@@ -353,6 +353,25 @@
     }
     .btn-lock:active:not(:disabled) { transform: translateY(0); }
     .btn-lock:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-unlock {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border-2);
+      padding: 7px 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: color 0.2s ease, border-color 0.2s ease;
+      margin-left: 16px;
+      vertical-align: middle;
+    }
+    .btn-unlock:hover {
+      color: var(--text);
+      border-color: var(--text-muted);
+    }
     .locked-msg {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
@@ -793,11 +812,22 @@ function updateRingFromDay(day) {
 function renderCTA(day) {
   const zone = document.getElementById('cta-zone');
   if (day.locked) {
-    zone.innerHTML = `<div class="locked-msg">✓ Day Locked — Field Record Updated</div>`;
+    zone.innerHTML = `
+      <span class="locked-msg">✓ Day Locked</span>
+      <button class="btn-unlock" id="btn-unlock">Unlock</button>`;
+    document.getElementById('btn-unlock').addEventListener('click', unlockDay);
   } else {
     zone.innerHTML = `<button class="btn-lock" id="btn-lock">Lock In Today's Work</button>`;
     document.getElementById('btn-lock').addEventListener('click', lockDay);
   }
+}
+
+function unlockDay() {
+  const day = loadDay();
+  day.locked = false;
+  saveDay(day);
+  document.querySelectorAll('.hcb').forEach(cb => { cb.disabled = false; });
+  renderCTA(day);
 }
 
 function lockDay() {
