@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brand Manager Blueprint</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── TOKENS ─────────────────────────────────────────────────────────────── */
+    :root {
+      --bg:           #0A0A0A;
+      --surface:      #0F0F0F;
+      --surface-2:    #141414;
+      --border:       #1C1C1C;
+      --border-2:     #252525;
+      --text:         #F2EDE6;
+      --text-dim:     #8A8480;
+      --text-muted:   #4A4744;
+      --accent:       #C8F04D;
+      --accent-soft:  rgba(200, 240, 77, 0.12);
+      --accent-glow:  rgba(200, 240, 77, 0.35);
+      --ring-r:       88;
+      --ring-c:       552.92; /* 2π × 88 */
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Noise grain overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.025;
+      pointer-events: none;
+      z-index: 9998;
+    }
+
+    /* ─── LAYOUT ─────────────────────────────────────────────────────────────── */
+    .wrap {
+      max-width: 740px;
+      margin: 0 auto;
+      padding: 0 28px;
+    }
+
+    /* ─── HEADER ─────────────────────────────────────────────────────────────── */
+    .site-header {
+      border-bottom: 1px solid var(--border);
+      padding: 18px 0;
+    }
+    .site-header .wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .logo em { color: var(--accent); font-style: normal; }
+    #header-date {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.12em;
+    }
+
+    /* ─── HERO ───────────────────────────────────────────────────────────────── */
+    .hero {
+      padding: 64px 0 52px;
+      text-align: center;
+      position: relative;
+    }
+    .hero-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+
+    /* ── Progress Ring ── */
+    .ring-wrap {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      margin: 0 auto 44px;
+    }
+    .ring-svg {
+      transform: rotate(-90deg);
+      width: 200px;
+      height: 200px;
+      display: block;
+    }
+    .ring-track {
+      fill: none;
+      stroke: var(--border);
+      stroke-width: 5;
+    }
+    .ring-fill {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-dasharray: 552.92;
+      stroke-dashoffset: 552.92;
+      transition: stroke-dashoffset 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+      filter: drop-shadow(0 0 6px var(--accent-glow));
+    }
+    .ring-fill.pulse {
+      animation: ringPulse 1.4s ease-in-out 3;
+    }
+    @keyframes ringPulse {
+      0%, 100% { filter: drop-shadow(0 0 6px var(--accent-glow)); }
+      50%       { filter: drop-shadow(0 0 22px var(--accent)) drop-shadow(0 0 44px var(--accent-glow)); }
+    }
+    .ring-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      pointer-events: none;
+    }
+    .ring-pct {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 36px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+    .ring-label {
+      font-size: 8px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 5px;
+    }
+
+    /* ── Quote ── */
+    .quote-wrap {
+      max-width: 500px;
+      margin: 0 auto;
+      cursor: pointer;
+      padding: 0 8px;
+    }
+    .quote-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 17px;
+      font-style: italic;
+      line-height: 1.7;
+      color: var(--text);
+      transition: opacity 0.35s ease;
+    }
+    .quote-attr {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-top: 10px;
+    }
+    .quote-refresh {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      letter-spacing: 0.08em;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .quote-wrap:hover .quote-refresh { opacity: 1; }
+
+    /* ─── HABITS ─────────────────────────────────────────────────────────────── */
+    .habits-section { padding: 8px 0 48px; }
+
+    .habit-cat {
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      margin-bottom: 8px;
+      overflow: hidden;
+      transition: border-color 0.25s ease;
+    }
+    .habit-cat:hover { border-color: var(--border-2); }
+    .habit-cat.is-complete { border-color: rgba(200, 240, 77, 0.28); }
+
+    .cat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      cursor: pointer;
+      user-select: none;
+      background: var(--surface);
+      transition: background 0.2s ease;
+    }
+    .cat-header:hover { background: var(--surface-2); }
+
+    .cat-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .cat-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 2px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .cat-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .cat-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .cat-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .cat-count .n { color: var(--accent); }
+    .cat-arrow {
+      font-size: 13px;
+      color: var(--text-muted);
+      transition: transform 0.3s ease;
+      line-height: 1;
+    }
+    .habit-cat.collapsed .cat-arrow { transform: rotate(-90deg); }
+
+    .cat-body {
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .habit-cat.collapsed .cat-body { max-height: 0 !important; }
+
+    .habit-list { padding: 2px 0 10px; }
+
+    .habit-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 13px 20px;
+      transition: background 0.15s ease;
+    }
+    .habit-row + .habit-row { border-top: 1px solid var(--border); }
+    .habit-row:hover { background: rgba(255,255,255,0.018); }
+
+    /* Custom checkbox */
+    .hcb {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 19px;
+      height: 19px;
+      min-width: 19px;
+      border: 1.5px solid var(--border-2);
+      border-radius: 2px;
+      background: transparent;
+      cursor: pointer;
+      position: relative;
+      margin-top: 1px;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+    .hcb:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .hcb:checked {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .hcb:checked::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 5px;
+      width: 5px;
+      height: 9px;
+      border: 2px solid #0A0A0A;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+    }
+    .hcb:disabled { opacity: 0.5; cursor: default; }
+
+    .habit-label {
+      flex: 1;
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: #7A7570;
+      cursor: pointer;
+      transition: color 0.2s ease, text-decoration-color 0.2s ease;
+      text-decoration: none;
+    }
+    .habit-row.done .habit-label {
+      color: var(--text-muted);
+      text-decoration: line-through;
+      text-decoration-color: #3A3734;
+    }
+    .habit-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      background: #141414;
+      border: 1px solid var(--border);
+      padding: 3px 7px;
+      border-radius: 2px;
+      white-space: nowrap;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    /* ─── CTA ────────────────────────────────────────────────────────────────── */
+    .cta-section {
+      padding: 12px 0 52px;
+      text-align: center;
+    }
+    .btn-lock {
+      background: var(--accent);
+      color: #0A0A0A;
+      border: none;
+      padding: 13px 40px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    }
+    .btn-lock:hover:not(:disabled) {
+      background: #d4f560;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(200, 240, 77, 0.22);
+    }
+    .btn-lock:active:not(:disabled) { transform: translateY(0); }
+    .btn-lock:disabled { opacity: 0.35; cursor: not-allowed; }
+    .locked-msg {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    /* ─── STREAK CALENDAR ────────────────────────────────────────────────────── */
+    .streak-section {
+      padding: 44px 0 72px;
+      border-top: 1px solid var(--border);
+    }
+    .streak-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 28px;
+      gap: 16px;
+    }
+    .streak-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .streak-stats {
+      display: flex;
+      gap: 28px;
+      flex-shrink: 0;
+    }
+    .stat-block { text-align: right; }
+    .stat-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 24px;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 5px;
+    }
+    .cal-cell {
+      aspect-ratio: 1;
+      border-radius: 2px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    .cal-cell.today {
+      box-shadow: 0 0 0 1.5px var(--accent);
+    }
+    .cal-cell.partial {
+      background: rgba(200, 240, 77, 0.18);
+      border-color: rgba(200, 240, 77, 0.28);
+    }
+    .cal-cell.complete {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    /* Tooltip */
+    .cal-cell::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 7px);
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      background: #1A1A1A;
+      border: 1px solid var(--border-2);
+      color: var(--text-dim);
+      padding: 4px 8px;
+      border-radius: 2px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      z-index: 100;
+    }
+    .cal-cell:hover::after { opacity: 1; }
+
+    .cal-legend {
+      display: flex;
+      gap: 18px;
+      margin-top: 14px;
+      justify-content: flex-end;
+    }
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+    }
+    .legend-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 2px;
+      border: 1px solid transparent;
+    }
+
+    /* ─── CONFETTI CANVAS ────────────────────────────────────────────────────── */
+    #confetti-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9997;
+    }
+
+    /* ─── RESPONSIVE ─────────────────────────────────────────────────────────── */
+    @media (max-width: 580px) {
+      .wrap { padding: 0 18px; }
+      .hero { padding: 44px 0 36px; }
+      .ring-wrap { width: 164px; height: 164px; }
+      .ring-svg { width: 164px; height: 164px; }
+      .ring-pct { font-size: 30px; }
+      .quote-text { font-size: 15px; }
+      .streak-head { flex-direction: column; }
+      .streak-stats { align-self: flex-start; gap: 20px; }
+      .cal-grid { grid-template-columns: repeat(6, 1fr); gap: 4px; }
+      .stat-block { text-align: left; }
+      .streak-title { font-size: 18px; }
+      .cat-title { font-size: 14px; }
+      .habit-label { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="wrap">
+    <div class="logo">Brand Manager <em>Blueprint</em></div>
+    <div id="header-date"></div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-eyebrow">Brand Equity Score</div>
+
+    <div class="ring-wrap">
+      <svg class="ring-svg" viewBox="0 0 200 200" aria-hidden="true">
+        <circle class="ring-track" cx="100" cy="100" r="88"/>
+        <circle class="ring-fill" id="ring-fill" cx="100" cy="100" r="88"/>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-pct" id="ring-pct">0%</div>
+        <div class="ring-label">Today</div>
+      </div>
+    </div>
+
+    <div class="quote-wrap" id="quote-wrap" role="button" tabindex="0" aria-label="Click for new quote">
+      <div class="quote-text" id="quote-text"></div>
+      <div class="quote-attr" id="quote-attr"></div>
+      <div class="quote-refresh">↻ click for a new one</div>
+    </div>
+  </div>
+</section>
+
+<!-- HABITS -->
+<section class="habits-section">
+  <div class="wrap" id="habits-container"></div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="wrap">
+    <div id="cta-zone">
+      <button class="btn-lock" id="btn-lock">Lock In Today's Work</button>
+    </div>
+  </div>
+</section>
+
+<!-- STREAK CALENDAR -->
+<section class="streak-section">
+  <div class="wrap">
+    <div class="streak-head">
+      <div class="streak-title">30-Day Field Record</div>
+      <div class="streak-stats">
+        <div class="stat-block">
+          <div class="stat-val" id="stat-streak">0</div>
+          <div class="stat-label">Day Streak</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-val" id="stat-best">0</div>
+          <div class="stat-label">Best Run</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-val" id="stat-full">0</div>
+          <div class="stat-label">Full Days</div>
+        </div>
+      </div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="cal-legend">
+      <div class="legend-row">
+        <div class="legend-dot" style="background:var(--surface);border-color:var(--border);"></div>
+        No data
+      </div>
+      <div class="legend-row">
+        <div class="legend-dot" style="background:rgba(200,240,77,.18);border-color:rgba(200,240,77,.28);"></div>
+        Partial
+      </div>
+      <div class="legend-row">
+        <div class="legend-dot" style="background:var(--accent);border-color:var(--accent);"></div>
+        Complete
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+/* ─── DATA ───────────────────────────────────────────────────────────────── */
+const QUOTES = [
+  { text: "A brand is a promise. A great brand keeps it.", attr: "— Muhtar Kent" },
+  { text: "Marketing is no longer about the stuff you make, but the stories you tell.", attr: "— Seth Godin" },
+  { text: "The best marketing doesn't feel like marketing.", attr: "— Tom Fishburne" },
+  { text: "Your brand is what other people say about you when you're not in the room.", attr: "— Jeff Bezos" },
+  { text: "You now have to decide what 'image' you want for your brand. Image means personality.", attr: "— David Ogilvy" },
+  { text: "Champions are not made in gyms. They are made from something deep inside them.", attr: "— Muhammad Ali" },
+  { text: "Discipline is the bridge between goals and accomplishment.", attr: "— Jim Rohn" },
+  { text: "Do the work every day, even if nobody is watching.", attr: "— Unknown" },
+  { text: "Mastery is not about perfection. It's about showing up.", attr: "— Unknown" },
+  { text: "The brand is the strategy made visible.", attr: "— Unknown" },
+];
+
+const CATEGORIES = [
+  {
+    id: 'strategic',
+    title: 'Strategic Thinking',
+    icon: '◈',
+    items: [
+      { id: 's1', text: 'Read one piece of brand strategy or marketing literature', tag: '15 min min' },
+      { id: 's2', text: 'Study one brand campaign — write a 3-sentence takeaway', tag: 'Analysis' },
+      { id: 's3', text: 'Review a competitor brand and note one positioning insight', tag: 'Intel' },
+    ],
+  },
+  {
+    id: 'creative',
+    title: 'Creative & Content',
+    icon: '◐',
+    items: [
+      { id: 'c1', text: 'Write or refine one piece of brand copy — headline, tagline, or social post', tag: 'Copy' },
+      { id: 'c2', text: 'Post or draft one piece of personal brand content (LinkedIn or Instagram)', tag: 'Visibility' },
+      { id: 'c3', text: 'Study one brand\'s visual identity system', tag: 'Visual IQ' },
+    ],
+  },
+  {
+    id: 'commercial',
+    title: 'Commercial Acumen',
+    icon: '◇',
+    items: [
+      { id: 'ca1', text: 'Solve part of a live case study — timed session, no shortcuts', tag: 'Time-bound' },
+    ],
+  },
+  {
+    id: 'network',
+    title: 'Networking & Visibility',
+    icon: '◉',
+    items: [
+      { id: 'n1', text: 'Reach out to or engage meaningfully with one marketing or brand professional', tag: 'Outreach' },
+      { id: 'n2', text: 'Follow or study one brand manager whose career trajectory you respect', tag: 'Benchmark' },
+    ],
+  },
+  {
+    id: 'portfolio',
+    title: 'Portfolio Building',
+    icon: '▣',
+    items: [
+      { id: 'p1', text: 'Spend 20 minutes on a real or speculative brand project', tag: '20 min' },
+      { id: 'p2', text: 'Save or annotate one piece of work that belongs in your portfolio', tag: 'Archive' },
+    ],
+  },
+];
+
+const TOTAL = CATEGORIES.reduce((n, c) => n + c.items.length, 0);
+const CIRCUMFERENCE = 2 * Math.PI * 88; // 552.92
+
+/* ─── KEYS & STORAGE ─────────────────────────────────────────────────────── */
+function dateKey(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function loadDay(key = dateKey()) {
+  try { return JSON.parse(localStorage.getItem(`bmb_day_${key}`)) || { checked: {}, locked: false }; }
+  catch { return { checked: {}, locked: false }; }
+}
+function saveDay(data, key = dateKey()) {
+  localStorage.setItem(`bmb_day_${key}`, JSON.stringify(data));
+}
+function loadStreaks() {
+  try { return JSON.parse(localStorage.getItem('bmb_streaks')) || {}; }
+  catch { return {}; }
+}
+function saveStreaks(s) { localStorage.setItem('bmb_streaks', JSON.stringify(s)); }
+
+/* ─── DATE DISPLAY ───────────────────────────────────────────────────────── */
+(function setDate() {
+  const d = new Date();
+  const DOW = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const MON = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  document.getElementById('header-date').textContent =
+    `${DOW[d.getDay()]} · ${MON[d.getMonth()]} ${d.getDate()} · ${d.getFullYear()}`;
+})();
+
+/* ─── QUOTES ─────────────────────────────────────────────────────────────── */
+let activeQuoteIdx = -1;
+
+function showQuote(idx) {
+  const el = document.getElementById('quote-text');
+  const at = document.getElementById('quote-attr');
+  const q  = QUOTES[idx];
+  el.style.opacity = '0';
+  setTimeout(() => {
+    el.textContent = `"${q.text}"`;
+    at.textContent = q.attr;
+    el.style.transition = 'opacity 0.4s ease';
+    el.style.opacity = '1';
+  }, 220);
+  activeQuoteIdx = idx;
+}
+
+function randomQuote() {
+  let n;
+  do { n = Math.floor(Math.random() * QUOTES.length); } while (n === activeQuoteIdx);
+  showQuote(n);
+}
+
+// Rotate daily
+const doy = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 864e5);
+showQuote(doy % QUOTES.length);
+
+const qw = document.getElementById('quote-wrap');
+qw.addEventListener('click', randomQuote);
+qw.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') randomQuote(); });
+
+/* ─── RING ───────────────────────────────────────────────────────────────── */
+function setRing(pct) {
+  const ring = document.getElementById('ring-fill');
+  const offset = CIRCUMFERENCE - (Math.min(pct, 100) / 100) * CIRCUMFERENCE;
+  ring.style.strokeDashoffset = offset;
+  document.getElementById('ring-pct').textContent = `${Math.round(pct)}%`;
+}
+
+function pulseRing() {
+  const ring = document.getElementById('ring-fill');
+  ring.classList.remove('pulse');
+  void ring.offsetWidth; // reflow
+  ring.classList.add('pulse');
+  ring.addEventListener('animationend', () => ring.classList.remove('pulse'), { once: true });
+}
+
+/* ─── RENDER HABITS ──────────────────────────────────────────────────────── */
+function countChecked(day) {
+  return Object.values(day.checked).filter(Boolean).length;
+}
+
+function renderHabits() {
+  const day = loadDay();
+  const container = document.getElementById('habits-container');
+  container.innerHTML = '';
+
+  CATEGORIES.forEach(cat => {
+    const doneCat = cat.items.filter(h => day.checked[h.id]).length;
+    const allCat  = cat.items.length;
+    const isComplete = doneCat === allCat;
+
+    const el = document.createElement('div');
+    el.className = `habit-cat${isComplete ? ' is-complete' : ''}`;
+    el.dataset.cat = cat.id;
+
+    el.innerHTML = `
+      <div class="cat-header">
+        <div class="cat-left">
+          <div class="cat-icon">${cat.icon}</div>
+          <div class="cat-title">${cat.title}</div>
+        </div>
+        <div class="cat-right">
+          <div class="cat-count"><span class="n">${doneCat}</span>/${allCat}</div>
+          <div class="cat-arrow">▾</div>
+        </div>
+      </div>
+      <div class="cat-body">
+        <div class="habit-list">
+          ${cat.items.map(h => {
+            const checked = !!day.checked[h.id];
+            return `
+              <div class="habit-row${checked ? ' done' : ''}" data-row="${h.id}">
+                <input type="checkbox" class="hcb" id="h_${h.id}" data-id="${h.id}"
+                  ${checked  ? 'checked'  : ''}
+                  ${day.locked ? 'disabled' : ''}>
+                <label class="habit-label" for="h_${h.id}">${h.text}</label>
+                <div class="habit-tag">${h.tag}</div>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+
+    container.appendChild(el);
+
+    // Set initial body height
+    const body = el.querySelector('.cat-body');
+    body.style.maxHeight = body.scrollHeight + 'px';
+
+    // Collapse toggle
+    el.querySelector('.cat-header').addEventListener('click', () => {
+      const wasCollapsed = el.classList.toggle('collapsed');
+      if (!wasCollapsed) body.style.maxHeight = body.scrollHeight + 'px';
+    });
+
+    // Checkbox change
+    el.querySelectorAll('.hcb').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const d = loadDay();
+        d.checked[cb.dataset.id] = cb.checked;
+        saveDay(d);
+        onHabitChange();
+      });
+    });
+  });
+
+  renderCTA(day);
+  updateRingFromDay(day);
+}
+
+function onHabitChange() {
+  const day = loadDay();
+  const total = countChecked(day);
+
+  // Update ring
+  updateRingFromDay(day);
+
+  // Update cat headers + row styling
+  CATEGORIES.forEach(cat => {
+    const el = document.querySelector(`[data-cat="${cat.id}"]`);
+    if (!el) return;
+    const done = cat.items.filter(h => day.checked[h.id]).length;
+    el.querySelector('.n').textContent = done;
+    if (done === cat.items.length) el.classList.add('is-complete');
+    else el.classList.remove('is-complete');
+
+    cat.items.forEach(h => {
+      const row = el.querySelector(`[data-row="${h.id}"]`);
+      if (!row) return;
+      if (day.checked[h.id]) row.classList.add('done');
+      else row.classList.remove('done');
+    });
+  });
+
+  // Celebrate full completion
+  if (total === TOTAL && !day.locked) {
+    triggerConfetti();
+    pulseRing();
+  }
+}
+
+function updateRingFromDay(day) {
+  const n = countChecked(day);
+  setRing((n / TOTAL) * 100);
+}
+
+/* ─── CTA ────────────────────────────────────────────────────────────────── */
+function renderCTA(day) {
+  const zone = document.getElementById('cta-zone');
+  if (day.locked) {
+    zone.innerHTML = `<div class="locked-msg">✓ Day Locked — Field Record Updated</div>`;
+  } else {
+    zone.innerHTML = `<button class="btn-lock" id="btn-lock">Lock In Today's Work</button>`;
+    document.getElementById('btn-lock').addEventListener('click', lockDay);
+  }
+}
+
+function lockDay() {
+  const day = loadDay();
+  day.locked = true;
+  saveDay(day);
+
+  const n   = countChecked(day);
+  const pct = Math.round((n / TOTAL) * 100);
+
+  const streaks = loadStreaks();
+  streaks[dateKey()] = { pct, count: n, total: TOTAL };
+  saveStreaks(streaks);
+
+  renderCTA(day);
+  buildCalendar();
+  calcStats();
+
+  if (n === TOTAL) { triggerConfetti(); pulseRing(); }
+
+  // Disable all checkboxes
+  document.querySelectorAll('.hcb').forEach(cb => { cb.disabled = true; });
+}
+
+/* ─── CALENDAR ───────────────────────────────────────────────────────────── */
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function buildCalendar() {
+  const grid    = document.getElementById('cal-grid');
+  const streaks = loadStreaks();
+  const today   = dateKey();
+  grid.innerHTML = '';
+
+  for (let i = 29; i >= 0; i--) {
+    const d   = new Date();
+    d.setDate(d.getDate() - i);
+    const key  = dateKey(d);
+    const data = streaks[key];
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell';
+
+    if (key === today) cell.classList.add('today');
+    if (data) {
+      if (data.pct === 100) cell.classList.add('complete');
+      else if (data.pct > 0) cell.classList.add('partial');
+    }
+
+    const tip = data
+      ? `${MONTHS[d.getMonth()]} ${d.getDate()} — ${data.pct}%`
+      : `${MONTHS[d.getMonth()]} ${d.getDate()}`;
+    cell.setAttribute('data-tip', tip);
+    grid.appendChild(cell);
+  }
+}
+
+function calcStats() {
+  const streaks = loadStreaks();
+
+  // Current streak (consecutive days ending today with pct > 0)
+  let current = 0;
+  for (let i = 0; i < 365; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const s = streaks[dateKey(d)];
+    if (s && s.pct > 0) current++;
+    else break;
+  }
+
+  // Best streak + full days
+  const days = Object.keys(streaks).sort();
+  let best = 0, run = 0, full = 0;
+  days.forEach((k, i) => {
+    const s = streaks[k];
+    if (!s || s.pct === 0) { run = 0; return; }
+    run++;
+    best = Math.max(best, run);
+    if (s.pct === 100) full++;
+  });
+
+  document.getElementById('stat-streak').textContent = current;
+  document.getElementById('stat-best').textContent   = best;
+  document.getElementById('stat-full').textContent   = full;
+}
+
+/* ─── CONFETTI ───────────────────────────────────────────────────────────── */
+function triggerConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx    = canvas.getContext('2d');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const COLORS = ['#C8F04D','#F2EDE6','#ffffff','#a8d040','#e2f080','#9ed040'];
+  const particles = Array.from({ length: 140 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height * 0.35 - 20,
+    vx: (Math.random() - 0.5) * 7,
+    vy: Math.random() * 3.5 + 1.5,
+    w: Math.random() * 9 + 3,
+    h: Math.random() * 5 + 2,
+    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    rot: Math.random() * 360,
+    rs: (Math.random() - 0.5) * 9,
+    life: 1,
+  }));
+
+  const TOTAL_FRAMES = 130;
+  let frame = 0;
+
+  (function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.x  += p.vx;
+      p.y  += p.vy;
+      p.vy += 0.075;
+      p.rot += p.rs;
+      p.life = Math.max(0, 1 - frame / TOTAL_FRAMES);
+      ctx.save();
+      ctx.globalAlpha = p.life;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    frame++;
+    if (frame < TOTAL_FRAMES) requestAnimationFrame(animate);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  })();
+}
+
+/* ─── MIDNIGHT RESET ─────────────────────────────────────────────────────── */
+function scheduleMidnightReset() {
+  const now  = new Date();
+  const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+  setTimeout(() => {
+    document.getElementById('header-date').textContent = (() => {
+      const d = new Date();
+      const DOW = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+      const MON = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+      return `${DOW[d.getDay()]} · ${MON[d.getMonth()]} ${d.getDate()} · ${d.getFullYear()}`;
+    })();
+    setRing(0);
+    renderHabits();
+    buildCalendar();
+    calcStats();
+    scheduleMidnightReset();
+  }, next - now);
+}
+
+/* ─── INIT ───────────────────────────────────────────────────────────────── */
+renderHabits();
+buildCalendar();
+calcStats();
+scheduleMidnightReset();
+</script>
+</body>
+</html>
