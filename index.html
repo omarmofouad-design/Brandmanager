@@ -159,34 +159,23 @@
     .quote-wrap {
       max-width: 500px;
       margin: 0 auto;
-      cursor: pointer;
       padding: 0 8px;
     }
     .quote-text {
       font-family: 'Playfair Display', serif;
-      font-size: 17px;
-      font-style: italic;
-      line-height: 1.7;
+      font-size: 20px;
+      font-style: normal;
+      line-height: 1.8;
       color: var(--text);
-      transition: opacity 0.35s ease;
+      letter-spacing: 0.01em;
     }
     .quote-attr {
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
       letter-spacing: 0.18em;
-      text-transform: uppercase;
       color: var(--accent);
-      margin-top: 10px;
+      margin-top: 12px;
     }
-    .quote-refresh {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 9px;
-      color: var(--text-muted);
-      margin-top: 8px;
-      letter-spacing: 0.08em;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }
-    .quote-wrap:hover .quote-refresh { opacity: 1; }
 
     /* ─── HABITS ─────────────────────────────────────────────────────────────── */
     .habits-section { padding: 8px 0 48px; }
@@ -531,10 +520,9 @@
       </div>
     </div>
 
-    <div class="quote-wrap" id="quote-wrap" role="button" tabindex="0" aria-label="Click for new quote">
-      <div class="quote-text" id="quote-text"></div>
+    <div class="quote-wrap">
+      <div class="quote-text" id="quote-text" dir="rtl" lang="ar"></div>
       <div class="quote-attr" id="quote-attr"></div>
-      <div class="quote-refresh">↻ click for a new one</div>
     </div>
   </div>
 </section>
@@ -593,18 +581,10 @@
 
 <script>
 /* ─── DATA ───────────────────────────────────────────────────────────────── */
-const QUOTES = [
-  { text: "A brand is a promise. A great brand keeps it.", attr: "— Muhtar Kent" },
-  { text: "Marketing is no longer about the stuff you make, but the stories you tell.", attr: "— Seth Godin" },
-  { text: "The best marketing doesn't feel like marketing.", attr: "— Tom Fishburne" },
-  { text: "Your brand is what other people say about you when you're not in the room.", attr: "— Jeff Bezos" },
-  { text: "You now have to decide what 'image' you want for your brand. Image means personality.", attr: "— David Ogilvy" },
-  { text: "Champions are not made in gyms. They are made from something deep inside them.", attr: "— Muhammad Ali" },
-  { text: "Discipline is the bridge between goals and accomplishment.", attr: "— Jim Rohn" },
-  { text: "Do the work every day, even if nobody is watching.", attr: "— Unknown" },
-  { text: "Mastery is not about perfection. It's about showing up.", attr: "— Unknown" },
-  { text: "The brand is the strategy made visible.", attr: "— Unknown" },
-];
+const QUOTE = {
+  text: "وَأَن لَّيْسَ لِلإِنسَانِ إِلاَّ مَا سَعَى ۝ وَأَنَّ سَعْيَهُ سَوْفَ يُرَى",
+  attr: "النجم ٣٩–٤٠",
+};
 
 const CATEGORIES = [
   {
@@ -680,36 +660,9 @@ function saveStreaks(s) { localStorage.setItem('bmb_streaks', JSON.stringify(s))
     `${DOW[d.getDay()]} · ${MON[d.getMonth()]} ${d.getDate()} · ${d.getFullYear()}`;
 })();
 
-/* ─── QUOTES ─────────────────────────────────────────────────────────────── */
-let activeQuoteIdx = -1;
-
-function showQuote(idx) {
-  const el = document.getElementById('quote-text');
-  const at = document.getElementById('quote-attr');
-  const q  = QUOTES[idx];
-  el.style.opacity = '0';
-  setTimeout(() => {
-    el.textContent = `"${q.text}"`;
-    at.textContent = q.attr;
-    el.style.transition = 'opacity 0.4s ease';
-    el.style.opacity = '1';
-  }, 220);
-  activeQuoteIdx = idx;
-}
-
-function randomQuote() {
-  let n;
-  do { n = Math.floor(Math.random() * QUOTES.length); } while (n === activeQuoteIdx);
-  showQuote(n);
-}
-
-// Rotate daily
-const doy = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 864e5);
-showQuote(doy % QUOTES.length);
-
-const qw = document.getElementById('quote-wrap');
-qw.addEventListener('click', randomQuote);
-qw.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') randomQuote(); });
+/* ─── QUOTE ──────────────────────────────────────────────────────────────── */
+document.getElementById('quote-text').textContent = QUOTE.text;
+document.getElementById('quote-attr').textContent = QUOTE.attr;
 
 /* ─── RING ───────────────────────────────────────────────────────────────── */
 function setRing(pct) {
