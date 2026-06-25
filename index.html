@@ -494,7 +494,44 @@
     }
 
     /* ─── RESPONSIVE ─────────────────────────────────────────────────────────── */
+    /* ─── NF STREAK BANNER ───────────────────────────────────────────────── */
+    .nf-banner {
+      border-bottom: 1px solid var(--border);
+      padding: 18px 0;
+      text-align: center;
+    }
+    .nf-banner .wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+    .nf-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .nf-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 48px;
+      font-weight: 500;
+      color: var(--accent);
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .nf-days {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
     @media (max-width: 580px) {
+      .nf-count { font-size: 36px; }
+    }
       .wrap { padding: 0 18px; }
       .hero { padding: 44px 0 36px; }
       .ring-wrap { width: 164px; height: 164px; }
@@ -522,6 +559,15 @@
     <div id="header-date"></div>
   </div>
 </header>
+
+<!-- NF STREAK -->
+<div class="nf-banner">
+  <div class="wrap">
+    <div class="nf-label">NF</div>
+    <div class="nf-count" id="nf-count">0</div>
+    <div class="nf-days">days</div>
+  </div>
+</div>
 
 <!-- HERO -->
 <section class="hero">
@@ -669,6 +715,33 @@ function loadStreaks() {
   catch { return {}; }
 }
 function saveStreaks(s) { localStorage.setItem('bmb_streaks', JSON.stringify(s)); }
+
+function loadNFStreak() {
+  try { return JSON.parse(localStorage.getItem('bmb_nf_streak')) || { count: 0, lastDate: null }; }
+  catch { return { count: 0, lastDate: null }; }
+}
+function saveNFStreak(s) { localStorage.setItem('bmb_nf_streak', JSON.stringify(s)); }
+
+function renderNFCount() {
+  document.getElementById('nf-count').textContent = loadNFStreak().count;
+}
+
+function updateNFStreak(nfChecked) {
+  const nf   = loadNFStreak();
+  const today = dateKey();
+
+  if (nf.lastDate === today) return; // already processed today
+
+  if (nfChecked) {
+    const yesterday = dateKey(new Date(new Date() - 864e5));
+    nf.count = (nf.lastDate === yesterday) ? nf.count + 1 : 1;
+  } else {
+    nf.count = 0;
+  }
+  nf.lastDate = today;
+  saveNFStreak(nf);
+  renderNFCount();
+}
 
 /* ─── DATE DISPLAY ───────────────────────────────────────────────────────── */
 (function setDate() {
@@ -842,6 +915,8 @@ function lockDay() {
   streaks[dateKey()] = { pct, count: n, total: TOTAL };
   saveStreaks(streaks);
 
+  updateNFStreak(!!day.checked['pe3']);
+
   renderCTA(day);
   buildCalendar();
   calcStats();
@@ -981,6 +1056,7 @@ function scheduleMidnightReset() {
 renderHabits();
 buildCalendar();
 calcStats();
+renderNFCount();
 scheduleMidnightReset();
 </script>
 </body>
