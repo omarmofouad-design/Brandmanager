@@ -1055,12 +1055,12 @@ function scheduleMidnightReset() {
 /* ─── NF SEED (one-time, July 17 2025 start) ─────────────────────────────── */
 (function seedNFStreak() {
   if (localStorage.getItem('bmb_nf_seeded')) return;
-  const start    = new Date('2025-07-17T00:00:00');
+  const start    = new Date('2026-06-17T00:00:00');
   const today    = new Date(); today.setHours(0,0,0,0);
   const elapsed  = Math.floor((today - start) / 864e5); // days completed before today
   const yesterday = dateKey(new Date(today - 864e5));
   saveNFStreak({ count: elapsed, lastDate: yesterday });
-  localStorage.setItem('bmb_nf_seeded', '1');
+  localStorage.setItem('bmb_nf_seeded', '2');
 })();
 
 /* ─── INIT ───────────────────────────────────────────────────────────────── */
