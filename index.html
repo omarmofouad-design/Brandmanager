@@ -497,25 +497,28 @@
     /* ─── NF STREAK BANNER ───────────────────────────────────────────────── */
     .nf-banner {
       border-bottom: 1px solid var(--border);
-      padding: 18px 0;
-      text-align: center;
+      padding: 24px 0;
     }
-    .nf-banner .wrap {
+    .nf-inner {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 20px;
+      gap: 28px;
+    }
+    .nf-left {
+      flex-shrink: 0;
+      text-align: center;
     }
     .nf-label {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 0.3em;
+      font-size: 9px;
+      letter-spacing: 0.35em;
       text-transform: uppercase;
       color: var(--text-muted);
+      margin-bottom: 4px;
     }
     .nf-count {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 48px;
+      font-size: 52px;
       font-weight: 500;
       color: var(--accent);
       line-height: 1;
@@ -523,14 +526,62 @@
     }
     .nf-days {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 0.3em;
+      font-size: 9px;
+      letter-spacing: 0.25em;
       text-transform: uppercase;
       color: var(--text-muted);
+      margin-top: 4px;
     }
+    .nf-right {
+      flex: 1;
+    }
+    .nf-rewire-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .nf-rewire-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+    .nf-rewire-frac {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .nf-rewire-frac span { color: var(--accent); }
+    .nf-bar-track {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .nf-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+    .nf-milestones {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+    }
+    .nf-milestone {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+    }
+    .nf-milestone.passed { color: var(--accent); }
 
     @media (max-width: 580px) {
-      .nf-count { font-size: 36px; }
+      .nf-count { font-size: 38px; }
+      .nf-inner { gap: 18px; }
     }
       .wrap { padding: 0 18px; }
       .hero { padding: 44px 0 36px; }
@@ -563,9 +614,27 @@
 <!-- NF STREAK -->
 <div class="nf-banner">
   <div class="wrap">
-    <div class="nf-label">NF</div>
-    <div class="nf-count" id="nf-count">0</div>
-    <div class="nf-days">days</div>
+    <div class="nf-inner">
+      <div class="nf-left">
+        <div class="nf-label">NF</div>
+        <div class="nf-count" id="nf-count">0</div>
+        <div class="nf-days">days</div>
+      </div>
+      <div class="nf-right">
+        <div class="nf-rewire-label">
+          <div class="nf-rewire-title">90-Day Rewire</div>
+          <div class="nf-rewire-frac"><span id="nf-frac-n">0</span> / 90</div>
+        </div>
+        <div class="nf-bar-track">
+          <div class="nf-bar-fill" id="nf-bar"></div>
+        </div>
+        <div class="nf-milestones">
+          <div class="nf-milestone" id="nf-m30">30</div>
+          <div class="nf-milestone" id="nf-m60">60</div>
+          <div class="nf-milestone" id="nf-m90">90</div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -723,7 +792,15 @@ function loadNFStreak() {
 function saveNFStreak(s) { localStorage.setItem('bmb_nf_streak', JSON.stringify(s)); }
 
 function renderNFCount() {
-  document.getElementById('nf-count').textContent = loadNFStreak().count;
+  const count = loadNFStreak().count;
+  const pct   = Math.min((count / 90) * 100, 100);
+  document.getElementById('nf-count').textContent   = count;
+  document.getElementById('nf-frac-n').textContent  = count;
+  document.getElementById('nf-bar').style.width     = pct + '%';
+  ['30','60','90'].forEach(n => {
+    const el = document.getElementById(`nf-m${n}`);
+    if (el) el.className = `nf-milestone${count >= +n ? ' passed' : ''}`;
+  });
 }
 
 function updateNFStreak(nfChecked) {
