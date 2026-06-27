@@ -1137,7 +1137,7 @@ function scheduleMidnightReset() {
   const elapsed  = Math.floor((today - start) / 864e5); // days completed before today
   const yesterday = dateKey(new Date(today - 864e5));
   saveNFStreak({ count: elapsed, lastDate: yesterday });
-  localStorage.setItem('bmb_nf_seeded', '2');
+  localStorage.setItem('bmb_nf_seeded', '3');
 })();
 
 /* ─── INIT ───────────────────────────────────────────────────────────────── */
