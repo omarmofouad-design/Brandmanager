@@ -493,6 +493,46 @@
       z-index: 9997;
     }
 
+    /* ─── DAY NAVIGATION ─────────────────────────────────────────────────── */
+    .day-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .day-nav-btn {
+      background: transparent;
+      border: 1px solid var(--border-2);
+      color: var(--text-muted);
+      width: 32px;
+      height: 32px;
+      border-radius: 2px;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      transition: color 0.2s ease, border-color 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .day-nav-btn:hover:not(:disabled) {
+      color: var(--text);
+      border-color: var(--text-muted);
+    }
+    .day-nav-btn:disabled { opacity: 0.2; cursor: default; }
+    .day-nav-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      min-width: 160px;
+      text-align: center;
+    }
+    .day-nav-label.is-today { color: var(--accent); }
+    .day-nav-label.is-past  { color: var(--text-muted); }
+
     /* ─── RESPONSIVE ─────────────────────────────────────────────────────────── */
     /* ─── NF STREAK BANNER ───────────────────────────────────────────────── */
     .nf-banner {
@@ -642,6 +682,11 @@
 <section class="hero">
   <div class="wrap">
     <div class="hero-eyebrow">Daily Score</div>
+    <div class="day-nav">
+      <button class="day-nav-btn" id="day-prev" title="Previous day">&#8592;</button>
+      <div class="day-nav-label is-today" id="day-nav-label">Today</div>
+      <button class="day-nav-btn" id="day-next" title="Next day" disabled>&#8594;</button>
+    </div>
 
     <div class="ring-wrap">
       <svg class="ring-svg" viewBox="0 0 200 200" aria-hidden="true">
@@ -820,13 +865,57 @@ function updateNFStreak(nfChecked) {
   renderNFCount();
 }
 
+/* ─── VIEW DATE (day navigation) ─────────────────────────────────────────── */
+let viewDate = new Date(); viewDate.setHours(0,0,0,0);
+
+function viewDateKey() { return dateKey(viewDate); }
+
+function isViewToday() { return viewDateKey() === dateKey(); }
+
+const DOW_FULL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DOW3     = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+const MON3     = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+
+function updateDayNav() {
+  const label   = document.getElementById('day-nav-label');
+  const btnNext = document.getElementById('day-next');
+  const today   = isViewToday();
+
+  if (today) {
+    label.textContent = 'Today';
+    label.className   = 'day-nav-label is-today';
+  } else {
+    const d = viewDate;
+    label.textContent = `${DOW3[d.getDay()]} · ${MON3[d.getMonth()]} ${d.getDate()}`;
+    label.className   = 'day-nav-label is-past';
+  }
+  btnNext.disabled = today;
+
+  // Also update header date to reflect viewed day
+  const hd = isViewToday() ? new Date() : viewDate;
+  document.getElementById('header-date').textContent =
+    `${DOW3[hd.getDay()]} · ${MON3[hd.getMonth()]} ${hd.getDate()} · ${hd.getFullYear()}`;
+}
+
+document.getElementById('day-prev').addEventListener('click', () => {
+  viewDate = new Date(viewDate - 864e5);
+  updateDayNav();
+  renderHabits();
+  setRing((countChecked(loadDay(viewDateKey())) / TOTAL) * 100);
+});
+document.getElementById('day-next').addEventListener('click', () => {
+  const tomorrow = new Date(); tomorrow.setHours(0,0,0,0); tomorrow.setDate(tomorrow.getDate() + 1);
+  if (viewDate < tomorrow) { viewDate = new Date(viewDate.getTime() + 864e5); }
+  updateDayNav();
+  renderHabits();
+  setRing((countChecked(loadDay(viewDateKey())) / TOTAL) * 100);
+});
+
 /* ─── DATE DISPLAY ───────────────────────────────────────────────────────── */
 (function setDate() {
   const d = new Date();
-  const DOW = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
-  const MON = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   document.getElementById('header-date').textContent =
-    `${DOW[d.getDay()]} · ${MON[d.getMonth()]} ${d.getDate()} · ${d.getFullYear()}`;
+    `${DOW3[d.getDay()]} · ${MON3[d.getMonth()]} ${d.getDate()} · ${d.getFullYear()}`;
 })();
 
 /* ─── QUOTE ──────────────────────────────────────────────────────────────── */
@@ -855,7 +944,7 @@ function countChecked(day) {
 }
 
 function renderHabits() {
-  const day = loadDay();
+  const day = loadDay(viewDateKey());
   const container = document.getElementById('habits-container');
   container.innerHTML = '';
 
@@ -910,9 +999,9 @@ function renderHabits() {
     // Checkbox change
     el.querySelectorAll('.hcb').forEach(cb => {
       cb.addEventListener('change', () => {
-        const d = loadDay();
+        const d = loadDay(viewDateKey());
         d.checked[cb.dataset.id] = cb.checked;
-        saveDay(d);
+        saveDay(d, viewDateKey());
         onHabitChange();
       });
     });
@@ -923,7 +1012,7 @@ function renderHabits() {
 }
 
 function onHabitChange() {
-  const day = loadDay();
+  const day = loadDay(viewDateKey());
   const total = countChecked(day);
 
   // Update ring
@@ -973,26 +1062,26 @@ function renderCTA(day) {
 }
 
 function unlockDay() {
-  const day = loadDay();
+  const day = loadDay(viewDateKey());
   day.locked = false;
-  saveDay(day);
+  saveDay(day, viewDateKey());
   document.querySelectorAll('.hcb').forEach(cb => { cb.disabled = false; });
   renderCTA(day);
 }
 
 function lockDay() {
-  const day = loadDay();
+  const day = loadDay(viewDateKey());
   day.locked = true;
-  saveDay(day);
+  saveDay(day, viewDateKey());
 
   const n   = countChecked(day);
   const pct = Math.round((n / TOTAL) * 100);
 
   const streaks = loadStreaks();
-  streaks[dateKey()] = { pct, count: n, total: TOTAL };
+  streaks[viewDateKey()] = { pct, count: n, total: TOTAL };
   saveStreaks(streaks);
 
-  updateNFStreak(!!day.checked['pe3']);
+  if (isViewToday()) updateNFStreak(!!day.checked['pe3']);
 
   renderCTA(day);
   buildCalendar();
@@ -1141,6 +1230,7 @@ function scheduleMidnightReset() {
 })();
 
 /* ─── INIT ───────────────────────────────────────────────────────────────── */
+updateDayNav();
 renderHabits();
 buildCalendar();
 calcStats();
