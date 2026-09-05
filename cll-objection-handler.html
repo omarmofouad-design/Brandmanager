@@ -324,9 +324,32 @@ ul.data li b{font-family:var(--mono);font-size:13px;}
   border:1px solid var(--line-strong);border-radius:8px;
   background:var(--paper);resize:vertical;line-height:1.5;font-size:14.5px;
 }
-.notes .saved{
-  font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-top:6px;min-height:16px;
+.notes .noterow{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap;}
+.notes .saved{font-family:var(--mono);font-size:11.5px;color:var(--stop);}
+.notelog{list-style:none;margin:18px 0 0;padding:0;display:flex;flex-direction:column;gap:8px;}
+.notelog .noneyet{
+  font-family:var(--mono);font-size:12px;color:var(--ink-3);
+  padding:12px 14px;border:1px dashed var(--line-strong);border-radius:8px;
 }
+.noteitem{
+  background:var(--paper);border:1px solid var(--line);
+  border-left:3px solid var(--brand-navy);border-radius:0 8px 8px 0;
+  padding:10px 14px;
+}
+.noteitem .notehead{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:5px;
+}
+.noteitem time{
+  font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ink-3);
+  font-variant-numeric:tabular-nums;
+}
+.noteitem p{margin:0;font-size:14.5px;line-height:1.5;white-space:pre-wrap;}
+.delnote{
+  border:0;background:transparent;color:var(--ink-3);cursor:pointer;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+  padding:4px 6px;border-radius:4px;
+}
+.delnote:hover{color:var(--stop);background:var(--stop-bg);}
 
 /* ---------- mobile detail as a sheet ---------- */
 @media (max-width:919px){
@@ -1572,6 +1595,63 @@ var toastTimer = null;
 function loadNotes(){
   try{ notes = JSON.parse(localStorage.getItem(NOTES_KEY) || "{}") || {}; }
   catch(e){ notes = {}; }
+  /* notes were once a single string per card; keep anything already
+     written by promoting it to the first dated entry */
+  Object.keys(notes).forEach(function(id){
+    if(typeof notes[id] === "string"){
+      var t = notes[id].trim();
+      notes[id] = t ? [{ t:null, text:t }] : [];
+    }
+    if(!Array.isArray(notes[id])) notes[id] = [];
+  });
+}
+function entriesFor(id){ return Array.isArray(notes[id]) ? notes[id] : []; }
+
+function stamp(iso){
+  if(!iso) return "Undated (written before notes were dated)";
+  var d = new Date(iso);
+  if(isNaN(d)) return "Undated";
+  var M = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var hh = String(d.getHours()).padStart(2,"0");
+  var mm = String(d.getMinutes()).padStart(2,"0");
+  return d.getDate() + " " + M[d.getMonth()] + " " + d.getFullYear() + " \u00b7 " + hh + ":" + mm;
+}
+
+function addNote(id){
+  var box = document.getElementById("noteinput");
+  var text = box.value.trim();
+  if(!text){ box.focus(); return; }
+  if(!Array.isArray(notes[id])) notes[id] = [];
+  notes[id].push({ t:new Date().toISOString(), text:text });
+  var ok = saveNotes();
+  box.value = "";
+  document.getElementById("notelog").innerHTML = noteLogHTML(id);
+  var s = document.getElementById("savedmsg");
+  if(s) s.textContent = ok ? "" : "This browser is blocking storage";
+  toast(ok ? "Note added" : "Could not save on this device");
+  box.focus();
+}
+
+function deleteNote(id, i){
+  var list = entriesFor(id);
+  if(i < 0 || i >= list.length) return;
+  list.splice(i, 1);
+  saveNotes();
+  document.getElementById("notelog").innerHTML = noteLogHTML(id);
+  toast("Note deleted");
+}
+
+function noteLogHTML(id){
+  var list = entriesFor(id);
+  if(!list.length) return '<li class="noneyet">No notes on this objection yet.</li>';
+  var h = "";
+  for(var i = list.length - 1; i >= 0; i--){          /* newest first */
+    h += '<li class="noteitem">'
+       + '<div class="notehead"><time>' + esc(stamp(list[i].t)) + '</time>'
+       + '<button class="delnote" type="button" data-del="' + i + '" aria-label="Delete this note">Delete</button></div>'
+       + '<p>' + esc(list[i].text) + '</p></li>';
+  }
+  return h;
 }
 function saveNotes(){
   try{ localStorage.setItem(NOTES_KEY, JSON.stringify(notes)); return true; }
@@ -1748,8 +1828,10 @@ function detailHTML(c){
 
   h += '<h2 class="sec">Field notes</h2>';
   h += '<div class="notes">';
-  h += '<textarea id="noteinput" data-id="' + esc(c.id) + '" placeholder="What worked, what did not. Saved on this device only."></textarea>';
-  h += '<div class="saved" id="savedmsg"></div>';
+  h += '<textarea id="noteinput" data-id="' + esc(c.id) + '" placeholder="What worked, what did not. Each note is saved with the date you added it."></textarea>';
+  h += '<div class="noterow"><button class="act primary" type="button" id="addnote">Add dated note</button>'
+     + '<span class="saved" id="savedmsg"></span></div>';
+  h += '<ol class="notelog" id="notelog">' + noteLogHTML(c.id) + '</ol>';
   h += '</div>';
 
   h += '<textarea id="fallback" readonly aria-label="Exported field notes"></textarea>';
@@ -1768,7 +1850,6 @@ function select(id, keepScroll){
     return;
   }
   host.innerHTML = detailHTML(c);
-  document.getElementById("noteinput").value = notes[c.id] || "";
   document.getElementById("backlabel").textContent = c.cat;
   if(window.innerWidth >= 920 && !keepScroll) pane.scrollTop = 0;
   if(window.innerWidth >= 920) pane.scrollTop = 0;
@@ -1852,22 +1933,28 @@ function notesText(){
   L.push("Internal draft. Not MRC approved. Do not use with HCPs until reviewed.");
   L.push("Exported: " + new Date().toString());
   L.push("");
-  var n = 0;
+  var cards = 0, entries = 0;
   CARDS.forEach(function(c){
-    var v = notes[c.id];
-    if(v && v.trim()){
-      n++;
-      L.push("----------------------------------------------------------");
-      L.push("[" + c.cat + "]");
-      L.push("OBJECTION: " + c.obj);
-      L.push("CITATION: " + citationText(c).replace(/\n/g, "\n          "));
-      L.push("NOTE:");
-      L.push(v.trim());
+    var list = entriesFor(c.id);
+    if(!list.length) return;
+    cards++;
+    L.push("----------------------------------------------------------");
+    L.push("[" + c.cat + "]");
+    L.push("OBJECTION: " + c.obj);
+    L.push("CITATION: " + citationText(c).replace(/\n/g, "\n          "));
+    L.push("");
+    list.forEach(function(en){          /* oldest first, as written */
+      entries++;
+      L.push("  " + stamp(en.t));
+      en.text.split("\n").forEach(function(line){ L.push("    " + line); });
       L.push("");
-    }
+    });
   });
-  if(!n) L.push("(No field notes saved on this device yet.)");
-  else { L.push("----------------------------------------------------------"); L.push("Total notes: " + n); }
+  if(!entries) L.push("(No field notes saved on this device yet.)");
+  else {
+    L.push("----------------------------------------------------------");
+    L.push("Total: " + entries + " note" + (entries===1?"":"s") + " across " + cards + " objection" + (cards===1?"":"s"));
+  }
   return L.join("\n");
 }
 
@@ -1928,16 +2015,16 @@ document.getElementById("list").addEventListener("click", function(e){
 document.getElementById("back").addEventListener("click", closeDetail);
 document.getElementById("export").addEventListener("click", doExport);
 
-document.getElementById("detail").addEventListener("input", function(e){
-  var t = e.target;
-  if(t && t.id === "noteinput"){
-    var id = t.dataset.id;
-    if(t.value.trim() === "") delete notes[id]; else notes[id] = t.value;
-    var s = document.getElementById("savedmsg");
-    if(s) s.textContent = saveNotes() ? "Saved on this device" : "This browser is blocking storage";
+document.getElementById("detail").addEventListener("keydown", function(e){
+  if(e.target && e.target.id === "noteinput" && e.key === "Enter" && (e.metaKey || e.ctrlKey)){
+    e.preventDefault();
+    addNote(e.target.dataset.id);
   }
 });
 document.getElementById("detail").addEventListener("click", function(e){
+  if(e.target && e.target.id === "addnote"){ addNote(state.selected); return; }
+  var del = e.target.closest ? e.target.closest("[data-del]") : null;
+  if(del){ deleteNote(state.selected, parseInt(del.dataset.del, 10)); return; }
   var b = e.target.closest ? e.target.closest("[data-copy]") : null;
   if(!b) return;
   var c = byId(state.selected);
