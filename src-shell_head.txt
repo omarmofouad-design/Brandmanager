@@ -133,6 +133,14 @@ button,input,textarea,select{font:inherit;color:inherit;}
 .brandtext b{font-size:15.5px;font-weight:800;letter-spacing:-.015em;}
 .brandtext span{display:none;}
 .brandspacer{flex:1 1 auto;}
+.scope{display:inline-flex;border:1px solid rgba(255,255,255,.28);border-radius:7px;overflow:hidden;flex:0 0 auto;}
+.scope[hidden]{display:none;}
+.scope button{
+  border:0;background:transparent;color:#A9B8D4;cursor:pointer;
+  padding:0 12px;min-height:34px;font-size:12.5px;font-weight:650;white-space:nowrap;
+}
+.scope button[aria-current="true"]{background:rgba(255,255,255,.16);color:#fff;}
+@media (max-width:620px){ .scope button{padding:0 9px;font-size:12px;} }
 .ghost{
   border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;
   min-height:36px;padding:0 12px;border-radius:6px;cursor:pointer;

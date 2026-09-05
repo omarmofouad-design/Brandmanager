@@ -26,6 +26,66 @@ var PASSWORD_HASH = "19d0a3d6";
 /* Hashed work emails, so no address is written here in readable form.
    Two groups only so a note shows whether it came from a manager or
    the field team; both have identical access to the tool. */
+/* ------------------------------------------------------------------
+   WHO OWNS WHAT
+   Keyed by the same email hash as sign-in, so no address is written
+   here. "sales" lists the owner names used in the ALLnONE file;
+   "acts" lists the requestor names used in the activities tracker.
+
+   Two things to check before relying on this:
+   1. The ALLnONE file names one owner, "Omar", against 23 of its 25
+      accounts. Nobody else owns anything there, so a field member
+      other than Omar sees no accounts under "Mine" until the file
+      carries a KAM per account.
+   2. The tracker says "Omar Abdelgawad" while the sign-in address is
+      omar.fouad@. They are assumed to be the same person here. If
+      they are not, clear the two entries on that line.
+   ------------------------------------------------------------------ */
+var KAM = {
+  "7d87193" : { sales:["Omar"], acts:["Omar Abdelgawad"] },   /* omar.fouad  — see note 2 */
+  "62af20a9": { sales:[],       acts:["Abdullah Alghamdi"] },
+  "78bd5e51": { sales:[],       acts:["Layan Almadfaa"] },
+  "1b730dad": { sales:[],       acts:["Renad Almutib"] }
+};
+var SCOPE_KEY = "beone_scope_v1";
+var scope = "mine";
+
+function myKam(){ return (user && KAM[emailHash(user.email)]) || null; }
+function isManager(){ return user && user.role === "Manager"; }
+function scopedAccounts(){
+  var k = myKam();
+  if(scope === "all" || !k) return SALES.accounts;
+  return SALES.accounts.filter(function(a){ return k.sales.indexOf(a.ps) !== -1; });
+}
+function scopedEvents(){
+  var k = myKam();
+  if(scope === "all" || !k) return ACTS.events;
+  return ACTS.events.filter(function(e){ return k.acts.indexOf(e.by) !== -1; });
+}
+function loadScope(){
+  try{ scope = localStorage.getItem(SCOPE_KEY) || (isManager() ? "all" : "mine"); }
+  catch(e){ scope = isManager() ? "all" : "mine"; }
+  if(!myKam()) scope = "all";
+}
+function setScope(v){
+  scope = v;
+  try{ localStorage.setItem(SCOPE_KEY, v); }catch(e){}
+  renderScope();
+  if(!document.getElementById("mod-home").hidden)       renderHome();
+  if(!document.getElementById("mod-sales").hidden)      renderSales();
+  if(!document.getElementById("mod-allinone").hidden)   renderAio();
+  if(!document.getElementById("mod-activities").hidden) renderActs();
+}
+function renderScope(){
+  var el = document.getElementById("scope");
+  if(!el) return;
+  if(!myKam()){ el.hidden = true; return; }
+  el.hidden = false;
+  el.innerHTML =
+    '<button type="button" data-scope="mine"' + (scope === "mine" ? ' aria-current="true"' : '') + '>Mine</button>' +
+    '<button type="button" data-scope="all"' + (scope === "all" ? ' aria-current="true"' : '') + '>Everyone</button>';
+}
+
 var MANAGERS = ["44b21d67","52fa73fe","8f38aae3"];
 var TEAM     = ["62af20a9","78bd5e51","7d87193","1b730dad"];
 var user = null;

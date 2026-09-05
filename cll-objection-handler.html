@@ -138,6 +138,14 @@ button,input,textarea,select{font:inherit;color:inherit;}
 .brandtext b{font-size:15.5px;font-weight:800;letter-spacing:-.015em;}
 .brandtext span{display:none;}
 .brandspacer{flex:1 1 auto;}
+.scope{display:inline-flex;border:1px solid rgba(255,255,255,.28);border-radius:7px;overflow:hidden;flex:0 0 auto;}
+.scope[hidden]{display:none;}
+.scope button{
+  border:0;background:transparent;color:#A9B8D4;cursor:pointer;
+  padding:0 12px;min-height:34px;font-size:12.5px;font-weight:650;white-space:nowrap;
+}
+.scope button[aria-current="true"]{background:rgba(255,255,255,.16);color:#fff;}
+@media (max-width:620px){ .scope button{padding:0 9px;font-size:12px;} }
 .ghost{
   border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;
   min-height:36px;padding:0 12px;border-radius:6px;cursor:pointer;
@@ -747,6 +755,7 @@ table.grid .grouprow td{background:var(--surface-2);font-weight:750;
     <div class="brandtext"><b>Gulf Field System</b></div>
   </button>
   <div class="brandspacer"></div>
+  <div class="scope" id="scope" hidden></div>
   <div class="who" id="who"></div>
   <button class="ghost" id="export" type="button">Export notes</button>
   <button class="ghost" id="signout" type="button" hidden>Sign out</button>
@@ -2190,6 +2199,66 @@ var PASSWORD_HASH = "19d0a3d6";
 /* Hashed work emails, so no address is written here in readable form.
    Two groups only so a note shows whether it came from a manager or
    the field team; both have identical access to the tool. */
+/* ------------------------------------------------------------------
+   WHO OWNS WHAT
+   Keyed by the same email hash as sign-in, so no address is written
+   here. "sales" lists the owner names used in the ALLnONE file;
+   "acts" lists the requestor names used in the activities tracker.
+
+   Two things to check before relying on this:
+   1. The ALLnONE file names one owner, "Omar", against 23 of its 25
+      accounts. Nobody else owns anything there, so a field member
+      other than Omar sees no accounts under "Mine" until the file
+      carries a KAM per account.
+   2. The tracker says "Omar Abdelgawad" while the sign-in address is
+      omar.fouad@. They are assumed to be the same person here. If
+      they are not, clear the two entries on that line.
+   ------------------------------------------------------------------ */
+var KAM = {
+  "7d87193" : { sales:["Omar"], acts:["Omar Abdelgawad"] },   /* omar.fouad  — see note 2 */
+  "62af20a9": { sales:[],       acts:["Abdullah Alghamdi"] },
+  "78bd5e51": { sales:[],       acts:["Layan Almadfaa"] },
+  "1b730dad": { sales:[],       acts:["Renad Almutib"] }
+};
+var SCOPE_KEY = "beone_scope_v1";
+var scope = "mine";
+
+function myKam(){ return (user && KAM[emailHash(user.email)]) || null; }
+function isManager(){ return user && user.role === "Manager"; }
+function scopedAccounts(){
+  var k = myKam();
+  if(scope === "all" || !k) return SALES.accounts;
+  return SALES.accounts.filter(function(a){ return k.sales.indexOf(a.ps) !== -1; });
+}
+function scopedEvents(){
+  var k = myKam();
+  if(scope === "all" || !k) return ACTS.events;
+  return ACTS.events.filter(function(e){ return k.acts.indexOf(e.by) !== -1; });
+}
+function loadScope(){
+  try{ scope = localStorage.getItem(SCOPE_KEY) || (isManager() ? "all" : "mine"); }
+  catch(e){ scope = isManager() ? "all" : "mine"; }
+  if(!myKam()) scope = "all";
+}
+function setScope(v){
+  scope = v;
+  try{ localStorage.setItem(SCOPE_KEY, v); }catch(e){}
+  renderScope();
+  if(!document.getElementById("mod-home").hidden)       renderHome();
+  if(!document.getElementById("mod-sales").hidden)      renderSales();
+  if(!document.getElementById("mod-allinone").hidden)   renderAio();
+  if(!document.getElementById("mod-activities").hidden) renderActs();
+}
+function renderScope(){
+  var el = document.getElementById("scope");
+  if(!el) return;
+  if(!myKam()){ el.hidden = true; return; }
+  el.hidden = false;
+  el.innerHTML =
+    '<button type="button" data-scope="mine"' + (scope === "mine" ? ' aria-current="true"' : '') + '>Mine</button>' +
+    '<button type="button" data-scope="all"' + (scope === "all" ? ' aria-current="true"' : '') + '>Everyone</button>';
+}
+
 var MANAGERS = ["44b21d67","52fa73fe","8f38aae3"];
 var TEAM     = ["62af20a9","78bd5e51","7d87193","1b730dad"];
 var user = null;
@@ -2832,7 +2901,7 @@ function filteredAccounts(){
   var ctry = document.getElementById("fcountry").value;
   var own  = document.getElementById("fowner").value;
   var city = document.getElementById("fcity").value;
-  return SALES.accounts.filter(function(a){
+  return scopedAccounts().filter(function(a){
     if(ctry && a.country !== ctry) return false;
     if(own && a.ps !== own) return false;
     if(city && a.city !== city) return false;
@@ -2996,10 +3065,12 @@ function renderSales(){
   var monthLabel = mv === "" ? "year to date" : MONTHS[monthIdx];
   var target = PAIRS[measure];
 
+  var universe = scopedAccounts();
   document.getElementById("salessub").textContent =
-    SALES.accounts.length + " accounts across " +
-    Array.from(new Set(SALES.accounts.map(function(a){ return a.country; }))).length +
-    " countries, from " + SALES.source + ". " + list.length + " shown with the current filters.";
+    universe.length + " accounts across " +
+    Array.from(new Set(universe.map(function(a){ return a.country; }))).length +
+    " countries, from " + SALES.source + ". " + list.length + " shown with the current filters." +
+    (scope === "mine" && myKam() ? "  Showing your accounts only." : "");
 
   var note = document.getElementById("entrynote");
   if(entries.length){
@@ -3021,7 +3092,7 @@ function renderSales(){
   document.getElementById("tiles").innerHTML = tiles.map(function(t){
     if(t.special !== undefined){
       return '<div class="tile"><span class="k">' + esc(t.k) + '</span><span class="v">' + t.special +
-             '</span><span class="s">of ' + SALES.accounts.length + ' in the file</span></div>';
+             '</span><span class="s">of ' + universe.length + ' in view</span></div>';
     }
     var v = sumOf(list, t.m, monthIdx);
     var sub = "";
@@ -3056,7 +3127,9 @@ function renderSales(){
   }).sort(function(x, y){ return y.value - x.value; });
   document.getElementById("acctitle").textContent = measure + " by account";
   document.getElementById("accsub").textContent = "Highest first, " + monthLabel + ".";
-  barChart(document.getElementById("accbox"), rows, {color:C_ACTUAL, measure:measure, aria:measure + " by account"});
+  if(rows.length) barChart(document.getElementById("accbox"), rows, {color:C_ACTUAL, measure:measure, aria:measure + " by account"});
+  else document.getElementById("accbox").innerHTML =
+    '<div class="emptybox">No accounts are assigned to you in the ALLnONE file. Every account there names one owner, so switch to <b>Everyone</b> above to see them.</div>';
 
   /* table view */
   var th = '<thead><tr><th class="txt">Account</th><th class="txt">Country</th><th class="txt">City</th><th class="txt">Owner</th>' +
@@ -3190,7 +3263,7 @@ function renderAio(){
   var th = '<thead><tr><th class="txt">Account</th><th class="txt">Country</th><th class="txt">Measure</th>' +
            MONTHS.map(function(m){ return '<th>' + m + '</th>'; }).join("") + '<th>Total</th><th>YTD</th></tr></thead>';
   var body = [], shown = 0;
-  SALES.accounts.forEach(function(a){
+  scopedAccounts().forEach(function(a){
     if(ctry && a.country !== ctry) return;
     var ms = Object.keys(a.measures).filter(function(m){
       if(cat && a.measures[m].cat !== cat) return false;
@@ -3236,7 +3309,7 @@ function renderHome(){
   document.getElementById("hometitle").innerHTML =
     'What are you working on<em>?</em>';
 
-  var all = SALES.accounts;
+  var all = scopedAccounts();
   var pts = sumOf(all, "Brukinsa patient recruited", "ytd");
   var tgt = sumOf(all, "Brukinsa patient target", "ytd");
   var rows = 0;
@@ -3254,7 +3327,9 @@ function renderHome(){
      s:entries.length ? entries.length + " entered on this device" : "Nothing entered yet"},
     {mod:"activities", ic:"activities", h:"Activities",
      p:"Events, their approvals and what is still outstanding.",
-     s:ACTS.events.length + " events · " + ACTS.events.filter(function(e){return e.gatesDone===e.gatesTotal;}).length + " ready to run"},
+     s:(function(){ var ev = scopedEvents();
+        return ev.length + " event" + (ev.length===1?"":"s") + " · " +
+               ev.filter(function(e){return e.gatesDone===e.gatesTotal;}).length + " ready to run"; })()},
     {mod:"allinone", ic:"allinone", h:"ALLnONE",
      p:"Every account, measure and month exactly as recorded.",
      s:all.length + " accounts · " + rows + " rows"}
@@ -3343,6 +3418,8 @@ function startSales(){
   buildEntryForm();
   buildAio();
   buildActs();
+  loadScope();
+  renderScope();
   loadEntries();
   document.body.addEventListener("click", function(e){
     var t = e.target;
@@ -3350,6 +3427,8 @@ function startSales(){
     if(close){ closeTab(close.dataset.close); return; }
     var tab = t.closest ? t.closest("[data-tab]") : null;
     if(tab){ showModule(tab.dataset.tab); return; }
+    var sc = t.closest ? t.closest("[data-scope]") : null;
+    if(sc){ setScope(sc.dataset.scope); return; }
     var nb = t.closest ? t.closest("[data-nav]") : null;
     if(nb){ nb.dataset.nav === "back" ? goBack() : showModule("home"); return; }
     var card = t.closest ? t.closest("button[data-mod]") : null;
@@ -3385,7 +3464,7 @@ function actFiltered(){
   var st = document.getElementById("astatus").value;
   var q = document.getElementById("asearch").value.trim().toLowerCase();
   var terms = q ? q.split(/\s+/) : [];
-  return ACTS.events.filter(function(e){
+  return scopedEvents().filter(function(e){
     if(by && e.by !== by) return false;
     if(city && e.city !== city) return false;
     if(st === "ready"    && e.gatesDone !== e.gatesTotal) return false;
@@ -3399,11 +3478,14 @@ function actFiltered(){
     return true;
   });
 }
-function buildActs(){
+function buildActsFilters(){
   fillSelect(document.getElementById("aby"),
-    Array.from(new Set(ACTS.events.map(function(e){ return e.by; }))).filter(Boolean).sort(), "Everyone");
+    Array.from(new Set(scopedEvents().map(function(e){ return e.by; }))).filter(Boolean).sort(), "Everyone");
   fillSelect(document.getElementById("acity"),
     Array.from(new Set(ACTS.events.map(function(e){ return e.city; }))).filter(Boolean).sort(), "All cities");
+}
+function buildActs(){
+  buildActsFilters();
   ["aby","acity","astatus"].forEach(function(id){
     document.getElementById(id).addEventListener("change", renderActs);
   });
@@ -3416,15 +3498,17 @@ function niceDate(iso){
 }
 function renderActs(){
   var list = actFiltered();
+  var evAll = scopedEvents();
   document.getElementById("actsub").textContent =
-    ACTS.events.length + " events from " + ACTS.source + ". " + list.length + " shown.";
+    evAll.length + " events from " + ACTS.source + ". " + list.length + " shown." +
+    (scope === "mine" && myKam() ? "  Yours only." : "");
 
   var cost = list.reduce(function(t, e){ return t + (e.cost || 0); }, 0);
   var ready = list.filter(function(e){ return e.gatesDone === e.gatesTotal; }).length;
   var done = list.filter(function(e){ return e.completed; }).length;
   var docs = list.filter(function(e){ return e.completed && !e.postDoc; }).length;
   document.getElementById("acttiles").innerHTML =
-    '<div class="tile"><span class="k">Events</span><span class="v">' + list.length + '</span><span class="s">of ' + ACTS.events.length + ' in the tracker</span></div>' +
+    '<div class="tile"><span class="k">Events</span><span class="v">' + list.length + '</span><span class="s">of ' + evAll.length + ' in view</span></div>' +
     '<div class="tile"><span class="k">Planned cost</span><span class="v">$' + money(Math.round(cost)) + '</span><span class="s">USD, as planned</span></div>' +
     '<div class="tile"><span class="k">Ready to run</span><span class="v">' + ready + '</span><span class="s">all ' + ACTS.gates.length + ' checks cleared</span></div>' +
     '<div class="tile"><span class="k">Completed</span><span class="v">' + done + '</span><span class="s">' + (list.length - done) + ' still to run</span></div>' +
@@ -3451,7 +3535,9 @@ function renderActs(){
         (e.completed ? '<span class="g ' + (e.postDoc ? "y" : "n") + '">' + (e.postDoc ? "✓" : "✕") + ' Post-event docs' + (e.postDate ? " " + esc(niceDate(e.postDate)) : "") + '</span>' : '') +
         '<span class="g ' + (e.paid ? "y" : "u") + '">' + (e.paid ? "✓ Paid" : "Payment pending") + '</span>' +
       '</div></article>';
-  }).join("") || '<div class="emptybox">No events match.</div>';
+  }).join("") || '<div class="emptybox">' +
+    (scope === "mine" && myKam() ? 'No events of yours match. Switch to <b>Everyone</b> above to see the whole tracker.' : 'No events match.') +
+    '</div>';
 
   document.getElementById("actnote").textContent =
     "Speaker and chairperson names are held back and shown as counts. Everything else is exactly as recorded in the tracker.";

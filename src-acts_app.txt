@@ -11,7 +11,7 @@ function actFiltered(){
   var st = document.getElementById("astatus").value;
   var q = document.getElementById("asearch").value.trim().toLowerCase();
   var terms = q ? q.split(/\s+/) : [];
-  return ACTS.events.filter(function(e){
+  return scopedEvents().filter(function(e){
     if(by && e.by !== by) return false;
     if(city && e.city !== city) return false;
     if(st === "ready"    && e.gatesDone !== e.gatesTotal) return false;
@@ -25,11 +25,14 @@ function actFiltered(){
     return true;
   });
 }
-function buildActs(){
+function buildActsFilters(){
   fillSelect(document.getElementById("aby"),
-    Array.from(new Set(ACTS.events.map(function(e){ return e.by; }))).filter(Boolean).sort(), "Everyone");
+    Array.from(new Set(scopedEvents().map(function(e){ return e.by; }))).filter(Boolean).sort(), "Everyone");
   fillSelect(document.getElementById("acity"),
     Array.from(new Set(ACTS.events.map(function(e){ return e.city; }))).filter(Boolean).sort(), "All cities");
+}
+function buildActs(){
+  buildActsFilters();
   ["aby","acity","astatus"].forEach(function(id){
     document.getElementById(id).addEventListener("change", renderActs);
   });
@@ -42,15 +45,17 @@ function niceDate(iso){
 }
 function renderActs(){
   var list = actFiltered();
+  var evAll = scopedEvents();
   document.getElementById("actsub").textContent =
-    ACTS.events.length + " events from " + ACTS.source + ". " + list.length + " shown.";
+    evAll.length + " events from " + ACTS.source + ". " + list.length + " shown." +
+    (scope === "mine" && myKam() ? "  Yours only." : "");
 
   var cost = list.reduce(function(t, e){ return t + (e.cost || 0); }, 0);
   var ready = list.filter(function(e){ return e.gatesDone === e.gatesTotal; }).length;
   var done = list.filter(function(e){ return e.completed; }).length;
   var docs = list.filter(function(e){ return e.completed && !e.postDoc; }).length;
   document.getElementById("acttiles").innerHTML =
-    '<div class="tile"><span class="k">Events</span><span class="v">' + list.length + '</span><span class="s">of ' + ACTS.events.length + ' in the tracker</span></div>' +
+    '<div class="tile"><span class="k">Events</span><span class="v">' + list.length + '</span><span class="s">of ' + evAll.length + ' in view</span></div>' +
     '<div class="tile"><span class="k">Planned cost</span><span class="v">$' + money(Math.round(cost)) + '</span><span class="s">USD, as planned</span></div>' +
     '<div class="tile"><span class="k">Ready to run</span><span class="v">' + ready + '</span><span class="s">all ' + ACTS.gates.length + ' checks cleared</span></div>' +
     '<div class="tile"><span class="k">Completed</span><span class="v">' + done + '</span><span class="s">' + (list.length - done) + ' still to run</span></div>' +
@@ -77,7 +82,9 @@ function renderActs(){
         (e.completed ? '<span class="g ' + (e.postDoc ? "y" : "n") + '">' + (e.postDoc ? "✓" : "✕") + ' Post-event docs' + (e.postDate ? " " + esc(niceDate(e.postDate)) : "") + '</span>' : '') +
         '<span class="g ' + (e.paid ? "y" : "u") + '">' + (e.paid ? "✓ Paid" : "Payment pending") + '</span>' +
       '</div></article>';
-  }).join("") || '<div class="emptybox">No events match.</div>';
+  }).join("") || '<div class="emptybox">' +
+    (scope === "mine" && myKam() ? 'No events of yours match. Switch to <b>Everyone</b> above to see the whole tracker.' : 'No events match.') +
+    '</div>';
 
   document.getElementById("actnote").textContent =
     "Speaker and chairperson names are held back and shown as counts. Everything else is exactly as recorded in the tracker.";

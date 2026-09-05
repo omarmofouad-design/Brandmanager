@@ -9,6 +9,7 @@
     <div class="brandtext"><b>Gulf Field System</b></div>
   </button>
   <div class="brandspacer"></div>
+  <div class="scope" id="scope" hidden></div>
   <div class="who" id="who"></div>
   <button class="ghost" id="export" type="button">Export notes</button>
   <button class="ghost" id="signout" type="button" hidden>Sign out</button>

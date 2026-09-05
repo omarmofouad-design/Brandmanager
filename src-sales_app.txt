@@ -86,7 +86,7 @@ function filteredAccounts(){
   var ctry = document.getElementById("fcountry").value;
   var own  = document.getElementById("fowner").value;
   var city = document.getElementById("fcity").value;
-  return SALES.accounts.filter(function(a){
+  return scopedAccounts().filter(function(a){
     if(ctry && a.country !== ctry) return false;
     if(own && a.ps !== own) return false;
     if(city && a.city !== city) return false;
@@ -250,10 +250,12 @@ function renderSales(){
   var monthLabel = mv === "" ? "year to date" : MONTHS[monthIdx];
   var target = PAIRS[measure];
 
+  var universe = scopedAccounts();
   document.getElementById("salessub").textContent =
-    SALES.accounts.length + " accounts across " +
-    Array.from(new Set(SALES.accounts.map(function(a){ return a.country; }))).length +
-    " countries, from " + SALES.source + ". " + list.length + " shown with the current filters.";
+    universe.length + " accounts across " +
+    Array.from(new Set(universe.map(function(a){ return a.country; }))).length +
+    " countries, from " + SALES.source + ". " + list.length + " shown with the current filters." +
+    (scope === "mine" && myKam() ? "  Showing your accounts only." : "");
 
   var note = document.getElementById("entrynote");
   if(entries.length){
@@ -275,7 +277,7 @@ function renderSales(){
   document.getElementById("tiles").innerHTML = tiles.map(function(t){
     if(t.special !== undefined){
       return '<div class="tile"><span class="k">' + esc(t.k) + '</span><span class="v">' + t.special +
-             '</span><span class="s">of ' + SALES.accounts.length + ' in the file</span></div>';
+             '</span><span class="s">of ' + universe.length + ' in view</span></div>';
     }
     var v = sumOf(list, t.m, monthIdx);
     var sub = "";
@@ -310,7 +312,9 @@ function renderSales(){
   }).sort(function(x, y){ return y.value - x.value; });
   document.getElementById("acctitle").textContent = measure + " by account";
   document.getElementById("accsub").textContent = "Highest first, " + monthLabel + ".";
-  barChart(document.getElementById("accbox"), rows, {color:C_ACTUAL, measure:measure, aria:measure + " by account"});
+  if(rows.length) barChart(document.getElementById("accbox"), rows, {color:C_ACTUAL, measure:measure, aria:measure + " by account"});
+  else document.getElementById("accbox").innerHTML =
+    '<div class="emptybox">No accounts are assigned to you in the ALLnONE file. Every account there names one owner, so switch to <b>Everyone</b> above to see them.</div>';
 
   /* table view */
   var th = '<thead><tr><th class="txt">Account</th><th class="txt">Country</th><th class="txt">City</th><th class="txt">Owner</th>' +
@@ -444,7 +448,7 @@ function renderAio(){
   var th = '<thead><tr><th class="txt">Account</th><th class="txt">Country</th><th class="txt">Measure</th>' +
            MONTHS.map(function(m){ return '<th>' + m + '</th>'; }).join("") + '<th>Total</th><th>YTD</th></tr></thead>';
   var body = [], shown = 0;
-  SALES.accounts.forEach(function(a){
+  scopedAccounts().forEach(function(a){
     if(ctry && a.country !== ctry) return;
     var ms = Object.keys(a.measures).filter(function(m){
       if(cat && a.measures[m].cat !== cat) return false;
@@ -490,7 +494,7 @@ function renderHome(){
   document.getElementById("hometitle").innerHTML =
     'What are you working on<em>?</em>';
 
-  var all = SALES.accounts;
+  var all = scopedAccounts();
   var pts = sumOf(all, "Brukinsa patient recruited", "ytd");
   var tgt = sumOf(all, "Brukinsa patient target", "ytd");
   var rows = 0;
@@ -508,7 +512,9 @@ function renderHome(){
      s:entries.length ? entries.length + " entered on this device" : "Nothing entered yet"},
     {mod:"activities", ic:"activities", h:"Activities",
      p:"Events, their approvals and what is still outstanding.",
-     s:ACTS.events.length + " events · " + ACTS.events.filter(function(e){return e.gatesDone===e.gatesTotal;}).length + " ready to run"},
+     s:(function(){ var ev = scopedEvents();
+        return ev.length + " event" + (ev.length===1?"":"s") + " · " +
+               ev.filter(function(e){return e.gatesDone===e.gatesTotal;}).length + " ready to run"; })()},
     {mod:"allinone", ic:"allinone", h:"ALLnONE",
      p:"Every account, measure and month exactly as recorded.",
      s:all.length + " accounts · " + rows + " rows"}
@@ -597,6 +603,8 @@ function startSales(){
   buildEntryForm();
   buildAio();
   buildActs();
+  loadScope();
+  renderScope();
   loadEntries();
   document.body.addEventListener("click", function(e){
     var t = e.target;
@@ -604,6 +612,8 @@ function startSales(){
     if(close){ closeTab(close.dataset.close); return; }
     var tab = t.closest ? t.closest("[data-tab]") : null;
     if(tab){ showModule(tab.dataset.tab); return; }
+    var sc = t.closest ? t.closest("[data-scope]") : null;
+    if(sc){ setScope(sc.dataset.scope); return; }
     var nb = t.closest ? t.closest("[data-nav]") : null;
     if(nb){ nb.dataset.nav === "back" ? goBack() : showModule("home"); return; }
     var card = t.closest ? t.closest("button[data-mod]") : null;
