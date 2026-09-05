@@ -70,7 +70,6 @@ function setScope(v){
   renderScope();
   if(!document.getElementById("mod-home").hidden)       renderHome();
   if(!document.getElementById("mod-sales").hidden)      renderSales();
-  if(!document.getElementById("mod-allinone").hidden)   renderAio();
   if(!document.getElementById("mod-activities").hidden) renderActs();
 }
 function renderScope(){
@@ -131,7 +130,9 @@ function showWho(){
   slot.querySelector("b").textContent = user.name;
   slot.querySelector(".role").textContent = user.role || "";
   slot.title = user.email;
-  document.getElementById("signout").hidden = false;
+  var so = document.getElementById("signout");
+  so.hidden = false;
+  so.title = "Signed in as " + user.name + " (" + user.email + ")";
 }
 function openGate(){
   var g = document.getElementById("gate");

@@ -1,6 +1,6 @@
 
 /* ==================================================================
-   SALES, ENTRY AND ALLnONE
+   SALES AND ENTRY
    Figures come from the ALLnONE export and are shown as recorded.
    Nothing here recalculates or restates them.
    ================================================================== */
@@ -432,60 +432,12 @@ function exportEntries(){
   showNotesInline(text, started ? "Entries downloaded. If nothing arrived, copy them below." : "Copy your entries below.");
 }
 
-/* ---------- ALLnONE ---------- */
-function buildAio(){
-  fillSelect(document.getElementById("aiocountry"),
-    Array.from(new Set(SALES.accounts.map(function(a){ return a.country; }))).sort(), "All countries");
-  fillSelect(document.getElementById("aiocat"), Object.keys(SALES.measureCats), "All categories");
-  document.getElementById("aiocountry").addEventListener("change", renderAio);
-  document.getElementById("aiocat").addEventListener("change", renderAio);
-  document.getElementById("aiosearch").addEventListener("input", renderAio);
-}
-function renderAio(){
-  var q = document.getElementById("aiosearch").value.trim().toLowerCase();
-  var cat = document.getElementById("aiocat").value;
-  var ctry = document.getElementById("aiocountry").value;
-  var terms = q ? q.split(/\s+/) : [];
-  var th = '<thead><tr><th class="txt">Account</th><th class="txt">Country</th><th class="txt">Measure</th>' +
-           MONTHS.map(function(m){ return '<th>' + m + '</th>'; }).join("") + '<th>Total</th><th>YTD</th></tr></thead>';
-  var body = [], shown = 0;
-  scopedAccounts().forEach(function(a){
-    if(ctry && a.country !== ctry) return;
-    var ms = Object.keys(a.measures).filter(function(m){
-      if(cat && a.measures[m].cat !== cat) return false;
-      if(!terms.length) return true;
-      var hay = (a.account + " " + a.country + " " + a.city + " " + a.ps + " " + m + " " + a.measures[m].cat).toLowerCase();
-      return terms.every(function(t){ return hay.indexOf(t) !== -1; });
-    });
-    if(!ms.length) return;
-    body.push('<tr class="grouprow"><td class="txt" colspan="' + (MONTHS.length + 5) + '">' +
-              esc(a.country) + ' · ' + esc(a.account) + ' · ' + esc(a.city) + ' · ' + esc(a.category) + ' · ' + esc(a.ps) + '</td></tr>');
-    ms.forEach(function(m){
-      var d = a.measures[m]; shown++;
-      body.push('<tr><td class="acct">' + esc(a.account) + '</td><td class="txt dim">' + esc(a.country) +
-        '</td><td class="txt">' + esc(m) + '</td>' +
-        MONTHS.map(function(_, i){ return '<td>' + money(d.m[i]) + '</td>'; }).join("") +
-        '<td>' + money(d.total) + '</td><td><b>' + money(d.ytd) + '</b></td></tr>');
-    });
-  });
-  document.getElementById("aiotable").innerHTML = th + '<tbody>' + (body.join("") ||
-    '<tr><td class="txt" colspan="' + (MONTHS.length + 5) + '">Nothing matches.</td></tr>') + '</tbody>';
-  document.getElementById("aiosub").textContent =
-    scopedAccounts().length + " accounts across " +
-    (function(n){ return n + (n === 1 ? " country" : " countries"); })(
-      Array.from(new Set(scopedAccounts().map(function(a){ return a.country; }))).length) +
-    ", every month as recorded in " + SALES.source + ".";
-  document.getElementById("aionote").textContent = shown + " rows shown. Figures are exactly as they appear in the source file.";
-}
-
-
 /* ---------- the lobby ---------- */
 var ICONS = {
   objections:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.9-.9L3 21l1.9-4.6A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5Z"/></svg>',
   sales:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>',
   entry:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
-  activities:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>',
-  allinone:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12"/></svg>'
+  activities:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>'
 };
 
 function renderHome(){
@@ -499,9 +451,6 @@ function renderHome(){
   var all = scopedAccounts();
   var pts = sumOf(all, "Brukinsa patient recruited", "ytd");
   var tgt = sumOf(all, "Brukinsa patient target", "ytd");
-  var rows = 0;
-  all.forEach(function(a){ rows += Object.keys(a.measures).length; });
-
   var cards = [
     {mod:"objections", ic:"objections", h:"Objection handler",
      p:"Every objection, its approved answer, and the slide it came from.",
@@ -516,10 +465,7 @@ function renderHome(){
      p:"Events, their approvals and what is still outstanding.",
      s:(function(){ var ev = scopedEvents();
         return ev.length + " event" + (ev.length===1?"":"s") + " · " +
-               ev.filter(function(e){return e.gatesDone===e.gatesTotal;}).length + " ready to run"; })()},
-    {mod:"allinone", ic:"allinone", h:"ALLnONE",
-     p:"Every account, measure and month exactly as recorded.",
-     s:all.length + " accounts · " + rows + " rows"}
+               ev.filter(function(e){return e.gatesDone===e.gatesTotal;}).length + " ready to run"; })()}
   ];
 
   document.getElementById("launch").innerHTML = cards.map(function(c){
@@ -537,9 +483,9 @@ function renderHome(){
    of views, Home returns to the launcher without closing anything. */
 var MOD_LABEL = {
   objections:"Objection handler", sales:"Sales",
-  entry:"Enter sales", allinone:"ALLnONE", activities:"Activities"
+  entry:"Enter sales", activities:"Activities"
 };
-var MOD_IDS = ["home","objections","sales","entry","allinone","activities"];
+var MOD_IDS = ["home","objections","sales","entry","activities"];
 var openTabs = [];
 var navStack = [];
 var current  = "home";
@@ -581,7 +527,6 @@ function showModule(name, fromBack){
   if(name === "home")     renderHome();
   if(name === "sales")    renderSales();
   if(name === "entry")    renderEntries();
-  if(name === "allinone") renderAio();
   if(name === "activities") renderActs();
   renderNav();
 }
@@ -603,7 +548,6 @@ function closeTab(name){
 function startSales(){
   buildSalesFilters();
   buildEntryForm();
-  buildAio();
   buildActs();
   loadScope();
   renderScope();
