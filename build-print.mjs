@@ -1,6 +1,8 @@
 import fs from 'fs';
-const D = '/tmp/claude-0/-home-user-Brandmanager/14920c6e-2b62-52d1-96a5-0cbcf6a84283/scratchpad/';
-const CARDS = eval(fs.readFileSync(D + 'cards.js', 'utf8') + '; CARDS');
+import path from 'path';
+import { fileURLToPath } from 'url';
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const CARDS = eval(fs.readFileSync(path.join(HERE, 'cards.js'), 'utf8') + '; CARDS');
 
 const CATS = ["Fixed duration","Efficacy","Safety and tolerability","Comparative and ITC","Access and cost","Dosing and administration","Other"];
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -184,5 +186,5 @@ CATS.forEach(cat => {
 
 h += `</body></html>`;
 
-fs.writeFileSync('/home/user/Brandmanager/cll-objection-handler-print.html', h);
+fs.writeFileSync(path.join(HERE, 'cll-objection-handler-print.html'), h);
 console.log('print document written:', ordered.length, 'objections');
