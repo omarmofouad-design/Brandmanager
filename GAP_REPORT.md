@@ -393,3 +393,43 @@ and instructing that they never be quoted together.
 6. **Clarify §4.4** (4.8% vs 13.6%) in one line.
 7. **Re-export the ITC deck with a text layer** so slides 80–125 (the safety
    NMAs) can be read.
+
+---
+
+## 8. Change log — flags removed from the interface (5 September 2026)
+
+At the requester's instruction, the reviewer-facing apparatus was removed
+from the shipped tool so it could be shown to managers. **This report is now
+the only record of those caveats — nothing below is visible in the tool.**
+
+Removed from the interface:
+
+- the **NO APPROVED RESPONSE ON FILE** state (10 cards)
+- the **PREDATES AMPLIFY, VERIFY BEFORE USE** tag (6 cards)
+- the **Read before use** notes (33 cards)
+- the severity stripes and the two status filters
+
+Every objection now shows a response. They were filled in two ways, and no
+new clinical claim was written in either:
+
+**Four cards were completed from approved text that already existed** in the
+source files — approved messaging plus approved author conclusions:
+
+| Card | Filled from |
+|---|---|
+| Hypertension | AMPLIFY deck slide 14 safety message + Pooled Safety slides 62, 68 |
+| Infections | AMPLIFY deck slide 14 message + Pooled Safety slides 22, 63, 68 |
+| BTKi intolerance | BGB-3111-215 reported findings (Shadman, Lancet Haematol 2023) |
+| Waldenström's | Zanubrutinib data in WM.pdf slides 3–6 and the ASPEN cohort 1 safety summary |
+
+**Six cards carry a routing instruction, not a clinical answer**, because no
+source file addresses them at all: fixed-duration cost, tender price, budget
+commitment, CLL guideline positioning, post-BTKi sequencing, and
+pirtobrutinib / BTK degraders. These say "refer to Medical Information" or
+"refer to Market Access". They contain no clinical content and must not be
+answered from the field.
+
+**Unchanged and still true:** the conflicts in §4 (the MAIC HR 0.45 vs 0.26
+being the most serious), the missing Mayo / KHAN / 61-trial analyses in §2,
+the two medical decks being non-promotional and reactive-use-only, and the
+source-material defects in §5. The compliance banner was kept in the tool.
