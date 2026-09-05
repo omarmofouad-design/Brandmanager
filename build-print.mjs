@@ -60,7 +60,12 @@ h2.ct{
   color:var(--ink-3); margin:0 0 2mm; font-weight:700;
 }
 .ctlist{ list-style:none; margin:0; padding:0; }
-.ctlist li{ display:flex; gap:4mm; font-size:9.4pt; padding:1.1mm 0; border-bottom:.4pt dotted var(--line); }
+.ctlist li{ font-size:9.4pt; border-bottom:.4pt dotted var(--line); }
+.ctlist a{ display:flex; gap:4mm; padding:1.1mm 0; color:var(--ink); text-decoration:none; }
+.hint{ font-size:8.8pt; color:var(--ink-3); margin:-3mm 0 5mm; }
+.backlink{ margin:-4mm 0 6mm; }
+.backlink a{ font-family:var(--mono); font-size:8pt; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--ink-3); text-decoration:none; }
 .ctlist .num{ font-family:var(--mono); color:var(--ink-3); flex:0 0 8mm; }
 
 /* ---------- entries ---------- */
@@ -133,12 +138,13 @@ h += `<section class="cover">
 </section>`;
 
 /* contents */
-h += `<section class="contents"><h2 class="ct">Contents</h2>`;
+h += `<section class="contents" id="contents"><h2 class="ct">Contents</h2>
+  <p class="hint">Tap or click any objection to jump to it. Every category page links back here.</p>`;
 CATS.forEach(cat => {
   const items = ordered.filter(c => c.cat === cat);
   if (!items.length) return;
   h += `<div class="ctgroup"><h3>${esc(cat)} — ${items.length}</h3><ul class="ctlist">`;
-  items.forEach(c => { h += `<li><span class="num">${c._n}</span><span>${esc(c.obj)}</span></li>`; });
+  items.forEach(c => { h += `<li><a href="#obj-${c._n}"><span class="num">${c._n}</span><span>${esc(c.obj)}</span></a></li>`; });
   h += `</ul></div>`;
 });
 h += `</section>`;
@@ -147,9 +153,9 @@ h += `</section>`;
 CATS.forEach(cat => {
   const items = ordered.filter(c => c.cat === cat);
   if (!items.length) return;
-  h += `<section class="cat-open"><h2>${esc(cat)}</h2>`;
+  h += `<section class="cat-open"><h2>${esc(cat)}</h2><p class="backlink"><a href="#contents">Back to contents</a></p>`;
   items.forEach(c => {
-    h += `<article class="entry">`;
+    h += `<article class="entry" id="obj-${c._n}">`;
     h += `<div class="eyebrow">Objection ${c._n} · ${esc(c.cat)}</div>`;
     h += `<p class="obj">&ldquo;${esc(c.obj)}&rdquo;</p>`;
 
@@ -164,15 +170,13 @@ CATS.forEach(cat => {
       h += `</ul>`;
     }
 
-    h += `<div class="sec">Citation</div>`;
-    if (!c.cites || !c.cites.length) {
-      h += `<div class="cite">Routed to Medical Information or Market Access — no clinical citation applies.</div>`;
-    } else {
+    if (c.cites && c.cites.length) {
+      h += `<div class="sec">Citation</div>`;
       c.cites.forEach(ct => {
         h += `<div class="cite"><b>Trial:</b> ${esc(ct.trial)}<br><b>File:</b> ${esc(ct.file)}<br><b>Location:</b> ${esc(ct.loc)}</div>`;
       });
     }
-    h += `<p class="srcdate">Source date — ${esc(c.date)}</p>`;
+    if (c.date) h += `<p class="srcdate">Source date — ${esc(c.date)}</p>`;
     h += `</article>`;
   });
   h += `</section>`;
