@@ -1,0 +1,585 @@
+
+/* ------------------------------------------------------------------
+   APP
+   The card data above is the deliverable; this layer only finds,
+   displays and annotates it. No clinical content is generated here.
+   ------------------------------------------------------------------ */
+var CATS = ["Fixed duration","Efficacy","Safety and tolerability","Comparative and ITC","Access and cost","Dosing and administration","Other"];
+var NOTES_KEY = "beone_cll_objection_notes_v1";
+var USER_KEY  = "beone_cll_objection_user_v1";
+
+/* ------------------------------------------------------------------
+   SIGN IN
+   A shared team password plus an allowlist of work emails, both held
+   as hashes so neither the password nor anyone's address sits in the
+   source in readable form — the repository is public and a plain list
+   would be scraped.
+
+   A page served to a browser can always be read, so this is a
+   deterrent and an attribution record, not access control. Real
+   restriction has to come from wherever the file is hosted.
+
+   To regenerate either value:  node make-access.mjs "Password" emails.txt
+   ------------------------------------------------------------------ */
+var PASSWORD_HASH = "19d0a3d6";
+
+/* Hashed work emails, so no address is written here in readable form.
+   Two groups only so a note shows whether it came from a manager or
+   the field team; both have identical access to the tool. */
+var MANAGERS = ["44b21d67","52fa73fe","8f38aae3"];
+var TEAM     = ["62af20a9","78bd5e51","7d87193","1b730dad"];
+var user = null;
+
+function roleFor(email){
+  var k = emailHash(email);
+  if(MANAGERS.indexOf(k) !== -1) return "Manager";
+  if(TEAM.indexOf(k) !== -1)     return "Field team";
+  return null;
+}
+
+function hashWith(s, upper){
+  var t = "bg1|" + (upper ? String(s).trim().toUpperCase() : String(s).trim().toLowerCase());
+  var x = 5381;
+  for(var i=0;i<t.length;i++){ x = ((x<<5) + x + t.charCodeAt(i)) | 0; }
+  return (x>>>0).toString(16);
+}
+function emailHash(e){ return hashWith(e, false); }
+function codeHash(c){ return hashWith(c, true); }
+
+/* "first.last@example.com" -> "First Last" */
+function nameFromEmail(email){
+  var local = String(email).split("@")[0].replace(/[._\-]+/g, " ").trim();
+  return local.split(/\s+/).map(function(w){
+    return w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w;
+  }).join(" ") || email;
+}
+function loadUser(){
+  try{ user = JSON.parse(localStorage.getItem(USER_KEY) || "null"); }
+  catch(e){ user = null; }
+  if(user && !user.email) user = null;
+  if(user && !user.role){
+    user.role = roleFor(user.email);
+    if(!user.role) user = null;            /* removed from the list since */
+    else { try{ localStorage.setItem(USER_KEY, JSON.stringify(user)); }catch(e){} }
+  }
+}
+function signOut(){
+  try{ localStorage.removeItem(USER_KEY); }catch(e){}
+  location.reload();
+}
+function showWho(){
+  if(!user) return;
+  var slot = document.getElementById("who");
+  slot.innerHTML = '<b></b> <span class="role"></span>';
+  slot.querySelector("b").textContent = user.name;
+  slot.querySelector(".role").textContent = user.role || "";
+  slot.title = user.email;
+  document.getElementById("signout").hidden = false;
+}
+function openGate(){
+  var g = document.getElementById("gate");
+  g.hidden = false;
+  document.getElementById("gmail").focus();
+
+  document.getElementById("gateform").addEventListener("submit", function(e){
+    e.preventDefault();
+    var email = document.getElementById("gmail").value.trim().toLowerCase();
+    var code  = document.getElementById("gcode").value;
+    var ack   = document.getElementById("gack").checked;
+    var err   = document.getElementById("gateerr");
+
+    function fail(msg, focusId){
+      err.textContent = msg; err.hidden = false;
+      var el = document.getElementById(focusId); if(el) el.focus();
+    }
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return fail("Enter your work email address.", "gmail");
+    if(!ack) return fail("Please confirm you have read the notice above the form.", "gack");
+    if(codeHash(code) !== PASSWORD_HASH) return fail("That password is not right. Check with your manager.", "gcode");
+    var role = roleFor(email);
+    if(!role) return fail("That email is not on the team list. Ask your manager to have it added.", "gmail");
+
+    user = { email:email, name:nameFromEmail(email), role:role, at:new Date().toISOString() };
+    try{ localStorage.setItem(USER_KEY, JSON.stringify(user)); }catch(e){}
+    err.hidden = true;
+    g.hidden = true;
+    showWho();
+    startApp();
+  });
+}
+
+
+var state = { q:"", cats:{}, selected:null };
+var notes = {};
+var toastTimer = null;
+
+function loadNotes(){
+  try{ notes = JSON.parse(localStorage.getItem(NOTES_KEY) || "{}") || {}; }
+  catch(e){ notes = {}; }
+  /* notes were once a single string per card; keep anything already
+     written by promoting it to the first dated entry */
+  Object.keys(notes).forEach(function(id){
+    if(typeof notes[id] === "string"){
+      var t = notes[id].trim();
+      notes[id] = t ? [{ t:null, text:t }] : [];
+    }
+    if(!Array.isArray(notes[id])) notes[id] = [];
+  });
+}
+function entriesFor(id){ return Array.isArray(notes[id]) ? notes[id] : []; }
+
+function stamp(iso){
+  if(!iso) return "Undated (written before notes were dated)";
+  var d = new Date(iso);
+  if(isNaN(d)) return "Undated";
+  var M = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var hh = String(d.getHours()).padStart(2,"0");
+  var mm = String(d.getMinutes()).padStart(2,"0");
+  return d.getDate() + " " + M[d.getMonth()] + " " + d.getFullYear() + " \u00b7 " + hh + ":" + mm;
+}
+
+function addNote(id){
+  var box = document.getElementById("noteinput");
+  var text = box.value.trim();
+  if(!text){ box.focus(); return; }
+  if(!Array.isArray(notes[id])) notes[id] = [];
+  notes[id].push({ t:new Date().toISOString(), text:text, who:(user && user.name) || "", role:(user && user.role) || "" });
+  var ok = saveNotes();
+  box.value = "";
+  document.getElementById("notelog").innerHTML = noteLogHTML(id);
+  var s = document.getElementById("savedmsg");
+  if(s) s.textContent = ok ? "" : "This browser is blocking storage";
+  toast(ok ? "Note added" : "Could not save on this device");
+  box.focus();
+}
+
+function deleteNote(id, i){
+  var list = entriesFor(id);
+  if(i < 0 || i >= list.length) return;
+  list.splice(i, 1);
+  saveNotes();
+  document.getElementById("notelog").innerHTML = noteLogHTML(id);
+  toast("Note deleted");
+}
+
+function noteLogHTML(id){
+  var list = entriesFor(id);
+  if(!list.length) return '<li class="noneyet">No notes on this objection yet.</li>';
+  var h = "";
+  for(var i = list.length - 1; i >= 0; i--){          /* newest first */
+    h += '<li class="noteitem">'
+       + '<div class="notehead"><time>' + esc(stamp(list[i].t)) + (list[i].who ? '  \u00b7  ' + esc(list[i].who) : '') + '</time>'
+       + '<button class="delnote" type="button" data-del="' + i + '" aria-label="Delete this note">Delete</button></div>'
+       + '<p>' + esc(list[i].text) + '</p></li>';
+  }
+  return h;
+}
+function saveNotes(){
+  try{ localStorage.setItem(NOTES_KEY, JSON.stringify(notes)); return true; }
+  catch(e){ return false; }
+}
+function esc(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function toast(msg){
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.hidden = true; }, 2600);
+}
+
+CARDS.forEach(function(c){
+  var parts = [c.obj, c.cat, c.key || "", (c.trials||[]).join(" "), c.date];
+  if(c.resp) parts = parts.concat(c.resp);
+  parts = parts.concat(c.data || []);
+  (c.cites||[]).forEach(function(ct){ parts.push(ct.trial, ct.file, ct.loc); });
+  c._hay = parts.join("  ").toLowerCase();
+});
+
+function matches(){
+  var terms = state.q ? state.q.toLowerCase().split(/\s+/).filter(Boolean) : [];
+  var picked = CATS.filter(function(k){ return state.cats[k]; });
+  return CARDS.filter(function(c){
+    if(picked.length && picked.indexOf(c.cat) === -1) return false;
+    for(var i=0;i<terms.length;i++){ if(c._hay.indexOf(terms[i]) === -1) return false; }
+    return true;
+  });
+}
+
+/* ---------- chips ---------- */
+function buildChips(){
+  var cc = document.getElementById("catchips");
+  CATS.forEach(function(cat){
+    var n = CARDS.filter(function(c){ return c.cat === cat; }).length;
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "chip";
+    b.setAttribute("aria-pressed","false");
+    b.innerHTML = esc(cat) + ' <span class="n">' + n + '</span>';
+    b.addEventListener("click", function(){
+      state.cats[cat] = !state.cats[cat];
+      syncChips(); render();
+    });
+    b.dataset.cat = cat;
+    cc.appendChild(b);
+  });
+
+  var clear = document.createElement("button");
+  clear.type = "button"; clear.className = "chip clear"; clear.id = "clearall";
+  clear.textContent = "Clear filters";
+  clear.addEventListener("click", function(){
+    state.q = ""; state.cats = {};
+    document.getElementById("q").value = "";
+    syncChips(); render();
+  });
+  cc.appendChild(clear);
+}
+
+function syncChips(){
+  document.querySelectorAll("#catchips .chip[data-cat]").forEach(function(b){
+    b.setAttribute("aria-pressed", state.cats[b.dataset.cat] ? "true" : "false");
+  });
+  var any = state.q || CATS.some(function(k){ return state.cats[k]; });
+  document.getElementById("clearall").style.display = any ? "" : "none";
+}
+
+/* ---------- list ---------- */
+function rowHTML(c){
+  return '<button class="row" type="button" data-id="' + esc(c.id) + '"' +
+         (state.selected === c.id ? ' aria-current="true"' : '') + '>' +
+    '<span class="stripe"></span>' +
+    '<span class="rowbody">' +
+      '<span class="eyebrow">' + esc(c.cat) + '</span>' +
+      '<span class="otext">' + esc(c.obj) + '</span>' +
+      '<span class="meta">' + esc(shortDate(c.date)) + '</span>' +
+    '</span></button>';
+}
+
+/* the date field is a full sentence on some cards; the list only needs the gist */
+function shortDate(d){
+  if(!d) return "";
+  var m = d.match(/((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4})/);
+  if(m) return m[1];
+  var y = d.match(/\b(20\d\d)\b/);
+  return y ? y[1] : d.slice(0, 40);
+}
+
+function render(){
+  var out = matches();
+  var list = document.getElementById("list");
+
+  if(!out.length){
+    list.innerHTML = '<div class="empty"><b>Nothing matches</b>Clear the search or the filters to see every objection.</div>';
+  } else {
+    list.innerHTML = out.map(rowHTML).join("");
+  }
+
+  document.getElementById("resultline").textContent =
+    out.length === CARDS.length
+      ? CARDS.length + " objections"
+      : out.length + " of " + CARDS.length + " objections";
+
+  syncChips();
+
+  /* keep a sensible selection so the desktop detail pane is never blank */
+  if(window.innerWidth >= 920){
+    var stillThere = out.some(function(c){ return c.id === state.selected; });
+    if(!stillThere) select(out.length ? out[0].id : null, true);
+    else markCurrent();
+  } else {
+    markCurrent();
+  }
+}
+
+function markCurrent(){
+  document.querySelectorAll(".row").forEach(function(r){
+    if(r.dataset.id === state.selected) r.setAttribute("aria-current","true");
+    else r.removeAttribute("aria-current");
+  });
+}
+
+/* ---------- detail ---------- */
+function byId(id){ for(var i=0;i<CARDS.length;i++){ if(CARDS[i].id === id) return CARDS[i]; } return null; }
+
+function detailHTML(c){
+  var h = '<div class="detailinner">';
+
+  h += '<div class="badges">';
+  h += '<span class="badge cat">' + esc(c.cat) + '</span>';
+  h += '</div>';
+
+  h += '<h1 class="objection">' + esc(c.obj) + '</h1>';
+  if(c.date) h += '<p class="sourceline">Source date &mdash; ' + esc(c.date) + '</p>';
+  else h += '<div class="sourcerule"></div>';
+
+  h += '<div class="actions">';
+  h += '<button class="act primary" type="button" data-copy="response">'
+     + '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>'
+     + 'Copy response + citation</button>';
+  h += '<button class="act" type="button" data-copy="citation">Copy citation only</button>';
+  h += '</div>';
+
+  h += '<h2 class="sec">Response</h2>';
+  h += '<div class="response">';
+  c.resp.forEach(function(p){ h += '<p>' + esc(p) + '</p>'; });
+  h += '</div>';
+  if(c.key) h += '<div class="keymsg"><em>Key message</em>' + esc(c.key) + '</div>';
+
+  if(c.data && c.data.length){
+    h += '<h2 class="sec">Supporting data points</h2>';
+    h += '<ul class="data">';
+    c.data.forEach(function(d){ h += '<li>' + esc(d) + '</li>'; });
+    h += '</ul>';
+  }
+
+  if(c.cites && c.cites.length){
+    h += '<h2 class="sec">Citation</h2>';
+    h += '<div class="cites">';
+    c.cites.forEach(function(ct){
+      h += '<dl class="cite">';
+      h += '<dt>Trial</dt><dd>' + esc(ct.trial) + '</dd>';
+      h += '<dt>File</dt><dd>' + esc(ct.file) + '</dd>';
+      h += '<dt>Location</dt><dd>' + esc(ct.loc) + '</dd>';
+      h += '</dl>';
+    });
+    h += '</div>';
+  }
+
+  h += '<h2 class="sec">Field notes</h2>';
+  h += '<div class="notes">';
+  h += '<textarea id="noteinput" data-id="' + esc(c.id) + '" placeholder="What worked, what did not. Each note is saved with the date you added it."></textarea>';
+  h += '<div class="noterow"><button class="act primary" type="button" id="addnote">Add dated note</button>'
+     + '<span class="saved" id="savedmsg"></span></div>';
+  h += '<ol class="notelog" id="notelog">' + noteLogHTML(c.id) + '</ol>';
+  h += '</div>';
+
+  h += '<textarea id="fallback" readonly aria-label="Exported field notes"></textarea>';
+  h += '</div>';
+  return h;
+}
+
+function select(id, keepScroll){
+  state.selected = id;
+  var pane = document.getElementById("detailpane");
+  var host = document.getElementById("detail");
+  var c = id ? byId(id) : null;
+
+  if(!c){
+    host.innerHTML = '<div class="empty"><b>No objection selected</b>Pick one from the list.</div>';
+    return;
+  }
+  host.innerHTML = detailHTML(c);
+  document.getElementById("backlabel").textContent = c.cat;
+  if(window.innerWidth >= 920 && !keepScroll) pane.scrollTop = 0;
+  if(window.innerWidth >= 920) pane.scrollTop = 0;
+  markCurrent();
+}
+
+function openDetail(id){
+  select(id);
+  if(window.innerWidth < 920){
+    var pane = document.getElementById("detailpane");
+    pane.classList.add("open");
+    pane.scrollTop = 0;
+    document.body.style.overflow = "hidden";
+    var b = document.getElementById("back");
+    if(b) b.focus();
+  }
+}
+function closeDetail(){
+  document.getElementById("detailpane").classList.remove("open");
+  document.body.style.overflow = "";
+  var r = document.querySelector('.row[data-id="' + state.selected + '"]');
+  if(r) r.focus();
+}
+
+/* ---------- copy ---------- */
+function citationText(c){
+  if(!c.cites || !c.cites.length) return "";
+  return c.cites.map(function(ct){
+    return ct.trial + " | " + ct.file + " | " + ct.loc;
+  }).join("\n");
+}
+function responseText(c){
+  var L = [];
+  L.push("OBJECTION: " + c.obj);
+  L.push("");
+  L.push("RESPONSE:");
+  c.resp.forEach(function(p){ L.push("- " + p); });
+  if(c.key){ L.push(""); L.push("KEY MESSAGE: " + c.key); }
+  if(c.data && c.data.length){
+    L.push("");
+    L.push("SUPPORTING DATA:");
+    c.data.forEach(function(d){ L.push("- " + d); });
+  }
+  var cit = citationText(c);
+  if(cit){ L.push(""); L.push("CITATION:"); L.push(cit); }
+  if(c.date){ L.push(""); L.push("SOURCE DATE: " + c.date); }
+  L.push("");
+  L.push("Internal draft. Not MRC approved. Do not use with HCPs until reviewed.");
+  return L.join("\n");
+}
+
+function copyText(text, label){
+  function ok(){ toast(label + " copied"); }
+  function fail(){ toast("Could not copy on this device"); }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(ok, function(){ legacyCopy(text) ? ok() : fail(); });
+  } else {
+    legacyCopy(text) ? ok() : fail();
+  }
+}
+function legacyCopy(text){
+  try{
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly","");
+    ta.style.position = "fixed"; ta.style.top = "-1000px";
+    document.body.appendChild(ta);
+    ta.select();
+    var okc = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return okc;
+  }catch(e){ return false; }
+}
+
+/* ---------- notes export ---------- */
+function notesText(){
+  var L = [];
+  L.push("BeOne Gulf - CLL Objection Handler - field notes export");
+  L.push("Internal draft. Not MRC approved. Do not use with HCPs until reviewed.");
+  L.push("Exported: " + new Date().toString());
+  if(user) L.push("Exported by: " + user.name + " <" + user.email + ">" + (user.role ? " — " + user.role : ""));
+  L.push("");
+  var cards = 0, entries = 0;
+  CARDS.forEach(function(c){
+    var list = entriesFor(c.id);
+    if(!list.length) return;
+    cards++;
+    L.push("----------------------------------------------------------");
+    L.push("[" + c.cat + "]");
+    L.push("OBJECTION: " + c.obj);
+    var cit = citationText(c);
+    if(cit) L.push("CITATION: " + cit.replace(/\n/g, "\n          "));
+    L.push("");
+    list.forEach(function(en){          /* oldest first, as written */
+      entries++;
+      L.push("  " + stamp(en.t) + (en.who ? "  \u00b7  " + en.who + (en.role ? " (" + en.role + ")" : "") : ""));
+      en.text.split("\n").forEach(function(line){ L.push("    " + line); });
+      L.push("");
+    });
+  });
+  if(!entries) L.push("(No field notes saved on this device yet.)");
+  else {
+    L.push("----------------------------------------------------------");
+    L.push("Total: " + entries + " note" + (entries===1?"":"s") + " across " + cards + " objection" + (cards===1?"":"s"));
+  }
+  return L.join("\n");
+}
+
+function showNotesInline(text, msg){
+  if(!state.selected && CARDS.length) openDetail(CARDS[0].id);
+  var fb = document.getElementById("fallback");
+  if(!fb){ toast(msg); return; }
+  fb.style.display = "block";
+  fb.value = text;
+  fb.scrollIntoView({block:"center"});
+  fb.focus(); fb.select();
+  toast(msg);
+}
+
+function blobDownload(text, name){
+  var blob = new Blob([text], {type:"text/plain;charset=utf-8"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+}
+
+function doExport(){
+  var text = notesText();
+  var name = "cll-objection-handler-field-notes-" + new Date().toISOString().slice(0,10) + ".txt";
+  var started = false;
+  try{ blobDownload(text, name); started = true; }catch(e){ started = false; }
+  /* Some hosts block a page from starting its own download, and it fails
+     silently, so the notes are always shown for copying as well. */
+  showNotesInline(text, started
+    ? "Notes downloaded. If nothing arrived, copy them below."
+    : "Copy your notes below.");
+}
+
+/* ---------- events ---------- */
+document.getElementById("q").addEventListener("input", function(){
+  state.q = this.value.trim();
+  render();
+});
+document.getElementById("list").addEventListener("click", function(e){
+  var row = e.target.closest ? e.target.closest(".row") : null;
+  if(row) openDetail(row.dataset.id);
+});
+document.getElementById("back").addEventListener("click", closeDetail);
+document.getElementById("export").addEventListener("click", doExport);
+
+document.getElementById("detail").addEventListener("keydown", function(e){
+  if(e.target && e.target.id === "noteinput" && e.key === "Enter" && (e.metaKey || e.ctrlKey)){
+    e.preventDefault();
+    addNote(e.target.dataset.id);
+  }
+});
+document.getElementById("detail").addEventListener("click", function(e){
+  if(e.target && e.target.id === "addnote"){ addNote(state.selected); return; }
+  var del = e.target.closest ? e.target.closest("[data-del]") : null;
+  if(del){ deleteNote(state.selected, parseInt(del.dataset.del, 10)); return; }
+  var b = e.target.closest ? e.target.closest("[data-copy]") : null;
+  if(!b) return;
+  var c = byId(state.selected);
+  if(!c) return;
+  if(b.dataset.copy === "citation") copyText(citationText(c), "Citation");
+  else copyText(responseText(c), "Response and citation");
+});
+
+document.addEventListener("keydown", function(e){
+  var typing = /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName);
+  if(e.key === "/" && !typing){ e.preventDefault(); document.getElementById("q").focus(); return; }
+  if(e.key === "Escape"){
+    if(window.innerWidth < 920 && document.getElementById("detailpane").classList.contains("open")){ closeDetail(); return; }
+    if(typing && document.activeElement.id === "q"){ document.activeElement.blur(); }
+    return;
+  }
+  if((e.key === "ArrowDown" || e.key === "ArrowUp") && !(typing && document.activeElement.tagName === "TEXTAREA")){
+    var rows = Array.prototype.slice.call(document.querySelectorAll(".row"));
+    if(!rows.length) return;
+    e.preventDefault();
+    var i = rows.findIndex(function(r){ return r.dataset.id === state.selected; });
+    i = (e.key === "ArrowDown") ? Math.min(rows.length - 1, i + 1) : Math.max(0, i - 1);
+    var id = rows[i].dataset.id;
+    if(window.innerWidth >= 920){ select(id); rows[i].scrollIntoView({block:"nearest"}); }
+    else { rows[i].focus(); }
+  }
+});
+
+window.addEventListener("resize", function(){
+  if(window.innerWidth >= 920){
+    document.getElementById("detailpane").classList.remove("open");
+    document.body.style.overflow = "";
+    if(!state.selected){ var m = matches(); if(m.length) select(m[0].id); }
+  }
+});
+
+function startApp(){
+  loadNotes();
+  buildChips();
+  render();
+  startSales();
+  showModule("objections");
+}
+
+/* boot runs at the very end of the bundle, after every module's
+   variables exist — a signed-in visitor starts the app during this
+   same synchronous pass, so nothing may still be undefined */
+</script>
+
+<textarea id="fallback" readonly aria-label="Exported field notes" placeholder="Your exported notes will appear here."></textarea>
+

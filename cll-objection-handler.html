@@ -41,6 +41,9 @@
   --focus:#2F6FD0;
   --shadow:0 1px 2px rgba(16,38,76,.06), 0 8px 24px rgba(16,38,76,.06);
 
+  --series-1:#2a78d6;
+  --series-2:#eb6834;
+
   --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
 
@@ -49,6 +52,8 @@
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
+    --series-1:#3987e5;
+    --series-2:#d95926;
     --paper:#0D1626;
     --surface:#121D31;
     --surface-2:#18253C;
@@ -71,6 +76,8 @@
   }
 }
 :root[data-theme="dark"]{
+  --series-1:#3987e5;
+  --series-2:#d95926;
   --paper:#0D1626;
   --surface:#121D31;
   --surface-2:#18253C;
@@ -506,6 +513,123 @@ ul.data li b{font-family:var(--mono);font-size:13px;}
 @media (max-width:700px){ .who .role{display:none;} .who{max-width:34vw;text-overflow:ellipsis;} }
 .noteitem .byline{font-family:var(--mono);font-size:11px;color:var(--ink-3);}
 
+
+/* ---------- module navigation ---------- */
+.modnav{
+  display:flex;gap:2px;background:var(--brand-navy-deep);
+  padding:0 10px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex:0 0 auto;
+}
+.modnav button{
+  border:0;background:transparent;color:#A9B8D4;cursor:pointer;
+  padding:11px 15px;min-height:var(--tap);white-space:nowrap;
+  font-size:14px;font-weight:650;border-bottom:3px solid transparent;
+}
+.modnav button:hover{color:#fff;}
+.modnav button[aria-current="true"]{color:#fff;border-bottom-color:var(--brand-red);}
+
+.module{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;}
+.module[hidden]{display:none;}
+.scrollpane{flex:1 1 auto;min-height:0;overflow-y:auto;background:var(--surface);}
+.pagewrap{max-width:1180px;margin:0 auto;padding:22px 20px 56px;}
+.pagehead{margin:0 0 18px;}
+.pagehead h2{margin:0 0 4px;font-size:22px;font-weight:800;letter-spacing:-.015em;}
+.pagehead p{margin:0;font-size:14px;color:var(--ink-2);max-width:70ch;}
+
+/* ---------- filter row ---------- */
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin:0 0 20px;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{
+  font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  font-weight:700;color:var(--ink-3);
+}
+.field select,.field input{
+  min-height:40px;padding:0 10px;border:1px solid var(--line-strong);
+  border-radius:7px;background:var(--paper);min-width:150px;
+}
+.field.grow{flex:1 1 220px;}
+.field.grow input{width:100%;}
+
+/* ---------- stat tiles ---------- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:10px;margin:0 0 22px;}
+.tile{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px;}
+.tile .k{
+  font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:700;display:block;margin-bottom:6px;
+}
+.tile .v{font-size:27px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1;}
+.tile .s{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;margin-top:3px;display:block;}
+.tile .s.up{color:var(--ok);} .tile .s.down{color:var(--stop);}
+
+/* ---------- chart card ---------- */
+.card2{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:18px 18px 14px;margin:0 0 18px;}
+.card2 h3{margin:0 0 2px;font-size:15.5px;font-weight:750;}
+.card2 .sub{margin:0 0 14px;font-size:12.5px;color:var(--ink-3);}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:0 0 10px;}
+.legend span{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2);}
+.swatch{width:11px;height:11px;border-radius:3px;flex:0 0 auto;}
+.chartbox{position:relative;overflow-x:auto;}
+.chartbox svg{display:block;}
+.axis text{font-size:10.5px;fill:var(--ink-3);font-family:var(--mono);}
+.gridline{stroke:var(--line);stroke-width:1;}
+.axisline{stroke:var(--line-strong);stroke-width:1;}
+.dlabel{font-size:11px;font-weight:700;font-family:var(--mono);}
+.tip{
+  position:absolute;pointer-events:none;z-index:5;
+  background:var(--ink);color:var(--paper);border-radius:7px;padding:8px 10px;
+  font-size:12px;line-height:1.45;white-space:nowrap;box-shadow:var(--shadow);
+}
+.tip[hidden]{display:none;}
+.tip b{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+.tip .row2{display:flex;align-items:center;gap:6px;}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:10px;background:var(--paper);max-height:70vh;}
+table.grid{border-collapse:separate;border-spacing:0;width:100%;font-size:13px;}
+table.grid th,table.grid td{padding:8px 11px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line);}
+table.grid th:first-child,table.grid td:first-child,
+table.grid th.txt,table.grid td.txt{text-align:left;}
+table.grid thead th{
+  position:sticky;top:0;z-index:2;background:var(--surface-2);
+  font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-2);font-weight:700;
+}
+table.grid tbody td{font-variant-numeric:tabular-nums;}
+table.grid tbody tr:hover td{background:var(--surface);}
+table.grid td.acct{position:sticky;left:0;background:var(--paper);font-weight:650;z-index:1;}
+table.grid tr:hover td.acct{background:var(--surface);}
+table.grid td.dim{color:var(--ink-3);}
+table.grid .grouprow td{background:var(--surface-2);font-weight:750;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);}
+.tablenote{margin:8px 2px 0;font-size:12px;color:var(--ink-3);}
+
+/* ---------- entry form ---------- */
+.formcard{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:20px;margin:0 0 18px;}
+.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:16px;}
+.formgrid .field select,.formgrid .field input{min-width:0;width:100%;}
+.formrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.notice{
+  background:var(--warn-bg);border:1px solid var(--warn);border-radius:9px;
+  padding:12px 14px;margin:0 0 18px;font-size:13.5px;line-height:1.5;color:var(--ink);
+}
+.notice b{display:block;color:var(--warn);font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px;}
+.entrylist{display:flex;flex-direction:column;gap:8px;}
+.entry2{
+  background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--brand-navy);
+  border-radius:0 9px 9px 0;padding:11px 14px;
+  display:flex;justify-content:space-between;gap:14px;align-items:flex-start;
+}
+.entry2 .meta2{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:3px;}
+.entry2 .val{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.emptybox{
+  border:1px dashed var(--line-strong);border-radius:9px;padding:22px;text-align:center;
+  color:var(--ink-3);font-size:13.5px;
+}
+@media (max-width:700px){
+  .pagewrap{padding:16px 14px 48px;}
+  .tile .v{font-size:23px;}
+}
+
 .toast{
   position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
   background:var(--ink);color:var(--paper);
@@ -526,8 +650,8 @@ ul.data li b{font-family:var(--mono);font-size:13px;}
           fill="#DA2B28"/>
   </svg>
   <div class="brandtext">
-    <b>BeOne&nbsp;&middot; CLL Objection Handler</b>
-    <span>Gulf field team &middot; BRUKINSA (zanubrutinib)</span>
+    <b>BeOne&nbsp;&middot; Gulf Field System</b>
+    <span>BRUKINSA (zanubrutinib) &middot; objections, sales, ALLnONE</span>
   </div>
   <div class="brandspacer"></div>
   <div class="who" id="who"></div>
@@ -537,6 +661,137 @@ ul.data li b{font-family:var(--mono);font-size:13px;}
 
 <div class="banner">Internal draft. Not MRC approved. Do not use with HCPs until reviewed.</div>
 
+
+<nav class="modnav" id="modnav" aria-label="Sections">
+  <button type="button" data-mod="objections" aria-current="true">Objection handler</button>
+  <button type="button" data-mod="sales">Sales</button>
+  <button type="button" data-mod="entry">Enter sales</button>
+  <button type="button" data-mod="allinone">ALLnONE</button>
+</nav>
+
+<!-- ============ SALES ============ -->
+<section class="module" id="mod-sales" hidden>
+  <div class="scrollpane"><div class="pagewrap">
+    <div class="pagehead">
+      <h2>Sales</h2>
+      <p id="salessub"></p>
+    </div>
+
+    <div class="filters">
+      <div class="field">
+        <label for="fowner">Owner</label>
+        <select id="fowner"></select>
+      </div>
+      <div class="field">
+        <label for="fcity">City</label>
+        <select id="fcity"></select>
+      </div>
+      <div class="field">
+        <label for="fmeasure">Measure</label>
+        <select id="fmeasure"></select>
+      </div>
+      <div class="field">
+        <label for="fmonth">Month</label>
+        <select id="fmonth"></select>
+      </div>
+    </div>
+
+    <div class="tiles" id="tiles"></div>
+
+    <div class="card2">
+      <h3 id="trendtitle"></h3>
+      <p class="sub" id="trendsub"></p>
+      <div class="legend" id="trendlegend"></div>
+      <div class="chartbox" id="trendbox"></div>
+    </div>
+
+    <div class="card2">
+      <h3 id="acctitle"></h3>
+      <p class="sub" id="accsub"></p>
+      <div class="chartbox" id="accbox"></div>
+    </div>
+
+    <div class="card2">
+      <h3>The same figures as a table</h3>
+      <p class="sub">Every value plotted above, for reading or copying.</p>
+      <div class="tablewrap"><table class="grid" id="salestable"></table></div>
+    </div>
+  </div></div>
+</section>
+
+<!-- ============ ENTER SALES ============ -->
+<section class="module" id="mod-entry" hidden>
+  <div class="scrollpane"><div class="pagewrap">
+    <div class="pagehead">
+      <h2>Enter sales</h2>
+      <p>Record a figure against an account and month. Entries are listed below and included in your export.</p>
+    </div>
+
+    <div class="notice">
+      <b>Read this first</b>
+      Entries are saved in this browser on this device only. They do not reach anyone else and they do not
+      change the ALLnONE file. To pass figures on, use <b style="display:inline;text-transform:none;letter-spacing:0;font-size:inherit;font-family:inherit;">Export entries</b> and send the file.
+    </div>
+
+    <form class="formcard" id="entryform" novalidate>
+      <div class="formgrid">
+        <div class="field">
+          <label for="eaccount">Account</label>
+          <select id="eaccount" required></select>
+        </div>
+        <div class="field">
+          <label for="emeasure">Measure</label>
+          <select id="emeasure" required></select>
+        </div>
+        <div class="field">
+          <label for="emonth">Month</label>
+          <select id="emonth" required></select>
+        </div>
+        <div class="field">
+          <label for="evalue">Value</label>
+          <input id="evalue" type="number" step="any" inputmode="decimal" placeholder="e.g. 12" required>
+        </div>
+      </div>
+      <div class="field grow" style="margin-bottom:16px;">
+        <label for="enote">Note (optional)</label>
+        <input id="enote" type="text" placeholder="Anything a reviewer should know about this figure">
+      </div>
+      <p class="gateerr" id="entryerr" role="alert" hidden></p>
+      <div class="formrow">
+        <button class="act primary" type="submit">Save entry</button>
+        <button class="act" type="button" id="exportentries">Export entries</button>
+        <span class="saved" id="entrysaved"></span>
+      </div>
+    </form>
+
+    <h3 style="margin:0 0 10px;font-size:15.5px;">Entries on this device <span id="entrycount" style="color:var(--ink-3);font-weight:400;"></span></h3>
+    <div class="entrylist" id="entrylist"></div>
+  </div></div>
+</section>
+
+<!-- ============ ALLnONE ============ -->
+<section class="module" id="mod-allinone" hidden>
+  <div class="scrollpane"><div class="pagewrap">
+    <div class="pagehead">
+      <h2>ALLnONE</h2>
+      <p id="aiosub"></p>
+    </div>
+    <div class="filters">
+      <div class="field grow">
+        <label for="aiosearch">Search account, city or measure</label>
+        <input id="aiosearch" type="search" placeholder="e.g. TAWAM, Dubai, Consumption" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="aiocat">Measure category</label>
+        <select id="aiocat"></select>
+      </div>
+    </div>
+    <div class="tablewrap"><table class="grid" id="aiotable"></table></div>
+    <p class="tablenote" id="aionote"></p>
+  </div></div>
+</section>
+
+<section class="module" id="mod-objections">
 <div class="toolbar">
   <div class="searchwrap">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
@@ -567,6 +822,7 @@ ul.data li b{font-family:var(--mono);font-size:13px;}
     <div id="detail"></div>
   </div>
 </div>
+</section>
 
 <div class="gate" id="gate" hidden>
   <div class="gatebanner">Internal draft. Not MRC approved. Do not use with HCPs until reviewed.</div>
@@ -578,7 +834,7 @@ ul.data li b{font-family:var(--mono);font-size:13px;}
           <path d="M32 6C25 20 18 27 4 32c14 5 21 12 28 26 7-14 14-21 28-26C46 27 39 20 32 6Z" fill="#fff"/>
           <path d="M32 20c-3 7-6 10-13 12 7 2 10 5 13 12 3-7 6-10 13-12-7-2-10-5-13-12Z" fill="#DA2B28"/>
         </svg>
-        <div><b>BeOne &middot; CLL Objection Handler</b><span>Gulf field team</span></div>
+        <div><b>BeOne &middot; Gulf Field System</b><span>Gulf field team</span></div>
       </div>
 
       <h2>Sign in to continue</h2>
@@ -1769,6 +2025,9 @@ var CARDS = [
  }
 ];
 
+var SALES = {"months":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"measureCats":{"Patients":["Brukinsa patient target","Brukinsa patient recruited","Brukinsa New Pts recruited"],"Units":["Target (units)","Sales (units)","Consumption","Starting stock","Ending stock","Stock correction (+/-)"],"Competition":["Acala CLL","Acala MCL","A+V","Ibrutinib mono","I+V","Pirtubrutinb"],"Outcomes":["Brukinsa Dropout patients","CMI","Variation vs. patient cons.","Patients cons.","Target (value)","Sales (value)"]},"accounts":[{"country":"UAE","account":"TAWAM","category":"Institution","city":"Al Ain","ps":"Omar","measures":{"Brukinsa patient target":{"cat":"Patients","m":[1,1,1,1,1,1,2,2,2,2,2,2],"total":2,"ytd":2},"Brukinsa patient recruited":{"cat":"Patients","m":[1,0,0,1,1,1,1,null,null,null,null,null],"total":5,"ytd":1},"Brukinsa New Pts recruited":{"cat":"Patients","m":[0,0,0,1,0,0,0,null,null,null,null,null],"total":1,"ytd":null},"Target (units)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Sales (units)":{"cat":"Units","m":[0,0,0,1,0,0,0,null,null,null,null,null],"total":1,"ytd":1},"Consumption":{"cat":"Units","m":[1,0,0,1,1,1,1,null,null,null,null,null],"total":5,"ytd":5},"Starting stock":{"cat":"Units","m":[18,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ending stock":{"cat":"Units","m":[17,17,17,17,16,15,14,14,14,14,14,14],"total":14,"ytd":14},"Stock correction (+/-)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala CLL":{"cat":"Competition","m":[9,9,9,7,7,7,7,null,null,null,null,null],"total":7,"ytd":7},"Acala MCL":{"cat":"Competition","m":[1,1,1,1,1,1,1,null,null,null,null,null],"total":1,"ytd":1},"A+V":{"cat":"Competition","m":[null,null,null,2,2,2,2,null,null,null,null,null],"total":2,"ytd":2},"Ibrutinib mono":{"cat":"Competition","m":[2,2,2,2,2,2,2,null,null,null,null,null],"total":2,"ytd":2},"I+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Pirtubrutinb":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Brukinsa Dropout patients":{"cat":"Outcomes","m":[0,1,0,0,0,0,0,0,0,0,0,0],"total":1,"ytd":1},"CMI":{"cat":"Outcomes","m":[17,34,51,51,24,15,14,null,null,null,null,null],"total":null,"ytd":14},"Variation vs. patient cons.":{"cat":"Outcomes","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Patients cons.":{"cat":"Outcomes","m":[1,0,0,1,1,1,1,0,0,0,0,0],"total":5,"ytd":5},"Target (value)":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":0},"Sales (value)":{"cat":"Outcomes","m":[null,null,null,11002,null,null,null,null,null,null,null,null],"total":11002,"ytd":11002}},"id":"ac1"},{"country":"UAE","account":"SSMC","category":"Institution","city":"Abu Dhabi","ps":"Omar","measures":{"Brukinsa patient target":{"cat":"Patients","m":[2,2,2,3,3,3,3,3,3,4,4,4],"total":4,"ytd":3},"Brukinsa patient recruited":{"cat":"Patients","m":[2,2,2,2,2,2,2,null,null,null,null,null],"total":14,"ytd":2},"Brukinsa New Pts recruited":{"cat":"Patients","m":[0,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":null},"Target (units)":{"cat":"Units","m":[3,null,null,null,null,null,null,null,null,null,null,3],"total":6,"ytd":3},"Sales (units)":{"cat":"Units","m":[3,12,2,7,0,0,0,null,null,null,null,null],"total":24,"ytd":24},"Consumption":{"cat":"Units","m":[2,2,2,2,2,2,2,null,null,null,null,null],"total":14,"ytd":14},"Starting stock":{"cat":"Units","m":[30,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ending stock":{"cat":"Units","m":[31,41,41,46,44,42,40,40,40,40,40,40],"total":40,"ytd":40},"Stock correction (+/-)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala CLL":{"cat":"Competition","m":[3,3,3,3,3,3,3,null,null,null,null,null],"total":3,"ytd":3},"Acala MCL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"A+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ibrutinib mono":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"I+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Pirtubrutinb":{"cat":"Competition","m":[1,1,1,1,1,1,1,null,null,null,null,null],"total":7,"ytd":1},"CMI":{"cat":"Outcomes","m":[16,21,21,23,22,21,20,null,null,null,null,null],"total":null,"ytd":20},"Variation vs. patient cons.":{"cat":"Outcomes","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Patients cons.":{"cat":"Outcomes","m":[2,2,2,2,2,2,2,0,0,0,0,0],"total":14,"ytd":14},"Target (value)":{"cat":"Outcomes","m":[33006,null,null,null,null,null,null,null,null,null,null,33006],"total":66012,"ytd":33006},"Sales (value)":{"cat":"Outcomes","m":[33006,132024,22004,77014,null,null,null,null,null,null,null,null],"total":264048,"ytd":264048}},"id":"ac2"},{"country":"UAE","account":"Sharjah University hospital","category":"NMC","city":"NMC","ps":"NMC","measures":{"Brukinsa patient target":{"cat":"Patients","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Brukinsa patient recruited":{"cat":"Patients","m":[0,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":0},"Brukinsa New Pts recruited":{"cat":"Patients","m":[0,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":null},"Target (units)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Sales (units)":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Consumption":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Starting stock":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ending stock":{"cat":"Units","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Stock correction (+/-)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala CLL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala MCL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"A+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ibrutinib mono":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"I+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Pirtubrutinb":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"CMI":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":null},"Variation vs. patient cons.":{"cat":"Outcomes","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Patients cons.":{"cat":"Outcomes","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Target (value)":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":0},"Sales (value)":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":0}},"id":"ac3"},{"country":"UAE","account":"Burjeel Hospital","category":"Private","city":"AD/Ain/Sharjah","ps":"Omar","measures":{"Brukinsa patient target":{"cat":"Patients","m":[3,3,3,4,4,4,5,5,5,6,6,6],"total":6,"ytd":5},"Brukinsa patient recruited":{"cat":"Patients","m":[3,4,4,3,1,1,2,null,null,null,null,null],"total":18,"ytd":2},"Brukinsa New Pts recruited":{"cat":"Patients","m":[0,1,0,0,0,0,1,null,null,null,null,null],"total":2,"ytd":null},"Target (units)":{"cat":"Units","m":[null,3,3,4,4,3,4,4,4,5,5,5],"total":44,"ytd":21},"Sales (units)":{"cat":"Units","m":[0,4,5,4,0,0,0,null,null,null,null,null],"total":13,"ytd":13},"Consumption":{"cat":"Units","m":[3,3,4,2,1,null,null,null,null,null,null,null],"total":13,"ytd":13},"Starting stock":{"cat":"Units","m":[6,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ending stock":{"cat":"Units","m":[3,4,5,7,6,6,6,6,6,6,6,6],"total":6,"ytd":6},"Stock correction (+/-)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala CLL":{"cat":"Competition","m":[1,1,1,1,1,2,2,null,null,null,null,null],"total":2,"ytd":2},"Acala MCL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"A+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ibrutinib mono":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"I+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Pirtubrutinb":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"CMI":{"cat":"Outcomes","m":[1,1,2,2,3,null,null,null,null,null,null,null],"total":null,"ytd":null},"Variation vs. patient cons.":{"cat":"Outcomes","m":[0,-1,0,-1,0,-1,-2,0,0,0,0,0],"total":-5,"ytd":-5},"Patients cons.":{"cat":"Outcomes","m":[3,4,4,3,1,1,2,0,0,0,0,0],"total":18,"ytd":18},"Target (value)":{"cat":"Outcomes","m":[null,33006,33006,44008,44008,33006,44008,44008,44008,55010,55010,55010],"total":484088,"ytd":231042},"Sales (value)":{"cat":"Outcomes","m":[null,44008,55010,44008,null,null,null,null,null,null,null,null],"total":143026,"ytd":143026}},"id":"ac4"},{"country":"UAE","account":"Mediclinic","category":"Private","city":"AD/Dubai \" City Hospital\"","ps":"Omar","measures":{"Brukinsa patient target":{"cat":"Patients","m":[1,1,1,1,1,2,2,2,2,3,3,3],"total":3,"ytd":2},"Brukinsa patient recruited":{"cat":"Patients","m":[2,2,3,3,3,3,3,null,null,null,null,null],"total":19,"ytd":3},"Brukinsa New Pts recruited":{"cat":"Patients","m":[0,0,1,0,0,0,0,null,null,null,null,null],"total":1,"ytd":null},"Target (units)":{"cat":"Units","m":[1,1,1,1,1,2,2,2,2,2,2,2],"total":19,"ytd":9},"Sales (units)":{"cat":"Units","m":[1,0,4,6,0,0,2,null,null,null,null,null],"total":13,"ytd":13},"Consumption":{"cat":"Units","m":[1,1,1,2,3,3,3,null,null,null,null,null],"total":14,"ytd":14},"Starting stock":{"cat":"Units","m":[4,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ending stock":{"cat":"Units","m":[3,2,5,9,6,3,2,2,2,2,2,2],"total":2,"ytd":2},"Stock correction (+/-)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala CLL":{"cat":"Competition","m":[2,2,2,2,2,2,2,null,null,null,null,null],"total":2,"ytd":2},"Acala MCL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"A+V":{"cat":"Competition","m":[4,4,4,3,3,3,3,null,null,null,null,null],"total":3,"ytd":3},"Ibrutinib mono":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"I+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Pirtubrutinb":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"CMI":{"cat":"Outcomes","m":[3,2,5,7,3,1,1,null,null,null,null,null],"total":null,"ytd":1},"Variation vs. patient cons.":{"cat":"Outcomes","m":[-1,-1,-2,-1,0,0,0,0,0,0,0,0],"total":-5,"ytd":-5},"Patients cons.":{"cat":"Outcomes","m":[2,2,3,3,3,3,3,0,0,0,0,0],"total":19,"ytd":19},"Target (value)":{"cat":"Outcomes","m":[11002,11002,11002,11002,11002,22004,22004,22004,22004,22004,22004,22004],"total":209038,"ytd":99018},"Sales (value)":{"cat":"Outcomes","m":[11002,null,44008,66012,null,null,22004,null,null,null,null,null],"total":143026,"ytd":143026}},"id":"ac5"},{"country":"UAE","account":"Yas Clinic","category":"Private","city":"Abu Dhabi","ps":"Omar","measures":{"Brukinsa patient target":{"cat":"Patients","m":[2,2,2,2,2,2,2,2,3,3,3,3],"total":3,"ytd":2},"Brukinsa patient recruited":{"cat":"Patients","m":[2,2,2,2,2,2,2,null,null,null,null,null],"total":14,"ytd":2},"Brukinsa New Pts recruited":{"cat":"Patients","m":[1,0,0,0,0,0,0,null,null,null,null,null],"total":1,"ytd":null},"Target (units)":{"cat":"Units","m":[1,2,2,2,2,2,2,2,3,3,3,3],"total":27,"ytd":13},"Sales (units)":{"cat":"Units","m":[1,4,0,0,0,0,0,null,null,null,null,null],"total":5,"ytd":5},"Consumption":{"cat":"Units","m":[2,2,2,2,2,2,2,null,null,null,null,null],"total":14,"ytd":14},"Starting stock":{"cat":"Units","m":[1,null,null,null,null,null,null,null,null,null,null,0],"total":0,"ytd":0},"Ending stock":{"cat":"Units","m":[0,2,0,-2,-4,-6,-8,-8,-8,-8,-8,-8],"total":-8,"ytd":-8},"Stock correction (+/-)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala CLL":{"cat":"Competition","m":[4,4,4,4,5,5,5,null,null,null,null,null],"total":5,"ytd":5},"Acala MCL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"A+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ibrutinib mono":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"I+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Pirtubrutinb":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"CMI":{"cat":"Outcomes","m":[0,1,0,-1,-2,-3,-4,null,null,null,null,null],"total":null,"ytd":-4},"Variation vs. patient cons.":{"cat":"Outcomes","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Patients cons.":{"cat":"Outcomes","m":[2,2,2,2,2,2,2,0,0,0,0,0],"total":14,"ytd":14},"Target (value)":{"cat":"Outcomes","m":[11002,22004,22004,22004,22004,22004,22004,22004,33006,33006,33006,33006],"total":297054,"ytd":143026},"Sales (value)":{"cat":"Outcomes","m":[11002,44008,null,null,null,null,null,null,null,null,null,null],"total":55010,"ytd":55010}},"id":"ac6"},{"country":"UAE","account":"Cleveland Clinic","category":"Institution","city":"Abu Dhabi","ps":"Omar","measures":{"Brukinsa patient target":{"cat":"Patients","m":[5,5,5,5,6,6,6,7,7,8,8,9],"total":9,"ytd":6},"Brukinsa patient recruited":{"cat":"Patients","m":[5,5,5,5,4,4,4,null,null,null,null,null],"total":32,"ytd":4},"Brukinsa New Pts recruited":{"cat":"Patients","m":[1,0,0,0,0,0,0,null,null,null,null,null],"total":1,"ytd":null},"Target (units)":{"cat":"Units","m":[null,null,5,5,6,6,6,7,7,7,7,7],"total":63,"ytd":28},"Sales (units)":{"cat":"Units","m":[0,10,6,9,4,0,1,null,null,null,null,null],"total":30,"ytd":30},"Consumption":{"cat":"Units","m":[4,4,4,4,4,4,4,null,null,null,null,null],"total":28,"ytd":28},"Starting stock":{"cat":"Units","m":[14,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ending stock":{"cat":"Units","m":[10,16,18,23,23,19,16,16,16,16,16,16],"total":16,"ytd":16},"Stock correction (+/-)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala CLL":{"cat":"Competition","m":[null,null,null,1,1,1,1,null,null,null,null,null],"total":1,"ytd":1},"Acala MCL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"A+V":{"cat":"Competition","m":[null,null,null,1,1,1,1,null,null,null,null,null],"total":1,"ytd":1},"Ibrutinib mono":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"I+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Pirtubrutinb":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"CMI":{"cat":"Outcomes","m":[3,4,5,6,6,5,4,null,null,null,null,null],"total":null,"ytd":4},"Variation vs. patient cons.":{"cat":"Outcomes","m":[-1,-1,-1,-1,0,0,0,0,0,0,0,0],"total":-4,"ytd":-4},"Patients cons.":{"cat":"Outcomes","m":[5,5,5,5,4,4,4,0,0,0,0,0],"total":32,"ytd":32},"Target (value)":{"cat":"Outcomes","m":[null,null,55010,55010,66012,66012,66012,77014,77014,77014,77014,77014],"total":693126,"ytd":308056},"Sales (value)":{"cat":"Outcomes","m":[null,110020,66012,99018,44008,null,11002,null,null,null,null,null],"total":330060,"ytd":330060}},"id":"ac7"},{"country":"UAE","account":"King's Colleague","category":"Private","city":"Dubai","ps":"Omar","measures":{"Brukinsa patient target":{"cat":"Patients","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Brukinsa patient recruited":{"cat":"Patients","m":[0,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":0},"Brukinsa New Pts recruited":{"cat":"Patients","m":[0,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":null},"Target (units)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Sales (units)":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Consumption":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Starting stock":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ending stock":{"cat":"Units","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Stock correction (+/-)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala CLL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala MCL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"A+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ibrutinib mono":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"I+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Pirtubrutinb":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"CMI":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":null},"Variation vs. patient cons.":{"cat":"Outcomes","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Patients cons.":{"cat":"Outcomes","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Target (value)":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":0},"Sales (value)":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":0}},"id":"ac8"},{"country":"UAE","account":"Dubai Hospital","category":"Institution","city":"Dubai","ps":"Omar","measures":{"Brukinsa patient target":{"cat":"Patients","m":[5,5,6,6,7,7,8,8,9,10,11,12],"total":12,"ytd":8},"Brukinsa patient recruited":{"cat":"Patients","m":[5,5,5,5,5,6,6,null,null,null,null,null],"total":37,"ytd":6},"Brukinsa New Pts recruited":{"cat":"Patients","m":[0,0,0,0,0,1,0,null,null,null,null,null],"total":1,"ytd":null},"Target (units)":{"cat":"Units","m":[null,5,6,6,7,7,8,8,8,9,9,10],"total":83,"ytd":39},"Sales (units)":{"cat":"Units","m":[0,2,10,3,0,0,5,null,null,null,null,null],"total":20,"ytd":20},"Consumption":{"cat":"Units","m":[5,5,5,5,5,6,6,null,null,null,null,null],"total":37,"ytd":37},"Starting stock":{"cat":"Units","m":[6,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ending stock":{"cat":"Units","m":[1,-2,3,1,-4,-10,-11,-11,-11,-11,-11,-11],"total":-11,"ytd":-11},"Stock correction (+/-)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala CLL":{"cat":"Competition","m":[10,10,10,10,9,8,8,null,null,null,null,null],"total":8,"ytd":8},"Acala MCL":{"cat":"Competition","m":[0,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":0},"A+V":{"cat":"Competition","m":[4,4,5,5,6,6,6,null,null,null,null,null],"total":6,"ytd":6},"Ibrutinib mono":{"cat":"Competition","m":[1,1,1,1,1,1,1,null,null,null,null,null],"total":1,"ytd":1},"I+V":{"cat":"Competition","m":[0,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":0},"Pirtubrutinb":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"CMI":{"cat":"Outcomes","m":[0,0,1,0,-1,-2,-2,null,null,null,null,null],"total":null,"ytd":-2},"Variation vs. patient cons.":{"cat":"Outcomes","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Patients cons.":{"cat":"Outcomes","m":[5,5,5,5,5,6,6,0,0,0,0,0],"total":37,"ytd":37},"Target (value)":{"cat":"Outcomes","m":[null,55010,66012,66012,77014,77014,88016,88016,88016,99018,99018,110020],"total":913166,"ytd":429078},"Sales (value)":{"cat":"Outcomes","m":[null,22004,110020,33006,null,null,55010,null,null,null,null,null],"total":220040,"ytd":220040}},"id":"ac9"},{"country":"UAE","account":"Al Zahra hospital","category":"Private","city":"Dubai","ps":"Omar","measures":{"Brukinsa patient target":{"cat":"Patients","m":[2,2,2,2,2,2,2,2,2,2,2,2],"total":2,"ytd":2},"Brukinsa patient recruited":{"cat":"Patients","m":[1,1,1,1,1,1,1,null,null,null,null,null],"total":7,"ytd":1},"Brukinsa New Pts recruited":{"cat":"Patients","m":[0,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":null},"Target (units)":{"cat":"Units","m":[1,2,2,2,2,2,2,1,1,1,1,1],"total":18,"ytd":13},"Sales (units)":{"cat":"Units","m":[1,0,1,0,0,0,0,null,null,null,null,null],"total":2,"ytd":2},"Consumption":{"cat":"Units","m":[1,1,0,0,0,0,0,null,null,null,null,null],"total":2,"ytd":2},"Starting stock":{"cat":"Units","m":[2,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ending stock":{"cat":"Units","m":[2,1,2,2,2,2,2,2,2,2,2,2],"total":2,"ytd":2},"Stock correction (+/-)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala CLL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala MCL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"A+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ibrutinib mono":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"I+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Pirtubrutinb":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"CMI":{"cat":"Outcomes","m":[2,1,3,6,null,null,null,null,null,null,null,null],"total":null,"ytd":null},"Variation vs. patient cons.":{"cat":"Outcomes","m":[0,0,-1,-1,-1,-1,-1,0,0,0,0,0],"total":-5,"ytd":-5},"Patients cons.":{"cat":"Outcomes","m":[1,1,1,1,1,1,1,0,0,0,0,0],"total":7,"ytd":7},"Target (value)":{"cat":"Outcomes","m":[11002,22004,22004,22004,22004,22004,22004,11002,11002,11002,11002,11002],"total":198036,"ytd":143026},"Sales (value)":{"cat":"Outcomes","m":[11002,null,11002,null,null,null,null,null,null,null,null,null],"total":22004,"ytd":22004}},"id":"ac10"},{"country":"UAE","account":"American Hospital","category":"Private","city":"Dubai","ps":"Omar","measures":{"Brukinsa patient target":{"cat":"Patients","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Brukinsa patient recruited":{"cat":"Patients","m":[0,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":0},"Brukinsa New Pts recruited":{"cat":"Patients","m":[0,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":null},"Target (units)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Sales (units)":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Consumption":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Starting stock":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ending stock":{"cat":"Units","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Stock correction (+/-)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala CLL":{"cat":"Competition","m":[1,1,1,1,0,0,0,null,null,null,null,null],"total":0,"ytd":0},"Acala MCL":{"cat":"Competition","m":[1,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":0},"A+V":{"cat":"Competition","m":[1,1,1,1,1,1,1,null,null,null,null,null],"total":1,"ytd":1},"Ibrutinib mono":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"I+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Pirtubrutinb":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"CMI":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":null},"Variation vs. patient cons.":{"cat":"Outcomes","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Patients cons.":{"cat":"Outcomes","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Target (value)":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":0},"Sales (value)":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":0}},"id":"ac11"},{"country":"UAE","account":"Saudi German Hospital","category":"Private","city":"Dubai/Ajman/Sharjah","ps":"Omar","measures":{"Brukinsa patient target":{"cat":"Patients","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Brukinsa patient recruited":{"cat":"Patients","m":[0,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":0},"Brukinsa New Pts recruited":{"cat":"Patients","m":[0,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":null},"Target (units)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Sales (units)":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Consumption":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Starting stock":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ending stock":{"cat":"Units","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Stock correction (+/-)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala CLL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala MCL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"A+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ibrutinib mono":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"I+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Pirtubrutinb":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"CMI":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":null},"Variation vs. patient cons.":{"cat":"Outcomes","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Patients cons.":{"cat":"Outcomes","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Target (value)":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":0},"Sales (value)":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":0}},"id":"ac12"},{"country":"UAE","account":"Clemenceau Hospital","category":"Private","city":"Dubai","ps":"Omar","measures":{"Brukinsa patient target":{"cat":"Patients","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Brukinsa patient recruited":{"cat":"Patients","m":[0,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":0},"Brukinsa New Pts recruited":{"cat":"Patients","m":[0,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":null},"Target (units)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Sales (units)":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Consumption":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Starting stock":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ending stock":{"cat":"Units","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Stock correction (+/-)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala CLL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala MCL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"A+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ibrutinib mono":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"I+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Pirtubrutinb":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"CMI":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":null},"Variation vs. patient cons.":{"cat":"Outcomes","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Patients cons.":{"cat":"Outcomes","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Target (value)":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":0},"Sales (value)":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":0}},"id":"ac13"},{"country":"UAE","account":"Fakih hospital","category":"Private","city":"Dubai","ps":"Omar","measures":{"Brukinsa patient target":{"cat":"Patients","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Brukinsa patient recruited":{"cat":"Patients","m":[0,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":0},"Brukinsa New Pts recruited":{"cat":"Patients","m":[0,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":null},"Target (units)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Sales (units)":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Consumption":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Starting stock":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ending stock":{"cat":"Units","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Stock correction (+/-)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala CLL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala MCL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"A+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ibrutinib mono":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"I+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Pirtubrutinb":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"CMI":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":null},"Variation vs. patient cons.":{"cat":"Outcomes","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Patients cons.":{"cat":"Outcomes","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Target (value)":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":0},"Sales (value)":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":0}},"id":"ac14"},{"country":"UAE","account":"NMC","category":"Private","city":"AD/Sharjah","ps":"Omar","measures":{"Brukinsa patient target":{"cat":"Patients","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Brukinsa patient recruited":{"cat":"Patients","m":[0,0,0,0,1,0,0,null,null,null,null,null],"total":1,"ytd":0},"Brukinsa New Pts recruited":{"cat":"Patients","m":[0,0,0,0,1,0,0,null,null,null,null,null],"total":1,"ytd":null},"Target (units)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Sales (units)":{"cat":"Units","m":[0,0,0,1,0,0,null,null,null,null,null,null],"total":1,"ytd":1},"Consumption":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Starting stock":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ending stock":{"cat":"Units","m":[0,0,0,1,1,1,1,1,1,1,1,1],"total":1,"ytd":1},"Stock correction (+/-)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala CLL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala MCL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"A+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ibrutinib mono":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"I+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Pirtubrutinb":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"CMI":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":null},"Variation vs. patient cons.":{"cat":"Outcomes","m":[0,0,0,0,-1,0,0,0,0,0,0,0],"total":-1,"ytd":-1},"Patients cons.":{"cat":"Outcomes","m":[0,0,0,0,1,0,0,0,0,0,0,0],"total":1,"ytd":1},"Target (value)":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":0},"Sales (value)":{"cat":"Outcomes","m":[null,null,null,11002,null,null,null,null,null,null,null,null],"total":11002,"ytd":11002}},"id":"ac15"},{"country":"UAE","account":"Advanced Care Onco center","category":"N/A","city":"N/A mapping","ps":"Unassigned","measures":{"Brukinsa patient target":{"cat":"Patients","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Brukinsa patient recruited":{"cat":"Patients","m":[0,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":0},"Brukinsa New Pts recruited":{"cat":"Patients","m":[0,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":null},"Target (units)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Sales (units)":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Consumption":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Starting stock":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ending stock":{"cat":"Units","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Stock correction (+/-)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala CLL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala MCL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"A+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ibrutinib mono":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"I+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Pirtubrutinb":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"CMI":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":null},"Variation vs. patient cons.":{"cat":"Outcomes","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Patients cons.":{"cat":"Outcomes","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Target (value)":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":0},"Sales (value)":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":0}},"id":"ac16"},{"country":"UAE","account":"SKSH","category":"Institution","city":"Ras Al Khaima","ps":"Omar","measures":{"Brukinsa patient target":{"cat":"Patients","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Brukinsa patient recruited":{"cat":"Patients","m":[0,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":0},"Brukinsa New Pts recruited":{"cat":"Patients","m":[0,0,0,0,0,0,0,null,null,null,null,null],"total":0,"ytd":null},"Target (units)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Sales (units)":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Consumption":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Starting stock":{"cat":"Units","m":[0,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ending stock":{"cat":"Units","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Stock correction (+/-)":{"cat":"Units","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala CLL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Acala MCL":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"A+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Ibrutinib mono":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"I+V":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"Pirtubrutinb":{"cat":"Competition","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":0,"ytd":0},"CMI":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":null},"Variation vs. patient cons.":{"cat":"Outcomes","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Patients cons.":{"cat":"Outcomes","m":[0,0,0,0,0,0,0,0,0,0,0,0],"total":0,"ytd":0},"Target (value)":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":0},"Sales (value)":{"cat":"Outcomes","m":[null,null,null,null,null,null,null,null,null,null,null,null],"total":null,"ytd":0}},"id":"ac17"}],"source":"2026 Brukinsa GCC ALLnONE updated areas (version 1)"};
+
+
 /* ------------------------------------------------------------------
    APP
    The card data above is the deliverable; this layer only finds,
@@ -1816,7 +2075,7 @@ function hashWith(s, upper){
 function emailHash(e){ return hashWith(e, false); }
 function codeHash(c){ return hashWith(c, true); }
 
-/* "omar.fouad@beonemedicines.com" -> "Omar Fouad" */
+/* "first.last@example.com" -> "First Last" */
 function nameFromEmail(email){
   var local = String(email).split("@")[0].replace(/[._\-]+/g, " ").trim();
   return local.split(/\s+/).map(function(w){
@@ -2342,16 +2601,461 @@ function startApp(){
   loadNotes();
   buildChips();
   render();
+  startSales();
+  showModule("objections");
 }
 
+/* boot runs at the very end of the bundle, after every module's
+   variables exist — a signed-in visitor starts the app during this
+   same synchronous pass, so nothing may still be undefined */
+
+
+/* ==================================================================
+   SALES, ENTRY AND ALLnONE
+   Figures come from the ALLnONE export and are shown as recorded.
+   Nothing here recalculates or restates them.
+   ================================================================== */
+var ENTRY_KEY = "beone_sales_entries_v1";
+var entries = [];
+var MONTHS = SALES.months;
+
+/* Actual / target pairs, so a trend can show both on one scale */
+var PAIRS = {
+  "Brukinsa patient recruited": "Brukinsa patient target",
+  "Sales (units)":              "Target (units)",
+  "Sales (value)":              "Target (value)"
+};
+
+function money(n){
+  if(n === null || n === undefined || isNaN(n)) return "—";
+  return (Math.round(n*100)/100).toLocaleString("en-GB");
+}
+function sumOf(list, measure, monthIdx){
+  var t = 0, seen = false;
+  list.forEach(function(a){
+    var m = a.measures[measure];
+    if(!m) return;
+    var v = (monthIdx === "ytd") ? m.ytd : m.m[monthIdx];
+    if(v !== null && v !== undefined && !isNaN(v)){ t += v; seen = true; }
+  });
+  return seen ? t : null;
+}
+function seriesOf(list, measure){
+  return MONTHS.map(function(_, i){ return sumOf(list, measure, i); });
+}
+function measureList(){
+  var out = [];
+  Object.keys(SALES.measureCats).forEach(function(cat){
+    SALES.measureCats[cat].forEach(function(m){ out.push({cat:cat, name:m}); });
+  });
+  return out;
+}
+function filteredAccounts(){
+  var own = document.getElementById("fowner").value;
+  var city = document.getElementById("fcity").value;
+  return SALES.accounts.filter(function(a){
+    if(own && a.ps !== own) return false;
+    if(city && a.city !== city) return false;
+    return true;
+  });
+}
+
+/* ---------- filters ---------- */
+function fillSelect(el, values, allLabel){
+  el.innerHTML = "";
+  if(allLabel){ var o = document.createElement("option"); o.value = ""; o.textContent = allLabel; el.appendChild(o); }
+  values.forEach(function(v){
+    var o = document.createElement("option");
+    o.value = (typeof v === "string") ? v : v.value;
+    o.textContent = (typeof v === "string") ? v : v.label;
+    el.appendChild(o);
+  });
+}
+function buildSalesFilters(){
+  var owners = Array.from(new Set(SALES.accounts.map(function(a){ return a.ps; }))).sort();
+  var cities = Array.from(new Set(SALES.accounts.map(function(a){ return a.city; }))).sort();
+  fillSelect(document.getElementById("fowner"), owners, "All owners");
+  fillSelect(document.getElementById("fcity"), cities, "All cities");
+
+  var sel = document.getElementById("fmeasure");
+  sel.innerHTML = "";
+  Object.keys(SALES.measureCats).forEach(function(cat){
+    var g = document.createElement("optgroup"); g.label = cat;
+    SALES.measureCats[cat].forEach(function(m){
+      var o = document.createElement("option"); o.value = m; o.textContent = m; g.appendChild(o);
+    });
+    sel.appendChild(g);
+  });
+  sel.value = "Brukinsa patient recruited";
+
+  fillSelect(document.getElementById("fmonth"),
+    MONTHS.map(function(m,i){ return {value:String(i), label:m}; }), "Year to date");
+
+  ["fowner","fcity","fmeasure","fmonth"].forEach(function(id){
+    document.getElementById(id).addEventListener("change", renderSales);
+  });
+}
+
+/* ---------- charts ---------- */
+var C_ACTUAL = "var(--series-1)";
+var C_TARGET = "var(--series-2)";
+
+function showTip(box, html, x, y){
+  var t = box.querySelector(".tip");
+  if(!t){ t = document.createElement("div"); t.className = "tip"; box.appendChild(t); }
+  t.innerHTML = html; t.hidden = false;
+  var bw = box.clientWidth, tw = t.offsetWidth;
+  t.style.left = Math.max(4, Math.min(x - tw/2, bw - tw - 4)) + "px";
+  t.style.top  = Math.max(0, y) + "px";
+}
+function hideTip(box){ var t = box.querySelector(".tip"); if(t) t.hidden = true; }
+
+function lineChart(box, series, opts){
+  var W = Math.max(box.clientWidth || 640, 340), H = 260;
+  var P = {t:16, r:46, b:30, l:46};
+  var iw = W - P.l - P.r, ih = H - P.t - P.b;
+  var all = [];
+  series.forEach(function(s){ s.values.forEach(function(v){ if(v !== null) all.push(v); }); });
+  var max = all.length ? Math.max.apply(null, all) : 1;
+  if(max <= 0) max = 1;
+  var step = Math.pow(10, Math.floor(Math.log10(max))) / 2 || 1;
+  var top = Math.ceil(max / step) * step;
+  var ticks = 4;
+
+  var x = function(i){ return P.l + (iw * i) / (MONTHS.length - 1); };
+  var y = function(v){ return P.t + ih - (ih * v) / top; };
+
+  var svg = ['<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="' + esc(opts.aria) + '">'];
+  svg.push('<g class="axis">');
+  for(var k = 0; k <= ticks; k++){
+    var v = (top / ticks) * k, yy = y(v);
+    svg.push('<line class="gridline" x1="' + P.l + '" x2="' + (W - P.r) + '" y1="' + yy + '" y2="' + yy + '"/>');
+    svg.push('<text x="' + (P.l - 8) + '" y="' + (yy + 3.5) + '" text-anchor="end">' + money(v) + '</text>');
+  }
+  MONTHS.forEach(function(m, i){
+    svg.push('<text x="' + x(i) + '" y="' + (H - 10) + '" text-anchor="middle">' + m + '</text>');
+  });
+  svg.push('<line class="axisline" x1="' + P.l + '" x2="' + (W - P.r) + '" y1="' + y(0) + '" y2="' + y(0) + '"/>');
+  svg.push('</g>');
+
+  series.forEach(function(s){
+    var d = "", started = false, last = -1;
+    s.values.forEach(function(v, i){
+      if(v === null) return;
+      d += (started ? "L" : "M") + x(i) + " " + y(v) + " ";
+      started = true; last = i;
+    });
+    if(d) svg.push('<path d="' + d.trim() + '" fill="none" stroke="' + s.color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>');
+    s.values.forEach(function(v, i){
+      if(v === null) return;
+      svg.push('<circle cx="' + x(i) + '" cy="' + y(v) + '" r="4.5" fill="' + s.color + '" stroke="var(--paper)" stroke-width="2"/>');
+    });
+    if(last >= 0){
+      svg.push('<text class="dlabel" x="' + (x(last) + 8) + '" y="' + (y(s.values[last]) + 4) + '" fill="' + s.color + '">' + money(s.values[last]) + '</text>');
+    }
+  });
+
+  /* invisible hit columns for the crosshair */
+  MONTHS.forEach(function(m, i){
+    svg.push('<rect data-i="' + i + '" x="' + (x(i) - iw / (MONTHS.length * 2)) + '" y="' + P.t +
+             '" width="' + (iw / MONTHS.length) + '" height="' + ih + '" fill="transparent"/>');
+  });
+  svg.push('</svg>');
+  box.innerHTML = svg.join("");
+
+  box.querySelectorAll("rect[data-i]").forEach(function(r){
+    r.addEventListener("mouseenter", function(){
+      var i = +r.dataset.i;
+      var rows = series.map(function(s){
+        return '<div class="row2"><span class="swatch" style="background:' + s.color + '"></span>' +
+               esc(s.name) + ' <b>' + money(s.values[i]) + '</b></div>';
+      }).join("");
+      showTip(box, '<b>' + MONTHS[i] + '</b>' + rows, x(i), 8);
+    });
+    r.addEventListener("mouseleave", function(){ hideTip(box); });
+  });
+  box.addEventListener("mouseleave", function(){ hideTip(box); });
+}
+
+function barChart(box, rows, opts){
+  var W = Math.max(box.clientWidth || 640, 320);
+  var rowH = 26, P = {t:6, r:56, b:6, l:Math.min(190, Math.round(W * 0.34))};
+  var H = P.t + P.b + rows.length * rowH;
+  var iw = W - P.l - P.r;
+  var max = Math.max.apply(null, rows.map(function(r){ return r.value || 0; }).concat([1]));
+  var svg = ['<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="' + esc(opts.aria) + '">'];
+  rows.forEach(function(r, i){
+    var yy = P.t + i * rowH, bh = 14;
+    var w = r.value ? Math.max(2, (iw * r.value) / max) : 0;
+    svg.push('<text class="axis" x="' + (P.l - 10) + '" y="' + (yy + bh) + '" text-anchor="end" fill="var(--ink-2)" font-size="11.5">' + esc(r.label) + '</text>');
+    svg.push('<rect data-i="' + i + '" x="' + P.l + '" y="' + (yy + 4) + '" width="' + w + '" height="' + bh + '" rx="4" fill="' + opts.color + '"/>');
+    svg.push('<text class="dlabel" x="' + (P.l + w + 8) + '" y="' + (yy + bh - 1) + '" fill="var(--ink-2)">' + money(r.value) + '</text>');
+  });
+  svg.push('</svg>');
+  box.innerHTML = svg.join("");
+  box.querySelectorAll("rect[data-i]").forEach(function(rc){
+    rc.addEventListener("mouseenter", function(){
+      var r = rows[+rc.dataset.i];
+      var bb = rc.getBoundingClientRect(), pb = box.getBoundingClientRect();
+      showTip(box, '<b>' + esc(r.label) + '</b><br>' + esc(opts.measure) + ' <b>' + money(r.value) + '</b>' +
+                   (r.sub ? '<br>' + esc(r.sub) : ''), bb.left - pb.left + bb.width, bb.top - pb.top - 6);
+    });
+    rc.addEventListener("mouseleave", function(){ hideTip(box); });
+  });
+}
+
+/* ---------- sales page ---------- */
+function renderSales(){
+  var list = filteredAccounts();
+  var measure = document.getElementById("fmeasure").value;
+  var mv = document.getElementById("fmonth").value;
+  var monthIdx = mv === "" ? "ytd" : +mv;
+  var monthLabel = mv === "" ? "year to date" : MONTHS[monthIdx];
+  var target = PAIRS[measure];
+
+  document.getElementById("salessub").textContent =
+    SALES.accounts.length + " accounts from " + SALES.source + ". " +
+    list.length + " shown with the current filters.";
+
+  /* tiles: the headline measures, not whatever is selected */
+  var tiles = [
+    {k:"Patients recruited", m:"Brukinsa patient recruited", t:"Brukinsa patient target"},
+    {k:"New patients",       m:"Brukinsa New Pts recruited"},
+    {k:"Sales (units)",      m:"Sales (units)", t:"Target (units)"},
+    {k:"Consumption",        m:"Consumption"},
+    {k:"Ending stock",       m:"Ending stock"},
+    {k:"Accounts",           special:list.length}
+  ];
+  document.getElementById("tiles").innerHTML = tiles.map(function(t){
+    if(t.special !== undefined){
+      return '<div class="tile"><span class="k">' + esc(t.k) + '</span><span class="v">' + t.special +
+             '</span><span class="s">of ' + SALES.accounts.length + ' in the file</span></div>';
+    }
+    var v = sumOf(list, t.m, monthIdx);
+    var sub = "";
+    if(t.t){
+      var tv = sumOf(list, t.t, monthIdx);
+      if(tv){
+        var pct = Math.round((v / tv) * 100);
+        sub = '<span class="s ' + (pct >= 100 ? "up" : "") + '">' + pct + '% of target ' + money(tv) + '</span>';
+      }
+    }
+    return '<div class="tile"><span class="k">' + esc(t.k) + '</span><span class="v">' + money(v) + '</span>' +
+           (sub || '<span class="s">' + esc(monthLabel) + '</span>') + '</div>';
+  }).join("");
+
+  /* trend */
+  var series = [{name:measure, color:C_ACTUAL, values:seriesOf(list, measure)}];
+  if(target) series.push({name:target, color:C_TARGET, values:seriesOf(list, target)});
+  document.getElementById("trendtitle").textContent = measure + " by month";
+  document.getElementById("trendsub").textContent =
+    "Every month in the file, summed across the " + list.length + " account" + (list.length === 1 ? "" : "s") + " selected.";
+  document.getElementById("trendlegend").innerHTML = series.length > 1 ? series.map(function(s){
+    return '<span><span class="swatch" style="background:' + s.color + '"></span>' + esc(s.name) + '</span>';
+  }).join("") : "";
+  lineChart(document.getElementById("trendbox"), series, {aria:measure + " by month"});
+
+  /* by account */
+  var rows = list.map(function(a){
+    var m = a.measures[measure];
+    var v = m ? ((monthIdx === "ytd") ? m.ytd : m.m[monthIdx]) : null;
+    return {label:a.account, value:(v === null || v === undefined || isNaN(v)) ? 0 : v, sub:a.city + " · " + a.ps};
+  }).sort(function(x, y){ return y.value - x.value; });
+  document.getElementById("acctitle").textContent = measure + " by account";
+  document.getElementById("accsub").textContent = "Highest first, " + monthLabel + ".";
+  barChart(document.getElementById("accbox"), rows, {color:C_ACTUAL, measure:measure, aria:measure + " by account"});
+
+  /* table view */
+  var th = '<thead><tr><th class="txt">Account</th><th class="txt">City</th><th class="txt">Owner</th>' +
+           MONTHS.map(function(m){ return '<th>' + m + '</th>'; }).join("") + '<th>YTD</th></tr></thead>';
+  var tb = '<tbody>' + list.map(function(a){
+    var m = a.measures[measure];
+    return '<tr><td class="acct">' + esc(a.account) + '</td><td class="txt dim">' + esc(a.city) +
+           '</td><td class="txt dim">' + esc(a.ps) + '</td>' +
+           MONTHS.map(function(_, i){ return '<td>' + (m ? money(m.m[i]) : "—") + '</td>'; }).join("") +
+           '<td><b>' + (m ? money(m.ytd) : "—") + '</b></td></tr>';
+  }).join("") + '</tbody>';
+  document.getElementById("salestable").innerHTML = th + tb;
+}
+
+/* ---------- enter sales ---------- */
+function loadEntries(){
+  try{ entries = JSON.parse(localStorage.getItem(ENTRY_KEY) || "[]") || []; }
+  catch(e){ entries = []; }
+  if(!Array.isArray(entries)) entries = [];
+}
+function saveEntries(){
+  try{ localStorage.setItem(ENTRY_KEY, JSON.stringify(entries)); return true; }
+  catch(e){ return false; }
+}
+function buildEntryForm(){
+  fillSelect(document.getElementById("eaccount"),
+    SALES.accounts.map(function(a){ return {value:a.id, label:a.account + " — " + a.city}; }), "Select an account");
+  var sel = document.getElementById("emeasure");
+  sel.innerHTML = '<option value="">Select a measure</option>';
+  Object.keys(SALES.measureCats).forEach(function(cat){
+    var g = document.createElement("optgroup"); g.label = cat;
+    SALES.measureCats[cat].forEach(function(m){
+      var o = document.createElement("option"); o.value = m; o.textContent = m; g.appendChild(o);
+    });
+    sel.appendChild(g);
+  });
+  fillSelect(document.getElementById("emonth"),
+    MONTHS.map(function(m, i){ return {value:String(i), label:m}; }), "Select a month");
+
+  document.getElementById("entryform").addEventListener("submit", function(e){
+    e.preventDefault();
+    var acc = document.getElementById("eaccount").value;
+    var mea = document.getElementById("emeasure").value;
+    var mon = document.getElementById("emonth").value;
+    var val = document.getElementById("evalue").value;
+    var note = document.getElementById("enote").value.trim();
+    var err = document.getElementById("entryerr");
+    function bad(msg, id){ err.textContent = msg; err.hidden = false; var el = document.getElementById(id); if(el) el.focus(); }
+    if(!acc) return bad("Choose an account.", "eaccount");
+    if(!mea) return bad("Choose a measure.", "emeasure");
+    if(mon === "") return bad("Choose a month.", "emonth");
+    if(val === "" || isNaN(+val)) return bad("Enter a number.", "evalue");
+    err.hidden = true;
+
+    var a = SALES.accounts.filter(function(x){ return x.id === acc; })[0];
+    entries.push({
+      id:"e" + Date.now(), account:a.account, city:a.city, measure:mea,
+      month:MONTHS[+mon], value:+val, note:note,
+      by:(user && user.name) || "", role:(user && user.role) || "",
+      at:new Date().toISOString()
+    });
+    var ok = saveEntries();
+    document.getElementById("entrysaved").textContent = ok ? "" : "This browser is blocking storage";
+    document.getElementById("evalue").value = "";
+    document.getElementById("enote").value = "";
+    renderEntries();
+    toast(ok ? "Entry saved on this device" : "Could not save on this device");
+  });
+
+  document.getElementById("exportentries").addEventListener("click", exportEntries);
+  document.getElementById("entrylist").addEventListener("click", function(e){
+    var b = e.target.closest ? e.target.closest("[data-del2]") : null;
+    if(!b) return;
+    entries = entries.filter(function(x){ return x.id !== b.dataset.del2; });
+    saveEntries(); renderEntries(); toast("Entry deleted");
+  });
+}
+function renderEntries(){
+  var host = document.getElementById("entrylist");
+  document.getElementById("entrycount").textContent = entries.length ? "(" + entries.length + ")" : "";
+  if(!entries.length){
+    host.innerHTML = '<div class="emptybox">Nothing entered on this device yet.</div>';
+    return;
+  }
+  host.innerHTML = entries.slice().reverse().map(function(en){
+    return '<div class="entry2"><div><div><b>' + esc(en.account) + '</b> · ' + esc(en.measure) + ' · ' + esc(en.month) + '</div>' +
+           (en.note ? '<div style="font-size:13px;color:var(--ink-2);margin-top:3px;">' + esc(en.note) + '</div>' : '') +
+           '<div class="meta2">' + esc(stamp(en.at)) + (en.by ? '  ·  ' + esc(en.by) + (en.role ? ' (' + esc(en.role) + ')' : '') : '') + '</div></div>' +
+           '<div style="text-align:right;"><div class="val">' + money(en.value) + '</div>' +
+           '<button class="delnote" type="button" data-del2="' + esc(en.id) + '">Delete</button></div></div>';
+  }).join("");
+}
+function exportEntries(){
+  var L = [];
+  L.push("BeOne Gulf - sales entries export");
+  L.push("Internal draft. Not MRC approved.");
+  L.push("Exported: " + new Date().toString());
+  if(user) L.push("Exported by: " + user.name + " <" + user.email + ">" + (user.role ? " — " + user.role : ""));
+  L.push("");
+  L.push("Account,City,Measure,Month,Value,Note,Entered by,Role,Entered at");
+  entries.forEach(function(e){
+    function q(s){ return '"' + String(s === undefined || s === null ? "" : s).replace(/"/g, '""') + '"'; }
+    L.push([q(e.account), q(e.city), q(e.measure), q(e.month), e.value, q(e.note), q(e.by), q(e.role), q(e.at)].join(","));
+  });
+  if(!entries.length) L.push("(no entries)");
+  var text = L.join("\n");
+  var name = "beone-sales-entries-" + new Date().toISOString().slice(0, 10) + ".csv";
+  var started = false;
+  try{ blobDownload(text, name); started = true; }catch(e){ started = false; }
+  showNotesInline(text, started ? "Entries downloaded. If nothing arrived, copy them below." : "Copy your entries below.");
+}
+
+/* ---------- ALLnONE ---------- */
+function buildAio(){
+  fillSelect(document.getElementById("aiocat"), Object.keys(SALES.measureCats), "All categories");
+  document.getElementById("aiocat").addEventListener("change", renderAio);
+  document.getElementById("aiosearch").addEventListener("input", renderAio);
+}
+function renderAio(){
+  var q = document.getElementById("aiosearch").value.trim().toLowerCase();
+  var cat = document.getElementById("aiocat").value;
+  var terms = q ? q.split(/\s+/) : [];
+  var th = '<thead><tr><th class="txt">Account</th><th class="txt">City</th><th class="txt">Measure</th>' +
+           MONTHS.map(function(m){ return '<th>' + m + '</th>'; }).join("") + '<th>Total</th><th>YTD</th></tr></thead>';
+  var body = [], shown = 0;
+  SALES.accounts.forEach(function(a){
+    var ms = Object.keys(a.measures).filter(function(m){
+      if(cat && a.measures[m].cat !== cat) return false;
+      if(!terms.length) return true;
+      var hay = (a.account + " " + a.city + " " + a.ps + " " + m + " " + a.measures[m].cat).toLowerCase();
+      return terms.every(function(t){ return hay.indexOf(t) !== -1; });
+    });
+    if(!ms.length) return;
+    body.push('<tr class="grouprow"><td class="txt" colspan="' + (MONTHS.length + 5) + '">' +
+              esc(a.account) + ' · ' + esc(a.city) + ' · ' + esc(a.category) + ' · ' + esc(a.ps) + '</td></tr>');
+    ms.forEach(function(m){
+      var d = a.measures[m]; shown++;
+      body.push('<tr><td class="acct">' + esc(a.account) + '</td><td class="txt dim">' + esc(a.city) +
+        '</td><td class="txt">' + esc(m) + '</td>' +
+        MONTHS.map(function(_, i){ return '<td>' + money(d.m[i]) + '</td>'; }).join("") +
+        '<td>' + money(d.total) + '</td><td><b>' + money(d.ytd) + '</b></td></tr>');
+    });
+  });
+  document.getElementById("aiotable").innerHTML = th + '<tbody>' + (body.join("") ||
+    '<tr><td class="txt" colspan="' + (MONTHS.length + 5) + '">Nothing matches.</td></tr>') + '</tbody>';
+  document.getElementById("aiosub").textContent =
+    SALES.accounts.length + " accounts, " + Object.keys(SALES.measureCats).length +
+    " measure categories, every month as recorded in " + SALES.source + ".";
+  document.getElementById("aionote").textContent = shown + " rows shown. Figures are exactly as they appear in the source file.";
+}
+
+/* ---------- module switching ---------- */
+function showModule(name){
+  ["objections","sales","entry","allinone"].forEach(function(m){
+    var el = document.getElementById("mod-" + m);
+    if(el) el.hidden = (m !== name);
+  });
+  document.querySelectorAll("#modnav button").forEach(function(b){
+    b.setAttribute("aria-current", b.dataset.mod === name ? "true" : "false");
+  });
+  if(name === "sales") renderSales();
+  if(name === "entry") renderEntries();
+  if(name === "allinone") renderAio();
+}
+
+function startSales(){
+  buildSalesFilters();
+  buildEntryForm();
+  buildAio();
+  loadEntries();
+  document.getElementById("modnav").addEventListener("click", function(e){
+    var b = e.target.closest ? e.target.closest("button[data-mod]") : null;
+    if(b) showModule(b.dataset.mod);
+  });
+  var rt;
+  window.addEventListener("resize", function(){
+    clearTimeout(rt);
+    rt = setTimeout(function(){
+      if(!document.getElementById("mod-sales").hidden) renderSales();
+    }, 180);
+  });
+}
+
+/* ---------- boot ---------- */
 document.getElementById("signout").addEventListener("click", signOut);
 
 loadUser();
 if(user){ showWho(); startApp(); }
 else { openGate(); }
+
 </script>
 
-<textarea id="fallback" readonly aria-label="Exported field notes" placeholder="Your exported notes will appear here."></textarea>
-
+<textarea id="fallback" readonly aria-label="Exported data" placeholder="Your export will appear here."></textarea>
 </body>
 </html>

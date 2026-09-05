@@ -1,0 +1,220 @@
+
+<header class="brandbar">
+  <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+    <rect x="0" y="0" width="64" height="64" rx="15" fill="#DA2B28"/>
+    <path d="M32 6 C25 20 18 27 4 32 C18 37 25 44 32 58 C39 44 46 37 60 32 C46 27 39 20 32 6 Z"
+          fill="#fff"/>
+    <path d="M32 20 C29 27 26 30 19 32 C26 34 29 37 32 44 C35 37 38 34 45 32 C38 30 35 27 32 20 Z"
+          fill="#DA2B28"/>
+  </svg>
+  <div class="brandtext">
+    <b>BeOne&nbsp;&middot; Gulf Field System</b>
+    <span>BRUKINSA (zanubrutinib) &middot; objections, sales, ALLnONE</span>
+  </div>
+  <div class="brandspacer"></div>
+  <div class="who" id="who"></div>
+  <button class="ghost" id="export" type="button">Export notes</button>
+  <button class="ghost" id="signout" type="button" hidden>Sign out</button>
+</header>
+
+<div class="banner">Internal draft. Not MRC approved. Do not use with HCPs until reviewed.</div>
+
+
+<nav class="modnav" id="modnav" aria-label="Sections">
+  <button type="button" data-mod="objections" aria-current="true">Objection handler</button>
+  <button type="button" data-mod="sales">Sales</button>
+  <button type="button" data-mod="entry">Enter sales</button>
+  <button type="button" data-mod="allinone">ALLnONE</button>
+</nav>
+
+<!-- ============ SALES ============ -->
+<section class="module" id="mod-sales" hidden>
+  <div class="scrollpane"><div class="pagewrap">
+    <div class="pagehead">
+      <h2>Sales</h2>
+      <p id="salessub"></p>
+    </div>
+
+    <div class="filters">
+      <div class="field">
+        <label for="fowner">Owner</label>
+        <select id="fowner"></select>
+      </div>
+      <div class="field">
+        <label for="fcity">City</label>
+        <select id="fcity"></select>
+      </div>
+      <div class="field">
+        <label for="fmeasure">Measure</label>
+        <select id="fmeasure"></select>
+      </div>
+      <div class="field">
+        <label for="fmonth">Month</label>
+        <select id="fmonth"></select>
+      </div>
+    </div>
+
+    <div class="tiles" id="tiles"></div>
+
+    <div class="card2">
+      <h3 id="trendtitle"></h3>
+      <p class="sub" id="trendsub"></p>
+      <div class="legend" id="trendlegend"></div>
+      <div class="chartbox" id="trendbox"></div>
+    </div>
+
+    <div class="card2">
+      <h3 id="acctitle"></h3>
+      <p class="sub" id="accsub"></p>
+      <div class="chartbox" id="accbox"></div>
+    </div>
+
+    <div class="card2">
+      <h3>The same figures as a table</h3>
+      <p class="sub">Every value plotted above, for reading or copying.</p>
+      <div class="tablewrap"><table class="grid" id="salestable"></table></div>
+    </div>
+  </div></div>
+</section>
+
+<!-- ============ ENTER SALES ============ -->
+<section class="module" id="mod-entry" hidden>
+  <div class="scrollpane"><div class="pagewrap">
+    <div class="pagehead">
+      <h2>Enter sales</h2>
+      <p>Record a figure against an account and month. Entries are listed below and included in your export.</p>
+    </div>
+
+    <div class="notice">
+      <b>Read this first</b>
+      Entries are saved in this browser on this device only. They do not reach anyone else and they do not
+      change the ALLnONE file. To pass figures on, use <b style="display:inline;text-transform:none;letter-spacing:0;font-size:inherit;font-family:inherit;">Export entries</b> and send the file.
+    </div>
+
+    <form class="formcard" id="entryform" novalidate>
+      <div class="formgrid">
+        <div class="field">
+          <label for="eaccount">Account</label>
+          <select id="eaccount" required></select>
+        </div>
+        <div class="field">
+          <label for="emeasure">Measure</label>
+          <select id="emeasure" required></select>
+        </div>
+        <div class="field">
+          <label for="emonth">Month</label>
+          <select id="emonth" required></select>
+        </div>
+        <div class="field">
+          <label for="evalue">Value</label>
+          <input id="evalue" type="number" step="any" inputmode="decimal" placeholder="e.g. 12" required>
+        </div>
+      </div>
+      <div class="field grow" style="margin-bottom:16px;">
+        <label for="enote">Note (optional)</label>
+        <input id="enote" type="text" placeholder="Anything a reviewer should know about this figure">
+      </div>
+      <p class="gateerr" id="entryerr" role="alert" hidden></p>
+      <div class="formrow">
+        <button class="act primary" type="submit">Save entry</button>
+        <button class="act" type="button" id="exportentries">Export entries</button>
+        <span class="saved" id="entrysaved"></span>
+      </div>
+    </form>
+
+    <h3 style="margin:0 0 10px;font-size:15.5px;">Entries on this device <span id="entrycount" style="color:var(--ink-3);font-weight:400;"></span></h3>
+    <div class="entrylist" id="entrylist"></div>
+  </div></div>
+</section>
+
+<!-- ============ ALLnONE ============ -->
+<section class="module" id="mod-allinone" hidden>
+  <div class="scrollpane"><div class="pagewrap">
+    <div class="pagehead">
+      <h2>ALLnONE</h2>
+      <p id="aiosub"></p>
+    </div>
+    <div class="filters">
+      <div class="field grow">
+        <label for="aiosearch">Search account, city or measure</label>
+        <input id="aiosearch" type="search" placeholder="e.g. TAWAM, Dubai, Consumption" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="aiocat">Measure category</label>
+        <select id="aiocat"></select>
+      </div>
+    </div>
+    <div class="tablewrap"><table class="grid" id="aiotable"></table></div>
+    <p class="tablenote" id="aionote"></p>
+  </div></div>
+</section>
+
+<section class="module" id="mod-objections">
+<div class="toolbar">
+  <div class="searchwrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+      <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
+    </svg>
+    <input id="q" type="search" autocomplete="off" spellcheck="false"
+           placeholder="Search objections, responses, trials, citations"
+           aria-label="Search objections, responses, trial names and citations">
+    <span class="kbd">/</span>
+  </div>
+  <div class="chips" id="catchips"></div>
+</div>
+
+<div class="split">
+  <div class="listpane">
+    <div class="resultline" id="resultline"></div>
+    <div id="list"></div>
+  </div>
+  <div class="detailpane" id="detailpane">
+    <div class="backbar">
+      <button id="back" type="button">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        All objections
+      </button>
+      <span id="backlabel"></span>
+    </div>
+    <div class="sheetbanner">Internal draft. Not MRC approved. Do not use with HCPs until reviewed.</div>
+    <div id="detail"></div>
+  </div>
+</div>
+</section>
+
+<div class="gate" id="gate" hidden>
+  <div class="gatebanner">Internal draft. Not MRC approved. Do not use with HCPs until reviewed.</div>
+  <div class="gatebody">
+    <form class="gatecard" id="gateform" autocomplete="off" novalidate>
+      <div class="gatebrand">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <rect width="64" height="64" rx="15" fill="#DA2B28"/>
+          <path d="M32 6C25 20 18 27 4 32c14 5 21 12 28 26 7-14 14-21 28-26C46 27 39 20 32 6Z" fill="#fff"/>
+          <path d="M32 20c-3 7-6 10-13 12 7 2 10 5 13 12 3-7 6-10 13-12-7-2-10-5-13-12Z" fill="#DA2B28"/>
+        </svg>
+        <div><b>BeOne &middot; Gulf Field System</b><span>Gulf field team</span></div>
+      </div>
+
+      <h2>Sign in to continue</h2>
+      <p class="gatelede">Sign in with your work email. It is attached to any field notes you write and to anything you export, so reviewers can see who recorded what.</p>
+
+      <label for="gmail">Work email</label>
+      <input id="gmail" type="email" autocomplete="username" required placeholder="name@beonemed.com" inputmode="email">
+
+      <label for="gcode">Password</label>
+      <input id="gcode" type="password" autocomplete="current-password" required placeholder="Shared team password">
+
+      <label class="gatecheck">
+        <input id="gack" type="checkbox" required>
+        <span>I understand this is an internal draft, is not MRC approved, and must not be used with HCPs until it has been reviewed.</span>
+      </label>
+
+      <p class="gateerr" id="gateerr" role="alert" hidden></p>
+      <button class="gatebtn" type="submit">Continue</button>
+      <p class="gatefoot">This sign-in identifies who is using the tool on this device. It is not a security control &mdash; treat the link itself as confidential.</p>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+<script>
