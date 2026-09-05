@@ -585,7 +585,7 @@ ul.data li b{font-family:var(--mono);font-size:13px;}
       <p class="gatelede">Sign in with your work email. It is attached to any field notes you write and to anything you export, so reviewers can see who recorded what.</p>
 
       <label for="gmail">Work email</label>
-      <input id="gmail" type="email" autocomplete="username" required placeholder="name@beonemedicines.com" inputmode="email">
+      <input id="gmail" type="email" autocomplete="username" required placeholder="name@beonemed.com" inputmode="email">
 
       <label for="gcode">Password</label>
       <input id="gcode" type="password" autocomplete="current-password" required placeholder="Shared team password">
@@ -1791,9 +1791,21 @@ var USER_KEY  = "beone_cll_objection_user_v1";
 
    To regenerate either value:  node make-access.mjs "Password" emails.txt
    ------------------------------------------------------------------ */
-var PASSWORD_HASH  = "19d0a3d6";
-var ALLOWED_EMAILS = [];      /* hashes; empty means any work email is accepted */
+var PASSWORD_HASH = "19d0a3d6";
+
+/* Hashed work emails, so no address is written here in readable form.
+   Two groups only so a note shows whether it came from a manager or
+   the field team; both have identical access to the tool. */
+var MANAGERS = ["44b21d67","52fa73fe","8f38aae3"];
+var TEAM     = ["62af20a9","78bd5e51","7d87193","1b730dad"];
 var user = null;
+
+function roleFor(email){
+  var k = emailHash(email);
+  if(MANAGERS.indexOf(k) !== -1) return "Manager";
+  if(TEAM.indexOf(k) !== -1)     return "Field team";
+  return null;
+}
 
 function hashWith(s, upper){
   var t = "bg1|" + (upper ? String(s).trim().toUpperCase() : String(s).trim().toLowerCase());
@@ -1815,6 +1827,11 @@ function loadUser(){
   try{ user = JSON.parse(localStorage.getItem(USER_KEY) || "null"); }
   catch(e){ user = null; }
   if(user && !user.email) user = null;
+  if(user && !user.role){
+    user.role = roleFor(user.email);
+    if(!user.role) user = null;            /* removed from the list since */
+    else { try{ localStorage.setItem(USER_KEY, JSON.stringify(user)); }catch(e){} }
+  }
 }
 function signOut(){
   try{ localStorage.removeItem(USER_KEY); }catch(e){}
@@ -1825,7 +1842,8 @@ function showWho(){
   var slot = document.getElementById("who");
   slot.innerHTML = '<b></b> <span class="role"></span>';
   slot.querySelector("b").textContent = user.name;
-  slot.querySelector(".role").textContent = user.email;
+  slot.querySelector(".role").textContent = user.role || "";
+  slot.title = user.email;
   document.getElementById("signout").hidden = false;
 }
 function openGate(){
@@ -1847,11 +1865,10 @@ function openGate(){
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return fail("Enter your work email address.", "gmail");
     if(!ack) return fail("Please confirm you have read the notice above the form.", "gack");
     if(codeHash(code) !== PASSWORD_HASH) return fail("That password is not right. Check with your manager.", "gcode");
-    if(ALLOWED_EMAILS.length && ALLOWED_EMAILS.indexOf(emailHash(email)) === -1){
-      return fail("That email is not on the team list. Ask your manager to have it added.", "gmail");
-    }
+    var role = roleFor(email);
+    if(!role) return fail("That email is not on the team list. Ask your manager to have it added.", "gmail");
 
-    user = { email:email, name:nameFromEmail(email), at:new Date().toISOString() };
+    user = { email:email, name:nameFromEmail(email), role:role, at:new Date().toISOString() };
     try{ localStorage.setItem(USER_KEY, JSON.stringify(user)); }catch(e){}
     err.hidden = true;
     g.hidden = true;
@@ -1895,7 +1912,7 @@ function addNote(id){
   var text = box.value.trim();
   if(!text){ box.focus(); return; }
   if(!Array.isArray(notes[id])) notes[id] = [];
-  notes[id].push({ t:new Date().toISOString(), text:text, who:(user && user.name) || "" });
+  notes[id].push({ t:new Date().toISOString(), text:text, who:(user && user.name) || "", role:(user && user.role) || "" });
   var ok = saveNotes();
   box.value = "";
   document.getElementById("notelog").innerHTML = noteLogHTML(id);
@@ -2201,7 +2218,7 @@ function notesText(){
   L.push("BeOne Gulf - CLL Objection Handler - field notes export");
   L.push("Internal draft. Not MRC approved. Do not use with HCPs until reviewed.");
   L.push("Exported: " + new Date().toString());
-  if(user) L.push("Exported by: " + user.name + " <" + user.email + ">");
+  if(user) L.push("Exported by: " + user.name + " <" + user.email + ">" + (user.role ? " — " + user.role : ""));
   L.push("");
   var cards = 0, entries = 0;
   CARDS.forEach(function(c){
@@ -2216,7 +2233,7 @@ function notesText(){
     L.push("");
     list.forEach(function(en){          /* oldest first, as written */
       entries++;
-      L.push("  " + stamp(en.t) + (en.who ? "  \u00b7  " + en.who : ""));
+      L.push("  " + stamp(en.t) + (en.who ? "  \u00b7  " + en.who + (en.role ? " (" + en.role + ")" : "") : ""));
       en.text.split("\n").forEach(function(line){ L.push("    " + line); });
       L.push("");
     });
