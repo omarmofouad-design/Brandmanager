@@ -712,33 +712,66 @@ table.grid .grouprow td{background:var(--surface-2);font-weight:750;
   color:#7E93B8;font-size:12.5px;line-height:1.5;
 }
 
-/* ---------- activities ---------- */
-.evlist{display:flex;flex-direction:column;gap:9px;}
+/* ---------- activities dashboard ---------- */
+.evlist{display:flex;flex-direction:column;gap:11px;}
+.chartlab{margin:0 0 7px;font-size:12.5px;font-weight:700;color:var(--ink);}
+.chartpart{margin:0 0 16px;}
+.chartpart:last-child{margin-bottom:0;}
+.striprow{margin:0 0 16px;}
+.striprow:last-child{margin-bottom:4px;}
+.striprow h5{margin:0 0 7px;font-size:12.5px;font-weight:700;color:var(--ink);}
+.strip{display:flex;height:13px;border-radius:7px;overflow:hidden;background:var(--surface-2);}
+.strip i{display:block;height:100%;}
+.striplegend{display:flex;flex-wrap:wrap;gap:5px 14px;margin-top:8px;font-size:11.5px;color:var(--ink-2);}
+.striplegend span{display:inline-flex;align-items:center;gap:6px;}
+.striplegend b{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;}
+.chartgrid{display:grid;grid-template-columns:1fr;gap:16px;margin:0 0 18px;}
+@media (min-width:900px){ .chartgrid{grid-template-columns:1fr 1fr;} }
 .ev{
-  background:var(--paper);border:1px solid var(--line);border-radius:10px;
-  padding:15px 17px;display:grid;grid-template-columns:1fr auto;gap:6px 18px;align-items:start;
+  background:var(--paper);border:1px solid var(--line);border-radius:11px;
+  padding:0;display:block;overflow:hidden;
 }
+.ev.done{border-left:3px solid var(--ok);}
+.ev.open{border-left:3px solid var(--warn);}
+.evtop{display:grid;grid-template-columns:1fr auto;gap:6px 18px;padding:15px 17px 0;}
+.evbody{padding:0 17px 15px;}
 .ev h4{margin:0;font-size:15.5px;font-weight:700;line-height:1.3;}
-.ev .evmeta{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-top:4px;}
-.ev .evcost{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;}
-.ev .evobj{grid-column:1/-1;font-size:13.5px;color:var(--ink-2);line-height:1.5;margin:6px 0 0;}
-.gates{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
+.ev .evmeta{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-top:5px;
+  display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;}
+.ev .evcost{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right;}
+.ev .evcost small{display:block;font-size:10.5px;font-weight:600;color:var(--ink-3);
+  font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;margin-top:2px;}
+.ev .evobj{font-size:13.5px;color:var(--ink-2);line-height:1.5;margin:10px 0 0;}
+.outstanding{
+  margin:11px 0 0;padding:9px 12px;border-radius:7px;background:var(--warn-bg);
+  font-size:12.5px;color:var(--ink);line-height:1.45;
+}
+.outstanding b{color:var(--warn);font-family:var(--mono);font-size:10px;letter-spacing:.06em;
+  text-transform:uppercase;display:block;margin-bottom:3px;}
+.progwrap{display:flex;align-items:center;gap:10px;margin-top:12px;}
+.bar{flex:1 1 auto;height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden;}
+.bar i{display:block;height:100%;border-radius:3px;background:var(--ok);}
+.bar i.part{background:var(--warn);}
+.progtxt{font-family:var(--mono);font-size:11px;color:var(--ink-3);white-space:nowrap;
+  font-variant-numeric:tabular-nums;}
+.gates{display:flex;flex-wrap:wrap;gap:5px;margin-top:11px;}
 .g{
   font-family:var(--mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;
-  padding:3px 7px;border-radius:4px;font-weight:700;
-  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 7px;border-radius:4px;font-weight:700;display:inline-flex;align-items:center;gap:4px;
 }
 .g.y{background:var(--ok-bg);color:var(--ok);}
 .g.n{background:var(--stop-bg);color:var(--stop);}
 .g.u{background:var(--surface-2);color:var(--ink-3);}
-.bar{grid-column:1/-1;height:5px;border-radius:3px;background:var(--surface-2);overflow:hidden;margin-top:11px;}
-.bar i{display:block;height:100%;background:var(--ok);border-radius:3px;}
 .pill{
   font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;
-  padding:3px 7px;border-radius:4px;font-weight:700;margin-left:8px;
+  padding:3px 7px;border-radius:4px;font-weight:700;margin-left:8px;white-space:nowrap;
 }
 .pill.done{background:var(--ok-bg);color:var(--ok);}
 .pill.open{background:var(--warn-bg);color:var(--warn);}
+.vbadge{
+  font-family:var(--mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;
+  padding:2px 6px;border-radius:4px;background:var(--surface-2);color:var(--ink-2);font-weight:700;
+}
 
 .toast{
   position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
@@ -971,10 +1004,40 @@ table.grid .grouprow td{background:var(--surface-2);font-weight:750;
           <option value="upcoming">Not yet run</option>
         </select>
       </div>
+      <div class="field"><label for="amonth">Month</label><select id="amonth"></select></div>
       <div class="field grow"><label for="asearch">Search</label>
         <input id="asearch" type="search" placeholder="Title, venue, objective" autocomplete="off"></div>
     </div>
     <div class="tiles" id="acttiles"></div>
+
+    <div class="chartgrid">
+      <div class="card2">
+        <h3>Spend and events by month</h3>
+        <p class="sub" id="spendsub"></p>
+        <div class="chartbox" id="spendbox"></div>
+      </div>
+      <div class="card2">
+        <h3>Where events are held up</h3>
+        <p class="sub">How far the events in view have got through each approval check.</p>
+        <div class="legend" id="gatelegend"></div>
+        <div class="chartbox" id="gatebox"></div>
+      </div>
+    </div>
+
+    <div class="chartgrid">
+      <div class="card2">
+        <h3>Where the spend sits</h3>
+        <p class="sub" id="reqsub"></p>
+        <div id="reqwrap"></div>
+      </div>
+      <div class="card2">
+        <h3>Approvals, documents and payment</h3>
+        <p class="sub">The state of the events in view, as recorded.</p>
+        <div id="stripbox"></div>
+      </div>
+    </div>
+
+    <h3 style="margin:22px 0 11px;font-size:16px;font-weight:750;">Events <span id="evcount" style="color:var(--ink-3);font-weight:400;font-size:13px;"></span></h3>
     <div class="evlist" id="evlist"></div>
     <p class="tablenote" id="actnote"></p>
   </div></div>
@@ -3012,11 +3075,19 @@ function barChart(box, rows, opts){
   var H = P.t + P.b + rows.length * rowH;
   var iw = W - P.l - P.r;
   var max = Math.max.apply(null, rows.map(function(r){ return r.value || 0; }).concat([1]));
+  /* the label column is fixed, so trim a long name to fit it — the full name stays in the tooltip */
+  var maxCh = Math.max(8, Math.floor((P.l - 14) / 6.95));
+  var fit = function(t){
+    if(t.length <= maxCh) return t;
+    var head = Math.ceil((maxCh - 1) * 0.55);
+    return t.slice(0, head).replace(/[ ,\-]+$/, "") + "\u2026" + t.slice(-(maxCh - 1 - head));
+  };
   var svg = ['<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="' + esc(opts.aria) + '">'];
   rows.forEach(function(r, i){
     var yy = P.t + i * rowH, bh = 14;
     var w = r.value ? Math.max(2, (iw * r.value) / max) : 0;
-    svg.push('<text class="axis" x="' + (P.l - 10) + '" y="' + (yy + bh) + '" text-anchor="end" fill="var(--ink-2)" font-size="11.5">' + esc(r.label) + '</text>');
+    var lab = fit(r.label);
+    svg.push('<text class="axis" x="' + (P.l - 10) + '" y="' + (yy + bh) + '" text-anchor="end" fill="var(--ink-2)" font-size="11.5"><title>' + esc(r.label) + '</title>' + esc(lab) + '</text>');
     svg.push('<rect data-i="' + i + '" x="' + P.l + '" y="' + (yy + 4) + '" width="' + w + '" height="' + bh + '" rx="4" fill="' + opts.color + '"/>');
     svg.push('<text class="dlabel" x="' + (P.l + w + 8) + '" y="' + (yy + bh - 1) + '" fill="var(--ink-2)">' + money(r.value) + '</text>');
   });
@@ -3364,6 +3435,7 @@ function startSales(){
     clearTimeout(rt);
     rt = setTimeout(function(){
       if(!document.getElementById("mod-sales").hidden) renderSales();
+      if(!document.getElementById("mod-activities").hidden) renderActs();
     }, 180);
   });
 }
@@ -3375,22 +3447,26 @@ loadUser();
 if(user){ showWho(); startApp(); }
 else { openGate(); }
 
-
 /* ==================================================================
    ACTIVITIES
    Events as recorded in the tracker. Speaker and chairperson names
    are held back and shown as counts: this page is served from a
    public location and those are third-party HCPs.
    ================================================================== */
+var MABBR = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+var C_OK = "var(--ok)", C_NO = "var(--stop)", C_UNK = "var(--line-strong)", C_NR = "var(--ink-3)";
+
 function actFiltered(){
   var by = document.getElementById("aby").value;
   var city = document.getElementById("acity").value;
   var st = document.getElementById("astatus").value;
+  var mo = document.getElementById("amonth").value;
   var q = document.getElementById("asearch").value.trim().toLowerCase();
   var terms = q ? q.split(/\s+/) : [];
   return scopedEvents().filter(function(e){
     if(by && e.by !== by) return false;
     if(city && e.city !== city) return false;
+    if(mo !== "" && e.month !== +mo) return false;
     if(st === "ready"    && e.gatesDone !== e.gatesTotal) return false;
     if(st === "blocked"  && e.gatesDone === e.gatesTotal) return false;
     if(st === "done"     && !e.completed) return false;
@@ -3403,26 +3479,149 @@ function actFiltered(){
   });
 }
 function buildActsFilters(){
+  var ev = scopedEvents();
   fillSelect(document.getElementById("aby"),
-    Array.from(new Set(scopedEvents().map(function(e){ return e.by; }))).filter(Boolean).sort(), "Everyone");
+    Array.from(new Set(ev.map(function(e){ return e.by; }))).filter(Boolean).sort(), "Everyone");
   fillSelect(document.getElementById("acity"),
     Array.from(new Set(ACTS.events.map(function(e){ return e.city; }))).filter(Boolean).sort(), "All cities");
+  fillSelect(document.getElementById("amonth"),
+    Array.from(new Set(ACTS.events.map(function(e){ return e.month; })))
+      .sort(function(a,b){ return a - b; })
+      .map(function(m){ return { value:String(m), label:MABBR[m] }; }), "All months");
 }
 function buildActs(){
   buildActsFilters();
-  ["aby","acity","astatus"].forEach(function(id){
+  ["aby","acity","astatus","amonth"].forEach(function(id){
     document.getElementById(id).addEventListener("change", renderActs);
   });
   document.getElementById("asearch").addEventListener("input", renderActs);
 }
 function niceDate(iso){
   if(!iso) return "No date";
-  var p = iso.split("-"), M = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  return (+p[2]) + " " + M[+p[1] - 1] + " " + p[0];
+  var p = iso.split("-");
+  return (+p[2]) + " " + MABBR[+p[1] - 1] + " " + p[0];
 }
+
+/* ---------- activity charts ---------- */
+
+/* Columns for planned spend, with the event count under each month. */
+function monthColumns(box, rows, aria){
+  var W = Math.max(box.clientWidth || 520, 300), H = 244;
+  var P = {t:14, r:12, b:46, l:54};
+  var iw = W - P.l - P.r, ih = H - P.t - P.b;
+  var max = Math.max.apply(null, rows.map(function(r){ return r.spend; }).concat([1]));
+  var step = Math.pow(10, Math.floor(Math.log10(max))) / 2 || 1;
+  var top = Math.ceil(max / step) * step || 1;
+  var ticks = 4;
+  var band = iw / Math.max(rows.length, 1);
+  var bw = Math.min(48, band * 0.56);
+  var cx = function(i){ return P.l + band * i + band / 2; };
+  var y = function(v){ return P.t + ih - (ih * v) / top; };
+
+  var s = ['<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H +
+           '" role="img" aria-label="' + esc(aria) + '">', '<g class="axis">'];
+  for(var k = 0; k <= ticks; k++){
+    var v = (top / ticks) * k, yy = y(v);
+    s.push('<line class="gridline" x1="' + P.l + '" x2="' + (W - P.r) + '" y1="' + yy + '" y2="' + yy + '"/>');
+    s.push('<text x="' + (P.l - 8) + '" y="' + (yy + 3.5) + '" text-anchor="end">$' + money(v) + '</text>');
+  }
+  rows.forEach(function(r, i){
+    s.push('<text x="' + cx(i) + '" y="' + (H - 26) + '" text-anchor="middle">' + r.label + '</text>');
+    s.push('<text x="' + cx(i) + '" y="' + (H - 12) + '" text-anchor="middle">' +
+           (r.count ? r.count + (r.count === 1 ? " event" : " events") : "none") + '</text>');
+  });
+  s.push('<line class="axisline" x1="' + P.l + '" x2="' + (W - P.r) + '" y1="' + y(0) + '" y2="' + y(0) + '"/>');
+  s.push('</g>');
+  rows.forEach(function(r, i){
+    if(r.spend > 0){
+      var hgt = Math.max(2, ih - (ih * (top - r.spend)) / top);
+      s.push('<rect x="' + (cx(i) - bw / 2) + '" y="' + y(r.spend) + '" width="' + bw +
+             '" height="' + hgt + '" rx="3" fill="var(--series-1)"/>');
+    }
+    s.push('<rect data-i="' + i + '" x="' + (cx(i) - band / 2) + '" y="' + P.t +
+           '" width="' + band + '" height="' + ih + '" fill="transparent"/>');
+  });
+  s.push('</svg>');
+  box.innerHTML = s.join("");
+  box.querySelectorAll("rect[data-i]").forEach(function(hit){
+    hit.addEventListener("mouseenter", function(){
+      var r = rows[+hit.dataset.i];
+      showTip(box, '<b>' + r.full + '</b><br>Planned spend <b>$' + money(r.spend) + '</b><br>' +
+                   r.count + (r.count === 1 ? " event" : " events") +
+                   (r.done ? '<br>' + r.done + ' completed' : ''),
+              cx(+hit.dataset.i), 6);
+    });
+    hit.addEventListener("mouseleave", function(){ hideTip(box); });
+  });
+  box.addEventListener("mouseleave", function(){ hideTip(box); });
+}
+
+/* One bar per approval check, split cleared / not cleared / not recorded. */
+function gateBars(box, rows, total, aria){
+  var W = Math.max(box.clientWidth || 520, 300);
+  var rowH = 30, P = {t:4, r:46, b:4, l:Math.min(148, Math.round(W * 0.42))};
+  var H = P.t + P.b + rows.length * rowH;
+  var iw = W - P.l - P.r;
+  var s = ['<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H +
+           '" role="img" aria-label="' + esc(aria) + '">'];
+  var uid = "gc" + Math.random().toString(36).slice(2, 8);
+  s.push('<defs>' + rows.map(function(r, i){
+    var yy = P.t + i * rowH + 7;
+    return '<clipPath id="' + uid + i + '"><rect x="' + P.l + '" y="' + yy + '" width="' + iw +
+           '" height="15" rx="4"/></clipPath>';
+  }).join("") + '</defs>');
+  rows.forEach(function(r, i){
+    var yy = P.t + i * rowH + 7, bh = 15, x = P.l;
+    s.push('<text class="axis" x="' + (P.l - 10) + '" y="' + (yy + 12) + '" text-anchor="end" ' +
+           'fill="var(--ink-2)" font-size="11.5">' + esc(r.label) + '</text>');
+    s.push('<g clip-path="url(#' + uid + i + ')">');
+    s.push('<rect x="' + P.l + '" y="' + yy + '" width="' + iw + '" height="' + bh + '" fill="var(--surface-2)"/>');
+    [[r.y, C_OK], [r.n, C_NO], [r.u, C_UNK]].forEach(function(seg){
+      if(!seg[0]) return;
+      var w = (iw * seg[0]) / Math.max(total, 1);
+      s.push('<rect x="' + x + '" y="' + yy + '" width="' + w + '" height="' + bh + '" fill="' + seg[1] + '"/>');
+      x += w;
+    });
+    s.push('</g>');
+    s.push('<text class="dlabel" x="' + (W - P.r + 8) + '" y="' + (yy + 12) + '" fill="var(--ink-2)">' +
+           r.y + '/' + total + '</text>');
+    s.push('<rect data-i="' + i + '" x="' + P.l + '" y="' + yy + '" width="' + iw + '" height="' + bh + '" fill="transparent"/>');
+  });
+  s.push('</svg>');
+  box.innerHTML = s.join("");
+  box.querySelectorAll("rect[data-i]").forEach(function(hit){
+    hit.addEventListener("mouseenter", function(){
+      var r = rows[+hit.dataset.i];
+      var bb = hit.getBoundingClientRect(), pb = box.getBoundingClientRect();
+      showTip(box, '<b>' + esc(r.label) + '</b><br>' + r.y + ' cleared<br>' + r.n + ' not cleared' +
+                   (r.u ? '<br>' + r.u + ' not recorded' : ''),
+              bb.left - pb.left + bb.width / 2, bb.top - pb.top - 4);
+    });
+    hit.addEventListener("mouseleave", function(){ hideTip(box); });
+  });
+}
+
+/* A 100% strip with its own legend, for the status breakdowns. */
+function statusStrip(title, parts, total){
+  var segs = parts.filter(function(p){ return p.n > 0; });
+  if(!total) return "";
+  return '<div class="striprow"><h5>' + esc(title) + '</h5><div class="strip">' +
+    segs.map(function(p){
+      return '<i style="width:' + ((p.n / total) * 100) + '%;background:' + p.color +
+             '" title="' + esc(p.label + ": " + p.n) + '"></i>';
+    }).join("") + '</div><div class="striplegend">' +
+    segs.map(function(p){
+      return '<span><span class="swatch" style="background:' + p.color + '"></span>' +
+             esc(p.label) + ' <b>' + p.n + '</b></span>';
+    }).join("") + '</div></div>';
+}
+
+/* ---------- activities page ---------- */
 function renderActs(){
   var list = actFiltered();
   var evAll = scopedEvents();
+  var G = ACTS.gates;
+
   document.getElementById("actsub").textContent =
     evAll.length + " events from " + ACTS.source + ". " + list.length + " shown." +
     (scope === "mine" && myKam() ? "  Yours only." : "");
@@ -3431,33 +3630,183 @@ function renderActs(){
   var ready = list.filter(function(e){ return e.gatesDone === e.gatesTotal; }).length;
   var done = list.filter(function(e){ return e.completed; }).length;
   var docs = list.filter(function(e){ return e.completed && !e.postDoc; }).length;
+  var unpaid = list.filter(function(e){ return !e.paid; }).length;
+  var cityCount = {};
+  list.forEach(function(e){ if(e.city) cityCount[e.city] = (cityCount[e.city] || 0) + 1; });
+  var cityNames = Object.keys(cityCount);
+  var cities = cityNames.length;
+  var busiest = cityNames.sort(function(a, b){ return cityCount[b] - cityCount[a]; })[0];
+  var avg = list.length ? Math.round(cost / list.length) : 0;
+
   document.getElementById("acttiles").innerHTML =
-    '<div class="tile"><span class="k">Events</span><span class="v">' + list.length + '</span><span class="s">of ' + evAll.length + ' in view</span></div>' +
-    '<div class="tile"><span class="k">Planned cost</span><span class="v">$' + money(Math.round(cost)) + '</span><span class="s">USD, as planned</span></div>' +
-    '<div class="tile"><span class="k">Ready to run</span><span class="v">' + ready + '</span><span class="s">all ' + ACTS.gates.length + ' checks cleared</span></div>' +
-    '<div class="tile"><span class="k">Completed</span><span class="v">' + done + '</span><span class="s">' + (list.length - done) + ' still to run</span></div>' +
-    '<div class="tile"><span class="k">Docs outstanding</span><span class="v">' + docs + '</span><span class="s">run, not documented</span></div>';
+    '<div class="tile"><span class="k">Events</span><span class="v">' + list.length +
+      '</span><span class="s">of ' + evAll.length + ' in view</span></div>' +
+    '<div class="tile"><span class="k">Planned cost</span><span class="v">$' + money(Math.round(cost)) +
+      '</span><span class="s">$' + money(avg) + ' an event on average</span></div>' +
+    '<div class="tile"><span class="k">Ready to run</span><span class="v">' + ready +
+      '</span><span class="s">all ' + G.length + ' checks cleared</span></div>' +
+    '<div class="tile"><span class="k">Completed</span><span class="v">' + done +
+      '</span><span class="s">' + (list.length - done) + ' still to run</span></div>' +
+    '<div class="tile"><span class="k">Docs outstanding</span><span class="v">' + docs +
+      '</span><span class="s">run, not documented</span></div>' +
+    '<div class="tile"><span class="k">Cities</span><span class="v">' + cities +
+      '</span><span class="s">' + (busiest ? esc(busiest) + ", " + cityCount[busiest] + " events" : "none recorded") + '</span></div>';
+
+  /* --- spend and events by month --- */
+  var months = list.map(function(e){ return e.month; }).filter(function(m){ return m === 0 || m; });
+  var mrows = [];
+  if(months.length){
+    var lo = Math.min.apply(null, months), hi = Math.max.apply(null, months);
+    for(var m = lo; m <= hi; m++){
+      var inM = list.filter(function(e){ return e.month === m; });
+      mrows.push({
+        label: MABBR[m], full: MABBR[m] + " 2026",
+        spend: inM.reduce(function(t, e){ return t + (e.cost || 0); }, 0),
+        count: inM.length,
+        done:  inM.filter(function(e){ return e.completed; }).length
+      });
+    }
+  }
+  var sbox = document.getElementById("spendbox");
+  if(mrows.length){
+    document.getElementById("spendsub").textContent =
+      "Planned cost in USD. The count under each column is the number of events that month.";
+    monthColumns(sbox, mrows, "Planned spend by month");
+  } else {
+    document.getElementById("spendsub").textContent = "No dated events in view.";
+    sbox.innerHTML = '<div class="emptybox">Nothing to plot.</div>';
+  }
+
+  /* --- approval checks --- */
+  var grows = G.map(function(name){
+    var r = { label:name, y:0, n:0, u:0 };
+    list.forEach(function(e){
+      var g = e.gates.filter(function(x){ return x.k === name; })[0];
+      if(!g || g.v === null || g.v === undefined) r.u++;
+      else if(g.v === true) r.y++;
+      else r.n++;
+    });
+    return r;
+  });
+  document.getElementById("gatelegend").innerHTML =
+    '<span><span class="swatch" style="background:' + C_OK + '"></span>Cleared</span>' +
+    '<span><span class="swatch" style="background:' + C_NO + '"></span>Not cleared</span>' +
+    '<span><span class="swatch" style="background:' + C_UNK + '"></span>Not recorded</span>';
+  var gbox = document.getElementById("gatebox");
+  if(list.length) gateBars(gbox, grows, list.length, "Events cleared at each approval check");
+  else gbox.innerHTML = '<div class="emptybox">Nothing to plot.</div>';
+
+  /* --- where the spend sits --- */
+  function spendRows(key){
+    var keys = Array.from(new Set(list.map(function(e){ return e[key]; }).filter(Boolean))).sort();
+    return keys.map(function(n){
+      var mine = list.filter(function(e){ return e[key] === n; });
+      return {
+        label: n,
+        value: Math.round(mine.reduce(function(t, e){ return t + (e.cost || 0); }, 0)),
+        sub: mine.length + (mine.length === 1 ? " event, " : " events, ") +
+             mine.filter(function(e){ return e.completed; }).length + " completed, " +
+             mine.filter(function(e){ return e.gatesDone === e.gatesTotal; }).length + " ready to run"
+      };
+    }).sort(function(a, b){ return b.value - a.value; });
+  }
+  var rrows = spendRows("by");
+  var crows = spendRows("city").slice(0, 10);
+  var parts = [];
+  if(rrows.length > 1) parts.push({ id:"reqbox",  lab:"By requestor", rows:rrows, color:"var(--series-2)" });
+  if(crows.length)     parts.push({ id:"citybox", lab:"By city",      rows:crows, color:"var(--series-1)" });
+
+  document.getElementById("reqsub").textContent =
+    parts.length ? "Planned cost in USD. Hover a bar for the event counts behind it."
+                 : "Nothing to break down in the current view.";
+  var wrap = document.getElementById("reqwrap");
+  wrap.innerHTML = parts.length
+    ? parts.map(function(p){
+        return '<div class="chartpart"><h5 class="chartlab">' + p.lab +
+               '</h5><div class="chartbox" id="' + p.id + '"></div></div>';
+      }).join("")
+    : '<div class="emptybox">Nothing to plot.</div>';
+  parts.forEach(function(p){
+    barChart(document.getElementById(p.id), p.rows,
+      { color:p.color, measure:"Planned cost", aria:"Planned cost " + p.lab.toLowerCase() });
+  });
+
+  /* --- status strips --- */
+  var sfdaOrder = ["SFDA Not Required", "Approved", "Pending Approval", "Not Approved"];
+  var sfdaColor = { "SFDA Not Required":C_UNK, "Approved":C_OK, "Pending Approval":"var(--warn)", "Not Approved":C_NO };
+  var sfdaParts = sfdaOrder.map(function(k){
+    return { label:k, color:sfdaColor[k], n:list.filter(function(e){ return e.sfda === k; }).length };
+  });
+  var other = list.filter(function(e){ return sfdaOrder.indexOf(e.sfda) === -1; }).length;
+  if(other) sfdaParts.push({ label:"Not recorded", color:C_NR, n:other });
+
+  var compOrder = ["Approved", "Pending"];
+  var compParts = compOrder.map(function(k){
+    return { label:k, color:(k === "Approved" ? C_OK : "var(--warn)"),
+             n:list.filter(function(e){ return e.compliance === k; }).length };
+  });
+  var compOther = list.filter(function(e){ return compOrder.indexOf(e.compliance) === -1; }).length;
+  if(compOther) compParts.push({ label:"Not recorded", color:C_NR, n:compOther });
+
+  var ranList = list.filter(function(e){ return e.completed; });
+  document.getElementById("stripbox").innerHTML =
+    (list.length ? "" : '<div class="emptybox">Nothing to show.</div>') +
+    statusStrip("SFDA", sfdaParts, list.length) +
+    statusStrip("Compliance", compParts, list.length) +
+    statusStrip("Progress", [
+      { label:"Completed", color:C_OK, n:done },
+      { label:"Ready to run", color:"var(--series-1)", n:list.filter(function(e){ return !e.completed && e.gatesDone === e.gatesTotal; }).length },
+      { label:"Checks outstanding", color:"var(--warn)", n:list.filter(function(e){ return !e.completed && e.gatesDone !== e.gatesTotal; }).length }
+    ], list.length) +
+    statusStrip("Post-event documents (completed events)", [
+      { label:"On file", color:C_OK, n:ranList.length - docs },
+      { label:"Outstanding", color:C_NO, n:docs }
+    ], ranList.length) +
+    statusStrip("Payment", [
+      { label:"Paid", color:C_OK, n:list.length - unpaid },
+      { label:"Pending", color:"var(--warn)", n:unpaid }
+    ], list.length);
+
+  /* --- the events themselves --- */
+  document.getElementById("evcount").textContent =
+    list.length ? "· " + list.length + " shown, $" + money(Math.round(cost)) + " planned" : "";
 
   document.getElementById("evlist").innerHTML = list.map(function(e){
     var pct = Math.round((e.gatesDone / e.gatesTotal) * 100);
-    var people = [];
-    if(e.speakers) people.push(e.speakers + " speaker" + (e.speakers === 1 ? "" : "s"));
-    if(e.chairs)   people.push(e.chairs + " chair" + (e.chairs === 1 ? "" : "s"));
-    return '<article class="ev">' +
-      '<div><h4>' + esc(e.title) +
-        '<span class="pill ' + (e.completed ? "done" : "open") + '">' + (e.completed ? "Completed" : "Not yet run") + '</span></h4>' +
-        '<div class="evmeta">' + esc(niceDate(e.date)) + ' · ' + esc(e.city || "—") + ' · ' + esc(e.venue || "—") +
-        ' · ' + esc(e.by || "—") + (people.length ? ' · ' + esc(people.join(", ")) : '') + '</div></div>' +
-      '<div class="evcost">' + (e.cost ? "$" + money(e.cost) : "—") + '</div>' +
-      (e.objective ? '<p class="evobj">' + esc(e.objective) + '</p>' : '') +
-      '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
-      '<div class="gates">' + e.gates.map(function(g){
-        var cls = g.v === true ? "y" : (g.v === false ? "n" : "u");
-        return '<span class="g ' + cls + '">' + (g.v === true ? "✓" : (g.v === false ? "✕" : "?")) + ' ' + esc(g.k) + '</span>';
-      }).join("") +
-        '<span class="g ' + (e.sfda === "Approved" || e.sfda === "SFDA Not Required" ? "y" : "n") + '">' + esc(e.sfda || "SFDA —") + '</span>' +
-        (e.completed ? '<span class="g ' + (e.postDoc ? "y" : "n") + '">' + (e.postDoc ? "✓" : "✕") + ' Post-event docs' + (e.postDate ? " " + esc(niceDate(e.postDate)) : "") + '</span>' : '') +
-        '<span class="g ' + (e.paid ? "y" : "u") + '">' + (e.paid ? "✓ Paid" : "Payment pending") + '</span>' +
+    var meta = [niceDate(e.date), e.city || "—", e.venue || "—", e.by || "—"];
+    var badges = "";
+    if(e.speakers) badges += '<span class="vbadge">' + e.speakers + " speaker" + (e.speakers === 1 ? "" : "s") + '</span>';
+    if(e.chairs)   badges += '<span class="vbadge">' + e.chairs + " chair" + (e.chairs === 1 ? "" : "s") + '</span>';
+
+    var open = e.gates.filter(function(g){ return g.v !== true; }).map(function(g){ return g.k; });
+    var flags = [];
+    if(open.length) flags.push(open.join(", "));
+    if(e.sfda === "Pending Approval") flags.push("SFDA approval pending");
+    if(e.sfda === "Not Approved") flags.push("SFDA not approved");
+    if(e.completed && !e.postDoc) flags.push("post-event documents not on file");
+
+    return '<article class="ev ' + (e.completed ? "done" : "open") + '">' +
+      '<div class="evtop"><div>' +
+        '<h4>' + esc(e.title) + '<span class="pill ' + (e.completed ? "done" : "open") + '">' +
+          (e.completed ? "Completed" : "Not yet run") + '</span></h4>' +
+        '<div class="evmeta">' + meta.map(esc).join(" · ") + badges + '</div>' +
+      '</div>' +
+      '<div class="evcost">' + (e.cost ? "$" + money(e.cost) : "—") +
+        (e.cost ? '<small>planned</small>' : '') + '</div></div>' +
+      '<div class="evbody">' +
+        (e.objective ? '<p class="evobj">' + esc(e.objective) + '</p>' : '') +
+        '<div class="progwrap"><div class="bar"><i class="' + (pct === 100 ? "" : "part") +
+          '" style="width:' + pct + '%"></i></div>' +
+          '<span class="progtxt">' + e.gatesDone + '/' + e.gatesTotal + ' checks</span></div>' +
+        '<div class="gates">' + e.gates.map(function(g){
+          var cls = g.v === true ? "y" : (g.v === false ? "n" : "u");
+          return '<span class="g ' + cls + '">' + (g.v === true ? "✓" : (g.v === false ? "✕" : "?")) + ' ' + esc(g.k) + '</span>';
+        }).join("") +
+          '<span class="g ' + (e.sfda === "Approved" || e.sfda === "SFDA Not Required" ? "y" : "n") + '">' + esc(e.sfda || "SFDA —") + '</span>' +
+          (e.completed ? '<span class="g ' + (e.postDoc ? "y" : "n") + '">' + (e.postDoc ? "✓" : "✕") + ' Post-event docs' + (e.postDate ? " " + esc(niceDate(e.postDate)) : "") + '</span>' : '') +
+          '<span class="g ' + (e.paid ? "y" : "u") + '">' + (e.paid ? "✓ Paid" : "Payment pending") + '</span>' +
+        '</div>' +
+        (flags.length ? '<div class="outstanding"><b>Outstanding</b>' + esc(flags.join(" · ")) + '</div>' : '') +
       '</div></article>';
   }).join("") || '<div class="emptybox">' +
     (scope === "mine" && myKam() ? 'No events of yours match. Switch to <b>Everyone</b> above to see the whole tracker.' : 'No events match.') +

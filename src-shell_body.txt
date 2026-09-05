@@ -219,10 +219,40 @@
           <option value="upcoming">Not yet run</option>
         </select>
       </div>
+      <div class="field"><label for="amonth">Month</label><select id="amonth"></select></div>
       <div class="field grow"><label for="asearch">Search</label>
         <input id="asearch" type="search" placeholder="Title, venue, objective" autocomplete="off"></div>
     </div>
     <div class="tiles" id="acttiles"></div>
+
+    <div class="chartgrid">
+      <div class="card2">
+        <h3>Spend and events by month</h3>
+        <p class="sub" id="spendsub"></p>
+        <div class="chartbox" id="spendbox"></div>
+      </div>
+      <div class="card2">
+        <h3>Where events are held up</h3>
+        <p class="sub">How far the events in view have got through each approval check.</p>
+        <div class="legend" id="gatelegend"></div>
+        <div class="chartbox" id="gatebox"></div>
+      </div>
+    </div>
+
+    <div class="chartgrid">
+      <div class="card2">
+        <h3>Where the spend sits</h3>
+        <p class="sub" id="reqsub"></p>
+        <div id="reqwrap"></div>
+      </div>
+      <div class="card2">
+        <h3>Approvals, documents and payment</h3>
+        <p class="sub">The state of the events in view, as recorded.</p>
+        <div id="stripbox"></div>
+      </div>
+    </div>
+
+    <h3 style="margin:22px 0 11px;font-size:16px;font-weight:750;">Events <span id="evcount" style="color:var(--ink-3);font-weight:400;font-size:13px;"></span></h3>
     <div class="evlist" id="evlist"></div>
     <p class="tablenote" id="actnote"></p>
   </div></div>

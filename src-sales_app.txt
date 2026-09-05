@@ -219,11 +219,19 @@ function barChart(box, rows, opts){
   var H = P.t + P.b + rows.length * rowH;
   var iw = W - P.l - P.r;
   var max = Math.max.apply(null, rows.map(function(r){ return r.value || 0; }).concat([1]));
+  /* the label column is fixed, so trim a long name to fit it — the full name stays in the tooltip */
+  var maxCh = Math.max(8, Math.floor((P.l - 14) / 6.95));
+  var fit = function(t){
+    if(t.length <= maxCh) return t;
+    var head = Math.ceil((maxCh - 1) * 0.55);
+    return t.slice(0, head).replace(/[ ,\-]+$/, "") + "\u2026" + t.slice(-(maxCh - 1 - head));
+  };
   var svg = ['<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="' + esc(opts.aria) + '">'];
   rows.forEach(function(r, i){
     var yy = P.t + i * rowH, bh = 14;
     var w = r.value ? Math.max(2, (iw * r.value) / max) : 0;
-    svg.push('<text class="axis" x="' + (P.l - 10) + '" y="' + (yy + bh) + '" text-anchor="end" fill="var(--ink-2)" font-size="11.5">' + esc(r.label) + '</text>');
+    var lab = fit(r.label);
+    svg.push('<text class="axis" x="' + (P.l - 10) + '" y="' + (yy + bh) + '" text-anchor="end" fill="var(--ink-2)" font-size="11.5"><title>' + esc(r.label) + '</title>' + esc(lab) + '</text>');
     svg.push('<rect data-i="' + i + '" x="' + P.l + '" y="' + (yy + 4) + '" width="' + w + '" height="' + bh + '" rx="4" fill="' + opts.color + '"/>');
     svg.push('<text class="dlabel" x="' + (P.l + w + 8) + '" y="' + (yy + bh - 1) + '" fill="var(--ink-2)">' + money(r.value) + '</text>');
   });
@@ -571,6 +579,7 @@ function startSales(){
     clearTimeout(rt);
     rt = setTimeout(function(){
       if(!document.getElementById("mod-sales").hidden) renderSales();
+      if(!document.getElementById("mod-activities").hidden) renderActs();
     }, 180);
   });
 }
