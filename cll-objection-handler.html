@@ -3,201 +3,437 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CLL Objection Handler — BeOne Gulf</title>
+<title>CLL Objection Handler</title>
 <style>
-  :root{
-    --ink:#111111;
-    --ink-2:#333333;
-    --ink-3:#555555;
-    --page:#ffffff;
-    --panel:#f2f2f2;
-    --line:#111111;
-    --line-soft:#c9c9c9;
-    --warn-bg:#ffe08a;
-    --warn-ink:#3d2c00;
-    --stop-bg:#b00020;
-    --stop-ink:#ffffff;
-    --flag-bg:#7a2400;
-    --flag-ink:#ffffff;
-    --ok-bg:#e8e8e8;
-    --tap:48px;
-  }
-  html{color-scheme:light;-webkit-text-size-adjust:100%;}
-  *,*::before,*::after{box-sizing:border-box;}
-  body{
-    margin:0;
-    background:var(--page);
-    color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    font-size:17px;
-    line-height:1.45;
-    -webkit-font-smoothing:antialiased;
-  }
-  button,input,textarea{font:inherit;color:inherit;}
-  /* no transitions or animation anywhere, by design */
+/* ============================================================
+   BeOne Gulf — CLL Objection Handler
+   Palette: BeOne navy #10264C, BeOne red #DA2B28.
+   Neutrals biased toward navy so greys read as chosen.
+   Semantic status colours are deliberately separate from the
+   brand red, which is reserved for the compliance banner and
+   the brand mark.
+   Type: system sans for reading, system mono for citations,
+   approval codes and figures — no webfont, so the page still
+   works offline and behind the corporate network.
+   ============================================================ */
+:root{
+  --brand-navy:#10264C;
+  --brand-navy-deep:#0A1B36;
+  --brand-red:#DA2B28;
 
-  /* ---------- Persistent banner ---------- */
-  /* Banner and search travel together as one sticky block, so the search
-     row can never be hidden behind a banner that wraps to two lines. */
-  .stickytop{position:sticky;top:0;z-index:50;background:var(--page);border-bottom:2px solid var(--line);}
-  .banner{
-    background:var(--stop-bg);color:var(--stop-ink);
-    padding:9px 14px;
-    font-weight:700;font-size:14px;line-height:1.25;
-    text-align:center;
-    border-bottom:3px solid #000;
-  }
-  .searchbar{padding:8px 12px;}
-  .searchbar .inner{max-width:820px;margin:0 auto;}
+  --paper:#FFFFFF;
+  --surface:#F4F6FA;
+  --surface-2:#EAEEF6;
+  --line:#D5DCE8;
+  --line-strong:#B4BFD2;
 
-  .wrap{max-width:820px;margin:0 auto;padding:0 12px 96px;}
+  --ink:#14203A;
+  --ink-2:#414D66;
+  --ink-3:#6C7793;
 
-  header.masthead{padding:14px 2px 10px;border-bottom:3px solid var(--line);}
-  h1{margin:0;font-size:22px;line-height:1.2;letter-spacing:-0.01em;}
-  .sub{margin:6px 0 0;font-size:14px;color:var(--ink-3);}
+  --ok:#0F7A5A;
+  --ok-bg:#E4F3ED;
+  --warn:#9A5B00;
+  --warn-bg:#FCF0DC;
+  --stop:#A3161C;
+  --stop-bg:#FBE7E7;
 
-  /* ---------- Controls ---------- */
-  .filters{padding:10px 0 8px;border-bottom:2px solid var(--line-soft);}
-  .searchrow{display:flex;gap:8px;}
-  #q{
-    flex:1;min-width:0;height:var(--tap);
-    padding:0 12px;
-    border:2px solid var(--line);border-radius:0;
-    background:#fff;
-  }
-  #clear{
-    height:var(--tap);min-width:var(--tap);padding:0 12px;
-    border:2px solid var(--line);background:var(--panel);
-    font-weight:700;cursor:pointer;
-  }
-  .cats{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
-  .catbtn{
-    min-height:44px;padding:8px 12px;
-    border:2px solid var(--line);background:#fff;
-    font-size:14px;font-weight:600;cursor:pointer;
-  }
-  .catbtn[aria-pressed="true"]{background:var(--ink);color:#fff;}
-  .count{margin-top:8px;font-size:14px;color:var(--ink-3);}
+  --focus:#2F6FD0;
+  --shadow:0 1px 2px rgba(16,38,76,.06), 0 8px 24px rgba(16,38,76,.06);
 
-  /* ---------- Cards ---------- */
-  .card{border:2px solid var(--line);margin:12px 0;background:#fff;}
-  .card.flagged{border-left:10px solid var(--flag-bg);}
-  .card.noresp{border-left:10px solid var(--stop-bg);}
-  details>summary{
-    list-style:none;cursor:pointer;
-    padding:14px;min-height:var(--tap);
-    display:block;
-  }
-  details>summary::-webkit-details-marker{display:none;}
-  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
-  .tag{font-size:12px;font-weight:700;letter-spacing:.02em;padding:3px 7px;border:1px solid var(--line);text-transform:uppercase;}
-  .tag.cat{background:var(--ok-bg);}
-  .tag.date{background:#fff;color:var(--ink-3);border-color:var(--line-soft);text-transform:none;letter-spacing:0;font-weight:600;}
-  .tag.flag{background:var(--flag-bg);color:var(--flag-ink);border-color:var(--flag-bg);}
-  .tag.none{background:var(--stop-bg);color:var(--stop-ink);border-color:var(--stop-bg);}
-  .obj{font-size:18px;font-weight:700;line-height:1.35;margin:0;}
-  .obj::before{content:"\201C";}
-  .obj::after{content:"\201D";}
-  .hint{margin-top:8px;font-size:13px;color:var(--ink-3);font-weight:600;}
-  details[open]>summary .hint::after{content:" - tap to close";}
-  details:not([open])>summary .hint::after{content:" - tap to open";}
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
 
-  .body{padding:0 14px 14px;border-top:2px solid var(--line-soft);}
-  h3.sec{font-size:13px;text-transform:uppercase;letter-spacing:.06em;margin:16px 0 6px;color:var(--ink-2);}
-  .resp{margin:0;padding:12px;background:var(--panel);border-left:6px solid var(--ink);}
-  .resp p{margin:0 0 10px;}
-  .resp p:last-child{margin:0;}
-  ul.data{margin:0;padding-left:20px;}
-  ul.data li{margin:0 0 7px;}
-  ul.data li:last-child{margin:0;}
-  .keymsg{margin:12px 0 0;padding:10px 12px;border:2px dashed var(--ink);font-weight:700;}
-  .cite{margin:0;padding:10px 12px;background:#fff;border:1px solid var(--line-soft);font-size:14px;}
-  .cite b{display:inline-block;min-width:64px;}
-  .cite div{margin-bottom:5px;}
-  .cite div:last-child{margin-bottom:0;}
-  .note{margin:10px 0 0;padding:10px 12px;background:var(--warn-bg);color:var(--warn-ink);font-size:14px;border:1px solid #8a6d00;}
-  .nores{margin:0;padding:12px;background:var(--stop-bg);color:var(--stop-ink);font-weight:700;}
+  --rail:56px;
+  --tap:44px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0D1626;
+    --surface:#121D31;
+    --surface-2:#18253C;
+    --line:#27364F;
+    --line-strong:#3B4C69;
 
-  .notesbox label{display:block;font-size:13px;text-transform:uppercase;letter-spacing:.06em;margin:16px 0 6px;color:var(--ink-2);font-weight:700;}
-  textarea.notes{
-    width:100%;min-height:88px;padding:10px;
-    border:2px solid var(--line);background:#fffdf5;resize:vertical;
-  }
-  .saved{font-size:13px;color:var(--ink-3);margin-top:4px;min-height:18px;}
+    --ink:#E8EDF6;
+    --ink-2:#AEBACE;
+    --ink-3:#8390A8;
 
-  /* ---------- Footer bar ---------- */
-  .footbar{
-    position:fixed;left:0;right:0;bottom:0;z-index:60;
-    background:var(--page);border-top:3px solid var(--line);
-    padding:8px 12px calc(8px + env(safe-area-inset-bottom));
-    display:flex;gap:8px;justify-content:center;
+    --ok:#4FCFA0;
+    --ok-bg:#0E3327;
+    --warn:#E8B563;
+    --warn-bg:#33260F;
+    --stop:#FF8A83;
+    --stop-bg:#3A1517;
+
+    --focus:#7FB0FF;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
   }
-  .footbar button{
-    flex:1;max-width:280px;min-height:var(--tap);
-    border:2px solid var(--line);background:var(--ink);color:#fff;
-    font-weight:700;cursor:pointer;
+}
+:root[data-theme="dark"]{
+  --paper:#0D1626;
+  --surface:#121D31;
+  --surface-2:#18253C;
+  --line:#27364F;
+  --line-strong:#3B4C69;
+
+  --ink:#E8EDF6;
+  --ink-2:#AEBACE;
+  --ink-3:#8390A8;
+
+  --ok:#4FCFA0;
+  --ok-bg:#0E3327;
+  --warn:#E8B563;
+  --warn-bg:#33260F;
+  --stop:#FF8A83;
+  --stop-bg:#3A1517;
+
+  --focus:#7FB0FF;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+}
+
+*,*::before,*::after{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+  min-height:100dvh;
+}
+button,input,textarea,select{font:inherit;color:inherit;}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+@media (prefers-reduced-motion: reduce){*{transition:none !important;}}
+
+/* ---------- brand bar ---------- */
+.brandbar{
+  background:var(--brand-navy);
+  color:#fff;
+  display:flex;align-items:center;gap:12px;
+  padding:10px 16px;
+  flex:0 0 auto;
+}
+.mark{flex:0 0 auto;display:block;width:30px;height:30px;}
+.brandtext{display:flex;flex-direction:column;line-height:1.15;min-width:0;}
+.brandtext b{font-size:15px;font-weight:800;letter-spacing:-.01em;}
+.brandtext span{font-size:11.5px;color:#A9B8D4;font-family:var(--mono);letter-spacing:.04em;}
+.brandspacer{flex:1 1 auto;}
+.ghost{
+  border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;
+  min-height:36px;padding:0 12px;border-radius:6px;cursor:pointer;
+  font-size:13px;font-weight:600;white-space:nowrap;
+}
+.ghost:hover{background:rgba(255,255,255,.12);}
+
+/* ---------- compliance banner (never removed) ---------- */
+.banner{
+  background:var(--brand-red);color:#fff;
+  padding:8px 16px;
+  font-size:13.5px;font-weight:700;line-height:1.3;text-align:center;
+  flex:0 0 auto;
+}
+
+/* ---------- toolbar ---------- */
+.toolbar{
+  flex:0 0 auto;
+  background:var(--surface);
+  border-bottom:1px solid var(--line);
+  padding:10px 12px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.searchwrap{position:relative;display:flex;gap:8px;}
+.searchwrap svg{
+  position:absolute;left:11px;top:50%;transform:translateY(-50%);
+  width:17px;height:17px;color:var(--ink-3);pointer-events:none;
+}
+#q{
+  flex:1 1 auto;min-width:0;height:var(--tap);
+  padding:0 12px 0 36px;
+  border:1px solid var(--line-strong);border-radius:8px;
+  background:var(--paper);
+}
+#q::placeholder{color:var(--ink-3);}
+.kbd{
+  display:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  font-family:var(--mono);font-size:11px;color:var(--ink-3);
+  border:1px solid var(--line-strong);border-radius:4px;padding:1px 5px;
+}
+@media (min-width:920px){ .kbd{display:block;} #q{padding-right:44px;} }
+
+.chips{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{
+  min-height:32px;padding:4px 10px;
+  border:1px solid var(--line-strong);border-radius:999px;
+  background:var(--paper);color:var(--ink-2);
+  font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.chip:hover{border-color:var(--ink-3);}
+.chip[aria-pressed="true"]{background:var(--brand-navy);border-color:var(--brand-navy);color:#fff;}
+.chip .n{font-family:var(--mono);font-size:11px;opacity:.75;font-variant-numeric:tabular-nums;}
+.chip.status[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);}
+.chip .dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;}
+.dot.warn{background:var(--warn);}
+.dot.stop{background:var(--stop);}
+.chip.clear{border-style:dashed;}
+
+/* ---------- main split ---------- */
+.split{flex:1 1 auto;min-height:0;display:flex;}
+.listpane{
+  width:100%;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  background:var(--paper);
+}
+.detailpane{display:none;}
+@media (min-width:920px){
+  .split{border-top:0;}
+  .listpane{width:390px;flex:0 0 390px;border-right:1px solid var(--line);}
+  .detailpane{display:block;flex:1 1 auto;min-width:0;overflow-y:auto;background:var(--surface);}
+}
+
+.resultline{
+  padding:8px 14px;font-size:12px;color:var(--ink-3);
+  font-family:var(--mono);font-variant-numeric:tabular-nums;
+  border-bottom:1px solid var(--line);
+  position:sticky;top:0;background:var(--paper);z-index:2;
+}
+
+/* ---------- list rows ---------- */
+.row{
+  display:grid;grid-template-columns:4px 1fr;
+  width:100%;text-align:left;
+  background:var(--paper);border:0;border-bottom:1px solid var(--line);
+  cursor:pointer;padding:0;color:inherit;
+}
+.row:hover{background:var(--surface);}
+.row[aria-current="true"]{background:var(--surface-2);}
+.row .stripe{background:var(--ok);}
+.row.warn .stripe{background:var(--warn);}
+.row.stop .stripe{background:var(--stop);}
+.row .rowbody{padding:12px 14px;min-width:0;display:flex;flex-direction:column;gap:6px;}
+.row .eyebrow{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--ink-3);display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.row .otext{
+  font-size:14.5px;font-weight:600;line-height:1.35;color:var(--ink);
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+.row .meta{font-size:11.5px;color:var(--ink-3);font-family:var(--mono);}
+.minitag{
+  font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.06em;
+  padding:2px 5px;border-radius:3px;text-transform:uppercase;
+}
+.minitag.warn{background:var(--warn-bg);color:var(--warn);}
+.minitag.stop{background:var(--stop-bg);color:var(--stop);}
+
+/* ---------- detail ---------- */
+.detailinner{max-width:760px;margin:0 auto;padding:22px 24px 48px;}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;padding:5px 9px;border-radius:5px;
+  border:1px solid transparent;
+}
+.badge.cat{background:var(--surface-2);color:var(--ink-2);border-color:var(--line);}
+.badge.ok{background:var(--ok-bg);color:var(--ok);}
+.badge.warn{background:var(--warn-bg);color:var(--warn);}
+.badge.stop{background:var(--stop-bg);color:var(--stop);}
+
+h1.objection{
+  font-size:25px;line-height:1.28;font-weight:800;letter-spacing:-.015em;
+  margin:0 0 6px;text-wrap:balance;
+}
+h1.objection::before{content:"\201C";}
+h1.objection::after{content:"\201D";}
+.sourceline{
+  font-family:var(--mono);font-size:12px;color:var(--ink-3);
+  margin:0 0 18px;padding-bottom:16px;border-bottom:1px solid var(--line);
+}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px;}
+.act{
+  min-height:38px;padding:0 14px;border-radius:7px;cursor:pointer;
+  border:1px solid var(--line-strong);background:var(--paper);color:var(--ink);
+  font-size:13.5px;font-weight:650;display:inline-flex;align-items:center;gap:7px;
+}
+.act:hover{border-color:var(--ink-3);}
+.act.primary{background:var(--brand-navy);border-color:var(--brand-navy);color:#fff;}
+.act.primary:hover{background:var(--brand-navy-deep);}
+.act[disabled]{opacity:.45;cursor:not-allowed;}
+
+h2.sec{
+  font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3);
+  margin:26px 0 10px;
+}
+.response{
+  background:var(--paper);border:1px solid var(--line);
+  border-left:4px solid var(--brand-navy);
+  border-radius:0 8px 8px 0;padding:16px 18px;
+  display:flex;flex-direction:column;gap:12px;
+}
+.response p{margin:0;}
+.noresponse{
+  background:var(--stop-bg);border:1px solid var(--stop);border-radius:8px;
+  padding:16px 18px;color:var(--stop);font-weight:750;
+  display:flex;align-items:center;gap:10px;
+}
+.keymsg{
+  margin-top:14px;padding:14px 16px;border-radius:8px;
+  background:var(--brand-navy);color:#fff;font-weight:650;line-height:1.45;
+}
+.keymsg em{display:block;font-family:var(--mono);font-size:10.5px;font-style:normal;
+  letter-spacing:.1em;text-transform:uppercase;color:#A9B8D4;margin-bottom:5px;}
+ul.data{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px;}
+ul.data li{
+  padding:11px 14px;background:var(--paper);border:1px solid var(--line);
+  font-size:14.5px;line-height:1.5;
+}
+ul.data li:first-child{border-radius:8px 8px 0 0;}
+ul.data li:last-child{border-radius:0 0 8px 8px;}
+ul.data li+li{border-top:0;}
+ul.data li b{font-family:var(--mono);font-size:13px;}
+
+.cites{display:flex;flex-direction:column;gap:10px;}
+.cite{
+  background:var(--paper);border:1px solid var(--line);border-radius:8px;
+  padding:12px 14px;font-size:13px;
+  display:grid;grid-template-columns:auto 1fr;gap:4px 12px;
+}
+.cite dt{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--ink-3);padding-top:2px;
+}
+.cite dd{margin:0;font-family:var(--mono);font-size:12.5px;line-height:1.5;color:var(--ink-2);word-break:break-word;}
+.warnnote{
+  margin-top:16px;padding:14px 16px;border-radius:8px;
+  background:var(--warn-bg);border:1px solid var(--warn);
+  font-size:14px;line-height:1.5;color:var(--ink);
+}
+.warnnote b{color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.07em;
+  text-transform:uppercase;display:block;margin-bottom:5px;}
+
+.notes textarea{
+  width:100%;min-height:110px;padding:12px 14px;
+  border:1px solid var(--line-strong);border-radius:8px;
+  background:var(--paper);resize:vertical;line-height:1.5;font-size:14.5px;
+}
+.notes .saved{
+  font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-top:6px;min-height:16px;
+}
+
+/* ---------- mobile detail as a sheet ---------- */
+@media (max-width:919px){
+  .detailpane{
+    display:none;position:fixed;inset:0;z-index:80;
+    background:var(--paper);overflow-y:auto;
+    flex-direction:column;
   }
-  .footbar button.secondary{background:#fff;color:var(--ink);}
-  .empty{padding:28px 4px;font-weight:700;}
-  #fallback{width:100%;min-height:220px;margin-top:10px;border:2px solid var(--line);padding:10px;display:none;}
-  .srcnote{margin:22px 0 0;padding:12px;border:2px solid var(--line-soft);font-size:14px;color:var(--ink-2);}
-  .srcnote h2{font-size:15px;margin:0 0 8px;}
-  .srcnote ul{margin:0;padding-left:20px;}
-  .srcnote li{margin-bottom:6px;}
+  .detailpane.open{display:flex;}
+  .detailinner{padding:16px 16px 40px;}
+  h1.objection{font-size:21px;}
+  .backbar{
+    position:sticky;top:0;z-index:5;background:var(--brand-navy);
+    padding:8px 12px;display:flex;align-items:center;gap:10px;flex:0 0 auto;
+  }
+  .backbar button{
+    border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;
+    min-height:var(--tap);padding:0 14px;border-radius:7px;cursor:pointer;
+    font-weight:650;font-size:14px;display:inline-flex;align-items:center;gap:7px;
+  }
+  .backbar span{color:#A9B8D4;font-family:var(--mono);font-size:11.5px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+}
+/* the compliance banner must stay visible even inside the mobile sheet,
+   which covers the page-level banner */
+.sheetbanner{display:none;}
+@media (max-width:919px){
+  .sheetbanner{
+    display:block;position:sticky;top:60px;z-index:4;
+    background:var(--brand-red);color:#fff;
+    padding:7px 14px;font-size:12px;font-weight:700;line-height:1.3;text-align:center;
+    flex:0 0 auto;
+  }
+}
+@media (min-width:920px){ .backbar{display:none;} }
+
+.empty{padding:40px 24px;text-align:center;color:var(--ink-3);}
+.empty b{display:block;color:var(--ink);font-size:16px;margin-bottom:6px;}
+#fallback{
+  width:100%;min-height:200px;margin-top:12px;padding:12px;
+  border:1px solid var(--line-strong);border-radius:8px;background:var(--paper);
+  font-family:var(--mono);font-size:12.5px;display:none;
+}
+.toast{
+  position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
+  background:var(--ink);color:var(--paper);
+  padding:11px 18px;border-radius:8px;font-size:13.5px;font-weight:600;
+  z-index:200;box-shadow:var(--shadow);max-width:90vw;text-align:center;
+}
+.toast[hidden]{display:none;}
 </style>
 </head>
 <body>
 
-<div class="stickytop">
-  <div class="banner">Internal draft. Not MRC approved. Do not use with HCPs until reviewed.</div>
-  <div class="searchbar"><div class="inner">
-    <div class="searchrow">
-      <input id="q" type="search" placeholder="Search objections, responses, trials&hellip;" autocomplete="off" aria-label="Search objections, responses and trial names">
-      <button id="clear" type="button" aria-label="Clear search">&times;</button>
+<header class="brandbar">
+  <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+    <rect x="0" y="0" width="64" height="64" rx="15" fill="#DA2B28"/>
+    <path d="M32 6 C25 20 18 27 4 32 C18 37 25 44 32 58 C39 44 46 37 60 32 C46 27 39 20 32 6 Z"
+          fill="#fff"/>
+    <path d="M32 20 C29 27 26 30 19 32 C26 34 29 37 32 44 C35 37 38 34 45 32 C38 30 35 27 32 20 Z"
+          fill="#DA2B28"/>
+  </svg>
+  <div class="brandtext">
+    <b>BeOne&nbsp;&middot; CLL Objection Handler</b>
+    <span>Gulf field team &middot; BRUKINSA (zanubrutinib)</span>
+  </div>
+  <div class="brandspacer"></div>
+  <button class="ghost" id="export" type="button">Export notes</button>
+</header>
+
+<div class="banner">Internal draft. Not MRC approved. Do not use with HCPs until reviewed.</div>
+
+<div class="toolbar">
+  <div class="searchwrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+      <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
+    </svg>
+    <input id="q" type="search" autocomplete="off" spellcheck="false"
+           placeholder="Search objections, responses, trials, citations"
+           aria-label="Search objections, responses, trial names and citations">
+    <span class="kbd">/</span>
+  </div>
+  <div class="chips" id="statuschips"></div>
+  <div class="chips" id="catchips"></div>
+</div>
+
+<div class="split">
+  <div class="listpane">
+    <div class="resultline" id="resultline"></div>
+    <div id="list"></div>
+  </div>
+  <div class="detailpane" id="detailpane">
+    <div class="backbar">
+      <button id="back" type="button">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        All objections
+      </button>
+      <span id="backlabel"></span>
     </div>
-  </div></div>
-</div>
-
-<div class="wrap">
-  <header class="masthead">
-    <h1>CLL Objection Handler</h1>
-    <p class="sub">BRUKINSA (zanubrutinib) &middot; BeOne Gulf field team. Every response below is taken from an approved source file and carries its citation. Nothing on this page is newly written clinical content.</p>
-  </header>
-
-  <div class="filters">
-    <div class="cats" id="cats"></div>
-    <div class="count" id="count"></div>
-  </div>
-
-  <main id="list"></main>
-
-  <div class="srcnote">
-    <h2>Source files behind this tool</h2>
-    <ul>
-      <li><b>GCC BRUKINSA CLL Objection Handler_V5.0 (x2 fixed duration objections) - APPROVED.pdf</b> &mdash; cover dated <b>October 2024</b>, code 0324-BRU-PRC-052. Predates the AMPLIFY read-out.</li>
-      <li><b>Objection Handler AMPLIFY.pptx</b> &mdash; 1225-BRU-PRC-030, <b>April 2026</b>. Global commercial field guidance. Newest source.</li>
-      <li><b>Objection hadler.pdf</b> / <b>Objection hadler.pptx</b> &mdash; <b>no date and no approval code printed in the file</b>; file last modified January 2026 and cites AMPLIFY (NEJM 2025).</li>
-      <li><b>Zanubrutinib Indirect Treatment Comparisons_Global_MRC-approved Aug 2025.pdf</b> &mdash; footer reads &ldquo;Updated <b>July 2025</b>&rdquo;, code 0324-BGB-3111-MRC-046. <b>Medical, non-promotional</b> &mdash; the deck states it is &ldquo;not for any promotional purpose&rdquo;.</li>
-      <li><b>Zanubrutinib Pooled Safety Data - MA Slides_MRC-approved May 2025.pptx</b> &mdash; 0524-BGB-3111-MRC-007, <b>May 2025</b>. <b>Medical, reactive use only.</b></li>
-      <li><b>ZANU ALL INDICATIONS.pdf</b> &mdash; <b>no slide numbers printed in the file</b>; citations below use section headings. Contains ASCO/EHA 2025 data.</li>
-      <li><b>Zanubrutinib data in WM.pdf</b> &mdash; 0922-BGB-3111-MRC-079; footers read variously February / April / September <b>2024</b>. Waldenstr&ouml;m&rsquo;s macroglobulinemia, not CLL.</li>
-    </ul>
+    <div class="sheetbanner">Internal draft. Not MRC approved. Do not use with HCPs until reviewed.</div>
+    <div id="detail"></div>
   </div>
 </div>
 
-<div class="footbar">
-  <button id="export" type="button">Export my field notes</button>
-  <button id="expandall" type="button" class="secondary">Expand all</button>
-</div>
-
+<div class="toast" id="toast" hidden></div>
 <script>
-/* ------------------------------------------------------------------
-   CARD DATA
-   Every "resp" and every figure below is transcribed from an approved
-   source file. Nothing here is written from general knowledge.
-   Where a source does not answer the objection, resp is null and the
-   card renders "NO APPROVED RESPONSE ON FILE".
-   ------------------------------------------------------------------ */
 var CARDS = [
 
 /* ============ FIXED DURATION ============ */
@@ -1002,11 +1238,15 @@ var CARDS = [
 
 /* ------------------------------------------------------------------
    APP
+   The card data above is the deliverable; this layer only finds,
+   displays and annotates it. No clinical content is generated here.
    ------------------------------------------------------------------ */
-var CATS = ["Efficacy","Safety and tolerability","Fixed duration","Comparative and ITC","Access and cost","Dosing and administration","Other"];
+var CATS = ["Fixed duration","Efficacy","Safety and tolerability","Comparative and ITC","Access and cost","Dosing and administration","Other"];
 var NOTES_KEY = "beone_cll_objection_notes_v1";
-var activeCats = {};
+
+var state = { q:"", cats:{}, status:null, selected:null };
 var notes = {};
+var toastTimer = null;
 
 function loadNotes(){
   try{ notes = JSON.parse(localStorage.getItem(NOTES_KEY) || "{}") || {}; }
@@ -1016,212 +1256,473 @@ function saveNotes(){
   try{ localStorage.setItem(NOTES_KEY, JSON.stringify(notes)); return true; }
   catch(e){ return false; }
 }
-
 function esc(s){
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
+function toast(msg){
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.hidden = true; }, 2600);
+}
 
-function haystack(c){
-  var parts = [c.obj, c.cat, c.key || "", (c.trials||[]).join(" ")];
+/* status of a card drives the severity stripe and the badges */
+function statusOf(c){
+  if(!c.resp) return "stop";
+  if(c.predates) return "warn";
+  return "ok";
+}
+var STATUS_LABEL = {
+  ok:   "Current approved response",
+  warn: "Predates AMPLIFY, verify before use",
+  stop: "No approved response on file"
+};
+
+CARDS.forEach(function(c){
+  var parts = [c.obj, c.cat, c.key || "", (c.trials||[]).join(" "), c.date];
   if(c.resp) parts = parts.concat(c.resp);
   parts = parts.concat(c.data || []);
-  (c.cites||[]).forEach(function(ct){ parts.push(ct.trial); parts.push(ct.file); parts.push(ct.loc); });
+  (c.cites||[]).forEach(function(ct){ parts.push(ct.trial, ct.file, ct.loc); });
   if(c.note) parts.push(c.note);
-  parts.push(c.date);
-  return parts.join("  ").toLowerCase();
-}
-CARDS.forEach(function(c){ c._hay = haystack(c); });
+  c._hay = parts.join("  ").toLowerCase();
+  c._status = statusOf(c);
+});
 
-function buildCats(){
-  var box = document.getElementById("cats");
-  CATS.forEach(function(cat){
-    var n = CARDS.filter(function(c){ return c.cat === cat; }).length;
-    var b = document.createElement("button");
-    b.type = "button";
-    b.className = "catbtn";
-    b.setAttribute("aria-pressed","false");
-    b.textContent = cat + " (" + n + ")";
-    b.addEventListener("click", function(){
-      activeCats[cat] = !activeCats[cat];
-      b.setAttribute("aria-pressed", activeCats[cat] ? "true" : "false");
-      render();
-    });
-    box.appendChild(b);
+function isVerify(c){ return c.predates === true; }
+function isNoResp(c){ return !c.resp; }
+
+function matches(){
+  var terms = state.q ? state.q.toLowerCase().split(/\s+/).filter(Boolean) : [];
+  var picked = CATS.filter(function(k){ return state.cats[k]; });
+  return CARDS.filter(function(c){
+    if(picked.length && picked.indexOf(c.cat) === -1) return false;
+    if(state.status === "warn" && !isVerify(c)) return false;
+    if(state.status === "stop" && !isNoResp(c)) return false;
+    for(var i=0;i<terms.length;i++){ if(c._hay.indexOf(terms[i]) === -1) return false; }
+    return true;
   });
 }
 
-function cardHTML(c){
-  var flagged = c.predates === true;
-  var noresp = !c.resp;
-  var cls = "card" + (noresp ? " noresp" : (flagged ? " flagged" : ""));
+/* ---------- chips ---------- */
+function buildChips(){
+  var sc = document.getElementById("statuschips");
+  [["warn","Verify before use"],["stop","No approved response"]].forEach(function(pair){
+    var key = pair[0], label = pair[1];
+    var n = CARDS.filter(key === "warn" ? isVerify : isNoResp).length;
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "chip status";
+    b.setAttribute("aria-pressed","false");
+    b.innerHTML = '<span class="dot ' + key + '"></span>' + esc(label) + ' <span class="n">' + n + '</span>';
+    b.addEventListener("click", function(){
+      state.status = (state.status === key) ? null : key;
+      syncChips(); render();
+    });
+    b.dataset.status = key;
+    sc.appendChild(b);
+  });
 
-  var tags = '<div class="tags">';
-  tags += '<span class="tag cat">' + esc(c.cat) + '</span>';
-  if(noresp) tags += '<span class="tag none">No approved response on file</span>';
-  if(flagged) tags += '<span class="tag flag">Predates AMPLIFY, verify before use</span>';
-  tags += '<span class="tag date">Source date: ' + esc(c.date) + '</span>';
-  tags += '</div>';
+  var cc = document.getElementById("catchips");
+  CATS.forEach(function(cat){
+    var n = CARDS.filter(function(c){ return c.cat === cat; }).length;
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "chip";
+    b.setAttribute("aria-pressed","false");
+    b.innerHTML = esc(cat) + ' <span class="n">' + n + '</span>';
+    b.addEventListener("click", function(){
+      state.cats[cat] = !state.cats[cat];
+      syncChips(); render();
+    });
+    b.dataset.cat = cat;
+    cc.appendChild(b);
+  });
 
-  var h = '<article class="' + cls + '" data-id="' + esc(c.id) + '">';
-  h += '<details><summary>' + tags + '<p class="obj">' + esc(c.obj) + '</p><div class="hint">Approved response</div></summary>';
-  h += '<div class="body">';
+  var clear = document.createElement("button");
+  clear.type = "button"; clear.className = "chip clear"; clear.id = "clearall";
+  clear.textContent = "Clear filters";
+  clear.addEventListener("click", function(){
+    state.q = ""; state.cats = {}; state.status = null;
+    document.getElementById("q").value = "";
+    syncChips(); render();
+  });
+  cc.appendChild(clear);
+}
 
-  h += '<h3 class="sec">Approved response</h3>';
-  if(noresp){
-    h += '<p class="nores">NO APPROVED RESPONSE ON FILE</p>';
+function syncChips(){
+  document.querySelectorAll("#statuschips .chip").forEach(function(b){
+    b.setAttribute("aria-pressed", state.status === b.dataset.status ? "true" : "false");
+  });
+  document.querySelectorAll("#catchips .chip[data-cat]").forEach(function(b){
+    b.setAttribute("aria-pressed", state.cats[b.dataset.cat] ? "true" : "false");
+  });
+  var any = state.q || state.status || CATS.some(function(k){ return state.cats[k]; });
+  document.getElementById("clearall").style.display = any ? "" : "none";
+}
+
+/* ---------- list ---------- */
+function rowHTML(c){
+  var st = c._status;
+  var tags = "";
+  if(isVerify(c)) tags += '<span class="minitag warn">Verify</span>';
+  if(isNoResp(c)) tags += '<span class="minitag stop">No response</span>';
+  return '<button class="row ' + st + '" type="button" data-id="' + esc(c.id) + '"' +
+         (state.selected === c.id ? ' aria-current="true"' : '') + '>' +
+    '<span class="stripe"></span>' +
+    '<span class="rowbody">' +
+      '<span class="eyebrow">' + esc(c.cat) + tags + '</span>' +
+      '<span class="otext">' + esc(c.obj) + '</span>' +
+      '<span class="meta">' + esc(shortDate(c.date)) + '</span>' +
+    '</span></button>';
+}
+
+/* the date field is a full sentence on some cards; the list only needs the gist */
+function shortDate(d){
+  if(!d) return "";
+  if(/no source/i.test(d)) return "No source on file";
+  var m = d.match(/((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4})/);
+  if(m) return m[1];
+  var y = d.match(/\b(20\d\d)\b/);
+  return y ? y[1] : d.slice(0, 40);
+}
+
+function render(){
+  var out = matches();
+  var list = document.getElementById("list");
+
+  if(!out.length){
+    list.innerHTML = '<div class="empty"><b>Nothing matches</b>Clear the search or the filters to see all 37 objections.</div>';
   } else {
-    h += '<div class="resp">';
+    list.innerHTML = out.map(rowHTML).join("");
+  }
+
+  var warn = out.filter(isVerify).length;
+  var stop = out.filter(isNoResp).length;
+  document.getElementById("resultline").textContent =
+    out.length + " of " + CARDS.length + " objections" +
+    (warn ? "  ·  " + warn + " verify" : "") +
+    (stop ? "  ·  " + stop + " no response" : "");
+
+  syncChips();
+
+  /* keep a sensible selection so the desktop detail pane is never blank */
+  if(window.innerWidth >= 920){
+    var stillThere = out.some(function(c){ return c.id === state.selected; });
+    if(!stillThere) select(out.length ? out[0].id : null, true);
+    else markCurrent();
+  } else {
+    markCurrent();
+  }
+}
+
+function markCurrent(){
+  document.querySelectorAll(".row").forEach(function(r){
+    if(r.dataset.id === state.selected) r.setAttribute("aria-current","true");
+    else r.removeAttribute("aria-current");
+  });
+}
+
+/* ---------- detail ---------- */
+function byId(id){ for(var i=0;i<CARDS.length;i++){ if(CARDS[i].id === id) return CARDS[i]; } return null; }
+
+function detailHTML(c){
+  var st = c._status;
+  var h = '<div class="detailinner">';
+
+  h += '<div class="badges">';
+  h += '<span class="badge cat">' + esc(c.cat) + '</span>';
+  if(isNoResp(c)) h += '<span class="badge stop">' + esc(STATUS_LABEL.stop) + '</span>';
+  if(isVerify(c)) h += '<span class="badge warn">' + esc(STATUS_LABEL.warn) + '</span>';
+  if(!isNoResp(c) && !isVerify(c)) h += '<span class="badge ok">' + esc(STATUS_LABEL.ok) + '</span>';
+  h += '</div>';
+
+  h += '<h1 class="objection">' + esc(c.obj) + '</h1>';
+  h += '<p class="sourceline">Source date &mdash; ' + esc(c.date) + '</p>';
+
+  h += '<div class="actions">';
+  h += '<button class="act primary" type="button" data-copy="response"' + (c.resp ? '' : ' disabled') + '>'
+     + '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>'
+     + 'Copy response + citation</button>';
+  h += '<button class="act" type="button" data-copy="citation">Copy citation only</button>';
+  h += '</div>';
+
+  h += '<h2 class="sec">Approved response</h2>';
+  if(!c.resp){
+    h += '<div class="noresponse">'
+       + '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>'
+       + 'NO APPROVED RESPONSE ON FILE</div>';
+  } else {
+    h += '<div class="response">';
     c.resp.forEach(function(p){ h += '<p>' + esc(p) + '</p>'; });
     h += '</div>';
-    if(c.key) h += '<p class="keymsg">Key message: ' + esc(c.key) + '</p>';
+    if(c.key) h += '<div class="keymsg"><em>Key message</em>' + esc(c.key) + '</div>';
   }
 
   if(c.data && c.data.length){
-    h += '<h3 class="sec">' + (noresp ? "What is on file" : "Supporting data points") + '</h3><ul class="data">';
+    h += '<h2 class="sec">' + (c.resp ? "Supporting data points" : "What is on file") + '</h2>';
+    h += '<ul class="data">';
     c.data.forEach(function(d){ h += '<li>' + esc(d) + '</li>'; });
     h += '</ul>';
   }
 
-  h += '<h3 class="sec">Citation</h3>';
+  h += '<h2 class="sec">Citation</h2>';
   if(!c.cites || !c.cites.length){
-    h += '<p class="cite">No source file in this set answers this objection.</p>';
+    h += '<div class="cite"><dt>Source</dt><dd>No source file in this set answers this objection.</dd></div>';
   } else {
+    h += '<div class="cites">';
     c.cites.forEach(function(ct){
-      h += '<div class="cite">';
-      h += '<div><b>Trial:</b> ' + esc(ct.trial) + '</div>';
-      h += '<div><b>File:</b> ' + esc(ct.file) + '</div>';
-      h += '<div><b>Location:</b> ' + esc(ct.loc) + '</div>';
-      h += '</div>';
+      h += '<dl class="cite">';
+      h += '<dt>Trial</dt><dd>' + esc(ct.trial) + '</dd>';
+      h += '<dt>File</dt><dd>' + esc(ct.file) + '</dd>';
+      h += '<dt>Location</dt><dd>' + esc(ct.loc) + '</dd>';
+      h += '</dl>';
     });
+    h += '</div>';
   }
 
-  if(c.note) h += '<p class="note"><b>Read before use:</b> ' + esc(c.note) + '</p>';
+  if(c.note){
+    h += '<div class="warnnote"><b>Read before use</b>' + esc(c.note) + '</div>';
+  }
 
-  h += '<div class="notesbox"><label for="n_' + esc(c.id) + '">Field notes - what worked, what did not</label>';
-  h += '<textarea class="notes" id="n_' + esc(c.id) + '" data-note="' + esc(c.id) + '" placeholder="Saved on this device only.">' + esc(notes[c.id] || "") + '</textarea>';
-  h += '<div class="saved" id="s_' + esc(c.id) + '"></div></div>';
+  h += '<h2 class="sec">Field notes</h2>';
+  h += '<div class="notes">';
+  h += '<textarea id="noteinput" data-id="' + esc(c.id) + '" placeholder="What worked, what did not. Saved on this device only."></textarea>';
+  h += '<div class="saved" id="savedmsg"></div>';
+  h += '</div>';
 
-  h += '</div></details></article>';
+  h += '<textarea id="fallback" readonly aria-label="Exported field notes"></textarea>';
+  h += '</div>';
   return h;
 }
 
-function render(){
-  var q = document.getElementById("q").value.trim().toLowerCase();
-  var terms = q ? q.split(/\s+/) : [];
-  var picked = CATS.filter(function(c){ return activeCats[c]; });
+function select(id, keepScroll){
+  state.selected = id;
+  var pane = document.getElementById("detailpane");
+  var host = document.getElementById("detail");
+  var c = id ? byId(id) : null;
 
-  var out = CARDS.filter(function(c){
-    if(picked.length && picked.indexOf(c.cat) === -1) return false;
-    for(var i=0;i<terms.length;i++){ if(c._hay.indexOf(terms[i]) === -1) return false; }
-    return true;
-  });
-
-  var list = document.getElementById("list");
-  if(!out.length){
-    list.innerHTML = '<p class="empty">No cards match. Clear the search or the category filters.</p>';
-  } else {
-    list.innerHTML = out.map(cardHTML).join("");
+  if(!c){
+    host.innerHTML = '<div class="empty"><b>No objection selected</b>Pick one from the list.</div>';
+    return;
   }
-
-  var noResp = out.filter(function(c){ return !c.resp; }).length;
-  var flagged = out.filter(function(c){ return c.predates; }).length;
-  document.getElementById("count").textContent =
-    out.length + " of " + CARDS.length + " cards" +
-    (flagged ? " | " + flagged + " predate AMPLIFY" : "") +
-    (noResp ? " | " + noResp + " with no approved response" : "");
+  host.innerHTML = detailHTML(c);
+  document.getElementById("noteinput").value = notes[c.id] || "";
+  document.getElementById("backlabel").textContent = c.cat;
+  if(window.innerWidth >= 920 && !keepScroll) pane.scrollTop = 0;
+  if(window.innerWidth >= 920) pane.scrollTop = 0;
+  markCurrent();
 }
 
-/* ---- events ---- */
-document.getElementById("q").addEventListener("input", render);
-document.getElementById("clear").addEventListener("click", function(){
-  document.getElementById("q").value = "";
-  render();
-  document.getElementById("q").focus();
-});
-
-document.getElementById("list").addEventListener("input", function(e){
-  var t = e.target;
-  if(t && t.dataset && t.dataset.note){
-    var id = t.dataset.note;
-    if(t.value.trim() === ""){ delete notes[id]; } else { notes[id] = t.value; }
-    var ok = saveNotes();
-    var s = document.getElementById("s_" + id);
-    if(s) s.textContent = ok ? "Saved on this device." : "Could not save - this browser is blocking storage.";
+function openDetail(id){
+  select(id);
+  if(window.innerWidth < 920){
+    var pane = document.getElementById("detailpane");
+    pane.classList.add("open");
+    pane.scrollTop = 0;
+    document.body.style.overflow = "hidden";
+    var b = document.getElementById("back");
+    if(b) b.focus();
   }
-});
+}
+function closeDetail(){
+  document.getElementById("detailpane").classList.remove("open");
+  document.body.style.overflow = "";
+  var r = document.querySelector('.row[data-id="' + state.selected + '"]');
+  if(r) r.focus();
+}
 
-document.getElementById("expandall").addEventListener("click", function(){
-  var ds = document.querySelectorAll("#list details");
-  var anyClosed = false;
-  for(var i=0;i<ds.length;i++){ if(!ds[i].open){ anyClosed = true; break; } }
-  for(var j=0;j<ds.length;j++){ ds[j].open = anyClosed; }
-  this.textContent = anyClosed ? "Collapse all" : "Expand all";
-});
+/* ---------- copy ---------- */
+function citationText(c){
+  if(!c.cites || !c.cites.length) return "No source file answers this objection.";
+  return c.cites.map(function(ct){
+    return ct.trial + " | " + ct.file + " | " + ct.loc;
+  }).join("\n");
+}
+function responseText(c){
+  var L = [];
+  L.push("OBJECTION: " + c.obj);
+  L.push("");
+  if(c.resp){
+    L.push("APPROVED RESPONSE:");
+    c.resp.forEach(function(p){ L.push("- " + p); });
+    if(c.key){ L.push(""); L.push("KEY MESSAGE: " + c.key); }
+  } else {
+    L.push("NO APPROVED RESPONSE ON FILE");
+  }
+  if(c.data && c.data.length){
+    L.push("");
+    L.push(c.resp ? "SUPPORTING DATA:" : "WHAT IS ON FILE:");
+    c.data.forEach(function(d){ L.push("- " + d); });
+  }
+  L.push("");
+  L.push("CITATION:");
+  L.push(citationText(c));
+  L.push("");
+  L.push("SOURCE DATE: " + c.date);
+  if(c.predates) L.push("FLAG: PREDATES AMPLIFY, VERIFY BEFORE USE");
+  if(c.note){ L.push(""); L.push("READ BEFORE USE: " + c.note); }
+  L.push("");
+  L.push("Internal draft. Not MRC approved. Do not use with HCPs until reviewed.");
+  return L.join("\n");
+}
 
+function copyText(text, label){
+  function ok(){ toast(label + " copied"); }
+  function fail(){ toast("Could not copy on this device"); }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(ok, function(){ legacyCopy(text) ? ok() : fail(); });
+  } else {
+    legacyCopy(text) ? ok() : fail();
+  }
+}
+function legacyCopy(text){
+  try{
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly","");
+    ta.style.position = "fixed"; ta.style.top = "-1000px";
+    document.body.appendChild(ta);
+    ta.select();
+    var okc = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return okc;
+  }catch(e){ return false; }
+}
+
+/* ---------- notes export ---------- */
 function notesText(){
-  var lines = [];
-  lines.push("BeOne Gulf - CLL Objection Handler - field notes export");
-  lines.push("Internal draft. Not MRC approved. Do not use with HCPs until reviewed.");
-  lines.push("Exported: " + new Date().toString());
-  lines.push("");
+  var L = [];
+  L.push("BeOne Gulf - CLL Objection Handler - field notes export");
+  L.push("Internal draft. Not MRC approved. Do not use with HCPs until reviewed.");
+  L.push("Exported: " + new Date().toString());
+  L.push("");
   var n = 0;
   CARDS.forEach(function(c){
     var v = notes[c.id];
     if(v && v.trim()){
       n++;
-      lines.push("----------------------------------------------------------");
-      lines.push("[" + c.cat + "]" + (c.predates ? "  [PREDATES AMPLIFY, VERIFY BEFORE USE]" : "") + (c.resp ? "" : "  [NO APPROVED RESPONSE ON FILE]"));
-      lines.push("OBJECTION: " + c.obj);
-      if(c.cites && c.cites.length){
-        c.cites.forEach(function(ct){
-          lines.push("CITATION: " + ct.trial + " | " + ct.file + " | " + ct.loc);
-        });
-      }
-      lines.push("NOTE:");
-      lines.push(v.trim());
-      lines.push("");
+      L.push("----------------------------------------------------------");
+      var flags = [];
+      if(isNoResp(c)) flags.push("NO APPROVED RESPONSE ON FILE");
+      if(isVerify(c)) flags.push("PREDATES AMPLIFY, VERIFY BEFORE USE");
+      L.push("[" + c.cat + "]" + (flags.length ? "  " + flags.join("  |  ") : ""));
+      L.push("OBJECTION: " + c.obj);
+      L.push("CITATION: " + citationText(c).replace(/\n/g, "\n          "));
+      L.push("NOTE:");
+      L.push(v.trim());
+      L.push("");
     }
   });
-  if(!n){
-    lines.push("(No field notes saved on this device yet.)");
-  } else {
-    lines.push("----------------------------------------------------------");
-    lines.push("Total notes: " + n);
-  }
-  return lines.join("\n");
+  if(!n) L.push("(No field notes saved on this device yet.)");
+  else { L.push("----------------------------------------------------------"); L.push("Total notes: " + n); }
+  return L.join("\n");
 }
 
-document.getElementById("export").addEventListener("click", function(){
+function showNotesInline(text, msg){
+  if(!state.selected && CARDS.length) openDetail(CARDS[0].id);
+  var fb = document.getElementById("fallback");
+  if(!fb){ toast(msg); return; }
+  fb.style.display = "block";
+  fb.value = text;
+  fb.scrollIntoView({block:"center"});
+  fb.focus(); fb.select();
+  toast(msg);
+}
+
+function doExport(){
   var text = notesText();
   var name = "cll-objection-handler-field-notes-" + new Date().toISOString().slice(0,10) + ".txt";
-  var done = false;
+
+  /* Published pages cannot start a download themselves, so the notes go out
+     through the downloads capability. Opened as a local file there is no
+     capability and the ordinary blob download works. */
+  if(window.claude && typeof window.claude.use === "function"){
+    window.claude.use("downloads").then(function(dl){
+      if(!dl){ showNotesInline(text, "Copy the notes below"); return; }
+      dl.save({filename:name, data:text}).then(function(){
+        toast("Notes saved");
+      }).catch(function(err){
+        var code = err && err.code;
+        if(code === "declined"){ toast("Save cancelled"); return; }
+        if(code === "rate_limited"){ toast("A save prompt is already open"); return; }
+        showNotesInline(text, "Copy the notes below");
+      });
+    }).catch(function(){ showNotesInline(text, "Copy the notes below"); });
+    return;
+  }
   try{
     var blob = new Blob([text], {type:"text/plain;charset=utf-8"});
     var url = URL.createObjectURL(blob);
     var a = document.createElement("a");
     a.href = url; a.download = name;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
-    done = true;
-  }catch(e){ done = false; }
+    toast("Notes downloaded");
+  }catch(e){
+    showNotesInline(text, "Copy the notes below");
+  }
+}
 
-  if(!done){
-    var fb = document.getElementById("fallback");
-    fb.style.display = "block";
-    fb.value = text;
-    fb.focus();
-    fb.select();
+/* ---------- events ---------- */
+document.getElementById("q").addEventListener("input", function(){
+  state.q = this.value.trim();
+  render();
+});
+document.getElementById("list").addEventListener("click", function(e){
+  var row = e.target.closest ? e.target.closest(".row") : null;
+  if(row) openDetail(row.dataset.id);
+});
+document.getElementById("back").addEventListener("click", closeDetail);
+document.getElementById("export").addEventListener("click", doExport);
+
+document.getElementById("detail").addEventListener("input", function(e){
+  var t = e.target;
+  if(t && t.id === "noteinput"){
+    var id = t.dataset.id;
+    if(t.value.trim() === "") delete notes[id]; else notes[id] = t.value;
+    var s = document.getElementById("savedmsg");
+    if(s) s.textContent = saveNotes() ? "Saved on this device" : "This browser is blocking storage";
+  }
+});
+document.getElementById("detail").addEventListener("click", function(e){
+  var b = e.target.closest ? e.target.closest("[data-copy]") : null;
+  if(!b) return;
+  var c = byId(state.selected);
+  if(!c) return;
+  if(b.dataset.copy === "citation") copyText(citationText(c), "Citation");
+  else copyText(responseText(c), "Response and citation");
+});
+
+document.addEventListener("keydown", function(e){
+  var typing = /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName);
+  if(e.key === "/" && !typing){ e.preventDefault(); document.getElementById("q").focus(); return; }
+  if(e.key === "Escape"){
+    if(window.innerWidth < 920 && document.getElementById("detailpane").classList.contains("open")){ closeDetail(); return; }
+    if(typing && document.activeElement.id === "q"){ document.activeElement.blur(); }
+    return;
+  }
+  if((e.key === "ArrowDown" || e.key === "ArrowUp") && !(typing && document.activeElement.tagName === "TEXTAREA")){
+    var rows = Array.prototype.slice.call(document.querySelectorAll(".row"));
+    if(!rows.length) return;
+    e.preventDefault();
+    var i = rows.findIndex(function(r){ return r.dataset.id === state.selected; });
+    i = (e.key === "ArrowDown") ? Math.min(rows.length - 1, i + 1) : Math.max(0, i - 1);
+    var id = rows[i].dataset.id;
+    if(window.innerWidth >= 920){ select(id); rows[i].scrollIntoView({block:"nearest"}); }
+    else { rows[i].focus(); }
+  }
+});
+
+window.addEventListener("resize", function(){
+  if(window.innerWidth >= 920){
+    document.getElementById("detailpane").classList.remove("open");
+    document.body.style.overflow = "";
+    if(!state.selected){ var m = matches(); if(m.length) select(m[0].id); }
   }
 });
 
 loadNotes();
-buildCats();
+buildChips();
 render();
 </script>
-
-<textarea id="fallback" readonly aria-label="Field notes export text"></textarea>
-
 </body>
 </html>
