@@ -451,21 +451,72 @@ function renderHome(){
   }).join("");
 }
 
-/* ---------- module switching ---------- */
-function showModule(name){
-  ["home","objections","sales","entry","allinone"].forEach(function(m){
+/* ---------- module switching ----------
+   Home is the launcher. Opening a section adds a tab; the bar only
+   ever shows sections that are actually open. Back walks the trail
+   of views, Home returns to the launcher without closing anything. */
+var MOD_LABEL = {
+  objections:"Objection handler", sales:"Sales",
+  entry:"Enter sales", allinone:"ALLnONE"
+};
+var MOD_IDS = ["home","objections","sales","entry","allinone"];
+var openTabs = [];
+var navStack = [];
+var current  = "home";
+
+var SVG_BACK = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>';
+var SVG_HOME = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5.5 9.5V20h13V9.5"/></svg>';
+
+function renderNav(){
+  var nav = document.getElementById("modnav");
+  if(current === "home" && !openTabs.length){ nav.hidden = true; nav.innerHTML = ""; return; }
+  nav.hidden = false;
+  var h = '';
+  h += '<button class="navbtn" type="button" data-nav="back"' + (navStack.length ? '' : ' disabled') +
+       ' aria-label="Back">' + SVG_BACK + 'Back</button>';
+  h += '<button class="navbtn" type="button" data-nav="home" aria-label="Home">' + SVG_HOME + 'Home</button>';
+  if(openTabs.length) h += '<span class="navsep" aria-hidden="true"></span>';
+  h += openTabs.map(function(m){
+    return '<span class="tab"' + (current === m ? ' aria-current="true"' : '') + '>' +
+      '<button class="tname" type="button" data-tab="' + m + '">' + esc(MOD_LABEL[m]) + '</button>' +
+      '<button class="tclose" type="button" data-close="' + m + '" aria-label="Close ' + esc(MOD_LABEL[m]) + '">&times;</button>' +
+      '</span>';
+  }).join("");
+  nav.innerHTML = h;
+}
+
+function showModule(name, fromBack){
+  if(MOD_IDS.indexOf(name) === -1) return;
+  if(!fromBack && name !== current) navStack.push(current);
+  current = name;
+  if(name !== "home" && openTabs.indexOf(name) === -1) openTabs.push(name);
+
+  MOD_IDS.forEach(function(m){
     var el = document.getElementById("mod-" + m);
     if(el) el.hidden = (m !== name);
   });
-  document.querySelectorAll("#modnav button").forEach(function(b){
-    b.setAttribute("aria-current", b.dataset.mod === name ? "true" : "false");
-  });
   var ex = document.getElementById("export");
   if(ex) ex.hidden = (name !== "objections");
-  if(name === "home") renderHome();
-  if(name === "sales") renderSales();
-  if(name === "entry") renderEntries();
+
+  if(name === "home")     renderHome();
+  if(name === "sales")    renderSales();
+  if(name === "entry")    renderEntries();
   if(name === "allinone") renderAio();
+  renderNav();
+}
+
+function goBack(){
+  if(!navStack.length) return;
+  var prev = navStack.pop();
+  if(prev !== "home" && openTabs.indexOf(prev) === -1) prev = "home";
+  showModule(prev, true);
+}
+
+function closeTab(name){
+  openTabs = openTabs.filter(function(m){ return m !== name; });
+  navStack = navStack.filter(function(m){ return m === "home" || openTabs.indexOf(m) !== -1; });
+  if(current === name) showModule(openTabs.length ? openTabs[openTabs.length - 1] : "home", true);
+  else renderNav();
 }
 
 function startSales(){
@@ -474,8 +525,15 @@ function startSales(){
   buildAio();
   loadEntries();
   document.body.addEventListener("click", function(e){
-    var b = e.target.closest ? e.target.closest("button[data-mod]") : null;
-    if(b) showModule(b.dataset.mod);
+    var t = e.target;
+    var close = t.closest ? t.closest("[data-close]") : null;
+    if(close){ closeTab(close.dataset.close); return; }
+    var tab = t.closest ? t.closest("[data-tab]") : null;
+    if(tab){ showModule(tab.dataset.tab); return; }
+    var nb = t.closest ? t.closest("[data-nav]") : null;
+    if(nb){ nb.dataset.nav === "back" ? goBack() : showModule("home"); return; }
+    var card = t.closest ? t.closest("button[data-mod]") : null;
+    if(card) showModule(card.dataset.mod);
   });
   document.getElementById("brandhome").addEventListener("click", function(){ showModule("home"); });
   var rt;

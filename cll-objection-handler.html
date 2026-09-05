@@ -515,18 +515,40 @@ ul.data li b{font-family:var(--mono);font-size:13px;}
 .noteitem .byline{font-family:var(--mono);font-size:11px;color:var(--ink-3);}
 
 
-/* ---------- module navigation ---------- */
+/* ---------- open-tab bar ---------- */
 .modnav{
-  display:flex;gap:2px;background:var(--brand-navy-deep);
-  padding:0 10px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex:0 0 auto;
+  display:flex;align-items:stretch;gap:4px;background:var(--brand-navy-deep);
+  padding:0 8px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex:0 0 auto;
+  border-bottom:1px solid rgba(255,255,255,.08);
 }
-.modnav button{
+.modnav[hidden]{display:none;}
+.navbtn{
   border:0;background:transparent;color:#A9B8D4;cursor:pointer;
-  padding:11px 15px;min-height:var(--tap);white-space:nowrap;
-  font-size:14px;font-weight:650;border-bottom:3px solid transparent;
+  min-height:var(--tap);min-width:var(--tap);padding:0 10px;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  font-size:13.5px;font-weight:650;white-space:nowrap;flex:0 0 auto;
 }
-.modnav button:hover{color:#fff;}
-.modnav button[aria-current="true"]{color:#fff;border-bottom-color:var(--brand-red);}
+.navbtn:hover:not(:disabled){color:#fff;}
+.navbtn:disabled{opacity:.32;cursor:default;}
+.navsep{width:1px;background:rgba(255,255,255,.16);margin:9px 5px;flex:0 0 auto;}
+.tab{
+  display:inline-flex;align-items:center;gap:2px;flex:0 0 auto;
+  border-bottom:3px solid transparent;
+}
+.tab .tname{
+  border:0;background:transparent;color:#A9B8D4;cursor:pointer;
+  padding:11px 4px 11px 12px;min-height:var(--tap);
+  font-size:13.5px;font-weight:650;white-space:nowrap;
+}
+.tab .tclose{
+  border:0;background:transparent;color:#6F82A6;cursor:pointer;
+  padding:0 9px 0 4px;min-height:var(--tap);font-size:17px;line-height:1;
+  display:inline-flex;align-items:center;border-radius:5px;
+}
+.tab .tclose:hover{color:#fff;}
+.tab:hover .tname{color:#fff;}
+.tab[aria-current="true"]{border-bottom-color:var(--brand-red);}
+.tab[aria-current="true"] .tname{color:#fff;}
 
 .module{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;}
 .module[hidden]{display:none;}
@@ -700,13 +722,7 @@ table.grid .grouprow td{background:var(--surface-2);font-weight:750;
 <div class="banner">Internal draft. Not MRC approved. Do not use with HCPs until reviewed.</div>
 
 
-<nav class="modnav" id="modnav" aria-label="Sections">
-  <button type="button" data-mod="home">Home</button>
-  <button type="button" data-mod="objections">Objection handler</button>
-  <button type="button" data-mod="sales">Sales</button>
-  <button type="button" data-mod="entry">Enter sales</button>
-  <button type="button" data-mod="allinone">ALLnONE</button>
-</nav>
+<nav class="modnav" id="modnav" aria-label="Open sections" hidden></nav>
 
 <section class="module" id="mod-home" hidden>
   <div class="scrollpane"><div class="homewrap">
@@ -3110,21 +3126,72 @@ function renderHome(){
   }).join("");
 }
 
-/* ---------- module switching ---------- */
-function showModule(name){
-  ["home","objections","sales","entry","allinone"].forEach(function(m){
+/* ---------- module switching ----------
+   Home is the launcher. Opening a section adds a tab; the bar only
+   ever shows sections that are actually open. Back walks the trail
+   of views, Home returns to the launcher without closing anything. */
+var MOD_LABEL = {
+  objections:"Objection handler", sales:"Sales",
+  entry:"Enter sales", allinone:"ALLnONE"
+};
+var MOD_IDS = ["home","objections","sales","entry","allinone"];
+var openTabs = [];
+var navStack = [];
+var current  = "home";
+
+var SVG_BACK = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>';
+var SVG_HOME = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5.5 9.5V20h13V9.5"/></svg>';
+
+function renderNav(){
+  var nav = document.getElementById("modnav");
+  if(current === "home" && !openTabs.length){ nav.hidden = true; nav.innerHTML = ""; return; }
+  nav.hidden = false;
+  var h = '';
+  h += '<button class="navbtn" type="button" data-nav="back"' + (navStack.length ? '' : ' disabled') +
+       ' aria-label="Back">' + SVG_BACK + 'Back</button>';
+  h += '<button class="navbtn" type="button" data-nav="home" aria-label="Home">' + SVG_HOME + 'Home</button>';
+  if(openTabs.length) h += '<span class="navsep" aria-hidden="true"></span>';
+  h += openTabs.map(function(m){
+    return '<span class="tab"' + (current === m ? ' aria-current="true"' : '') + '>' +
+      '<button class="tname" type="button" data-tab="' + m + '">' + esc(MOD_LABEL[m]) + '</button>' +
+      '<button class="tclose" type="button" data-close="' + m + '" aria-label="Close ' + esc(MOD_LABEL[m]) + '">&times;</button>' +
+      '</span>';
+  }).join("");
+  nav.innerHTML = h;
+}
+
+function showModule(name, fromBack){
+  if(MOD_IDS.indexOf(name) === -1) return;
+  if(!fromBack && name !== current) navStack.push(current);
+  current = name;
+  if(name !== "home" && openTabs.indexOf(name) === -1) openTabs.push(name);
+
+  MOD_IDS.forEach(function(m){
     var el = document.getElementById("mod-" + m);
     if(el) el.hidden = (m !== name);
   });
-  document.querySelectorAll("#modnav button").forEach(function(b){
-    b.setAttribute("aria-current", b.dataset.mod === name ? "true" : "false");
-  });
   var ex = document.getElementById("export");
   if(ex) ex.hidden = (name !== "objections");
-  if(name === "home") renderHome();
-  if(name === "sales") renderSales();
-  if(name === "entry") renderEntries();
+
+  if(name === "home")     renderHome();
+  if(name === "sales")    renderSales();
+  if(name === "entry")    renderEntries();
   if(name === "allinone") renderAio();
+  renderNav();
+}
+
+function goBack(){
+  if(!navStack.length) return;
+  var prev = navStack.pop();
+  if(prev !== "home" && openTabs.indexOf(prev) === -1) prev = "home";
+  showModule(prev, true);
+}
+
+function closeTab(name){
+  openTabs = openTabs.filter(function(m){ return m !== name; });
+  navStack = navStack.filter(function(m){ return m === "home" || openTabs.indexOf(m) !== -1; });
+  if(current === name) showModule(openTabs.length ? openTabs[openTabs.length - 1] : "home", true);
+  else renderNav();
 }
 
 function startSales(){
@@ -3133,8 +3200,15 @@ function startSales(){
   buildAio();
   loadEntries();
   document.body.addEventListener("click", function(e){
-    var b = e.target.closest ? e.target.closest("button[data-mod]") : null;
-    if(b) showModule(b.dataset.mod);
+    var t = e.target;
+    var close = t.closest ? t.closest("[data-close]") : null;
+    if(close){ closeTab(close.dataset.close); return; }
+    var tab = t.closest ? t.closest("[data-tab]") : null;
+    if(tab){ showModule(tab.dataset.tab); return; }
+    var nb = t.closest ? t.closest("[data-nav]") : null;
+    if(nb){ nb.dataset.nav === "back" ? goBack() : showModule("home"); return; }
+    var card = t.closest ? t.closest("button[data-mod]") : null;
+    if(card) showModule(card.dataset.mod);
   });
   document.getElementById("brandhome").addEventListener("click", function(){ showModule("home"); });
   var rt;

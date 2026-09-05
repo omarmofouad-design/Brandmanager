@@ -17,13 +17,7 @@
 <div class="banner">Internal draft. Not MRC approved. Do not use with HCPs until reviewed.</div>
 
 
-<nav class="modnav" id="modnav" aria-label="Sections">
-  <button type="button" data-mod="home">Home</button>
-  <button type="button" data-mod="objections">Objection handler</button>
-  <button type="button" data-mod="sales">Sales</button>
-  <button type="button" data-mod="entry">Enter sales</button>
-  <button type="button" data-mod="allinone">ALLnONE</button>
-</nav>
+<nav class="modnav" id="modnav" aria-label="Open sections" hidden></nav>
 
 <section class="module" id="mod-home" hidden>
   <div class="scrollpane"><div class="homewrap">

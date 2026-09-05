@@ -510,18 +510,40 @@ ul.data li b{font-family:var(--mono);font-size:13px;}
 .noteitem .byline{font-family:var(--mono);font-size:11px;color:var(--ink-3);}
 
 
-/* ---------- module navigation ---------- */
+/* ---------- open-tab bar ---------- */
 .modnav{
-  display:flex;gap:2px;background:var(--brand-navy-deep);
-  padding:0 10px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex:0 0 auto;
+  display:flex;align-items:stretch;gap:4px;background:var(--brand-navy-deep);
+  padding:0 8px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex:0 0 auto;
+  border-bottom:1px solid rgba(255,255,255,.08);
 }
-.modnav button{
+.modnav[hidden]{display:none;}
+.navbtn{
   border:0;background:transparent;color:#A9B8D4;cursor:pointer;
-  padding:11px 15px;min-height:var(--tap);white-space:nowrap;
-  font-size:14px;font-weight:650;border-bottom:3px solid transparent;
+  min-height:var(--tap);min-width:var(--tap);padding:0 10px;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  font-size:13.5px;font-weight:650;white-space:nowrap;flex:0 0 auto;
 }
-.modnav button:hover{color:#fff;}
-.modnav button[aria-current="true"]{color:#fff;border-bottom-color:var(--brand-red);}
+.navbtn:hover:not(:disabled){color:#fff;}
+.navbtn:disabled{opacity:.32;cursor:default;}
+.navsep{width:1px;background:rgba(255,255,255,.16);margin:9px 5px;flex:0 0 auto;}
+.tab{
+  display:inline-flex;align-items:center;gap:2px;flex:0 0 auto;
+  border-bottom:3px solid transparent;
+}
+.tab .tname{
+  border:0;background:transparent;color:#A9B8D4;cursor:pointer;
+  padding:11px 4px 11px 12px;min-height:var(--tap);
+  font-size:13.5px;font-weight:650;white-space:nowrap;
+}
+.tab .tclose{
+  border:0;background:transparent;color:#6F82A6;cursor:pointer;
+  padding:0 9px 0 4px;min-height:var(--tap);font-size:17px;line-height:1;
+  display:inline-flex;align-items:center;border-radius:5px;
+}
+.tab .tclose:hover{color:#fff;}
+.tab:hover .tname{color:#fff;}
+.tab[aria-current="true"]{border-bottom-color:var(--brand-red);}
+.tab[aria-current="true"] .tname{color:#fff;}
 
 .module{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;}
 .module[hidden]{display:none;}
