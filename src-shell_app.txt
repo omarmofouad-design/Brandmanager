@@ -573,7 +573,7 @@ function startApp(){
   buildChips();
   render();
   startSales();
-  showModule("objections");
+  showModule("home");
 }
 
 /* boot runs at the very end of the bundle, after every module's

@@ -404,15 +404,65 @@ function renderAio(){
   document.getElementById("aionote").textContent = shown + " rows shown. Figures are exactly as they appear in the source file.";
 }
 
+
+/* ---------- the lobby ---------- */
+var ICONS = {
+  objections:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.9-.9L3 21l1.9-4.6A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5Z"/></svg>',
+  sales:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>',
+  entry:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
+  allinone:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12"/></svg>'
+};
+
+function renderHome(){
+  var h = new Date().getHours();
+  var part = h < 12 ? "Good morning" : (h < 18 ? "Good afternoon" : "Good evening");
+  var first = user ? user.name.split(" ")[0] : "";
+  document.getElementById("greet").textContent = part + (first ? ", " + first : "");
+  document.getElementById("hometitle").innerHTML =
+    'What are you working on<em>?</em>';
+
+  var all = SALES.accounts;
+  var pts = sumOf(all, "Brukinsa patient recruited", "ytd");
+  var tgt = sumOf(all, "Brukinsa patient target", "ytd");
+  var rows = 0;
+  all.forEach(function(a){ rows += Object.keys(a.measures).length; });
+
+  var cards = [
+    {mod:"objections", ic:"objections", h:"Objection handler",
+     p:"Every objection, its approved answer, and the slide it came from.",
+     s:CARDS.length + " objections · " + CATS.length + " categories"},
+    {mod:"sales", ic:"sales", h:"Sales",
+     p:"Targets, trends and how each account is tracking.",
+     s:money(pts) + " patients YTD" + (tgt ? " · " + Math.round((pts/tgt)*100) + "% to target" : "")},
+    {mod:"entry", ic:"entry", h:"Enter sales",
+     p:"Log a figure against an account and month.",
+     s:entries.length ? entries.length + " entered on this device" : "Nothing entered yet"},
+    {mod:"allinone", ic:"allinone", h:"ALLnONE",
+     p:"Every account, measure and month exactly as recorded.",
+     s:all.length + " accounts · " + rows + " rows"}
+  ];
+
+  document.getElementById("launch").innerHTML = cards.map(function(c){
+    return '<button class="lcard" type="button" data-mod="' + c.mod + '">' +
+      '<span class="ic">' + ICONS[c.ic] + '</span>' +
+      '<h3>' + esc(c.h) + '</h3><p>' + esc(c.p) + '</p>' +
+      '<span class="stat"><span>' + esc(c.s) + '</span><span class="arrow">&rarr;</span></span>' +
+      '</button>';
+  }).join("");
+}
+
 /* ---------- module switching ---------- */
 function showModule(name){
-  ["objections","sales","entry","allinone"].forEach(function(m){
+  ["home","objections","sales","entry","allinone"].forEach(function(m){
     var el = document.getElementById("mod-" + m);
     if(el) el.hidden = (m !== name);
   });
   document.querySelectorAll("#modnav button").forEach(function(b){
     b.setAttribute("aria-current", b.dataset.mod === name ? "true" : "false");
   });
+  var ex = document.getElementById("export");
+  if(ex) ex.hidden = (name !== "objections");
+  if(name === "home") renderHome();
   if(name === "sales") renderSales();
   if(name === "entry") renderEntries();
   if(name === "allinone") renderAio();
@@ -423,10 +473,11 @@ function startSales(){
   buildEntryForm();
   buildAio();
   loadEntries();
-  document.getElementById("modnav").addEventListener("click", function(e){
+  document.body.addEventListener("click", function(e){
     var b = e.target.closest ? e.target.closest("button[data-mod]") : null;
     if(b) showModule(b.dataset.mod);
   });
+  document.getElementById("brandhome").addEventListener("click", function(){ showModule("home"); });
   var rt;
   window.addEventListener("resize", function(){
     clearTimeout(rt);
