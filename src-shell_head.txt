@@ -660,7 +660,12 @@ table.grid .grouprow td{background:var(--surface-2);font-weight:750;
 }
 .homewrap h2 em{font-style:normal;color:#7E93B8;}
 .launch{display:grid;grid-template-columns:1fr;gap:14px;}
-@media (min-width:640px){ .launch{grid-template-columns:repeat(2,1fr);gap:16px;} }
+@media (min-width:640px){
+  .launch{grid-template-columns:repeat(2,1fr);gap:16px;}
+  /* an odd count would strand the last card on its own row */
+  .lcard:last-child:nth-child(odd){grid-column:1/-1;min-height:0;}
+  .lcard:last-child:nth-child(odd) .stat{padding-top:12px;}
+}
 .lcard{
   display:flex;flex-direction:column;gap:0;text-align:left;
   background:var(--paper);border:1px solid transparent;border-radius:14px;
@@ -687,6 +692,34 @@ table.grid .grouprow td{background:var(--surface-2);font-weight:750;
   margin:30px 0 0;padding-top:18px;border-top:1px solid rgba(255,255,255,.14);
   color:#7E93B8;font-size:12.5px;line-height:1.5;
 }
+
+/* ---------- activities ---------- */
+.evlist{display:flex;flex-direction:column;gap:9px;}
+.ev{
+  background:var(--paper);border:1px solid var(--line);border-radius:10px;
+  padding:15px 17px;display:grid;grid-template-columns:1fr auto;gap:6px 18px;align-items:start;
+}
+.ev h4{margin:0;font-size:15.5px;font-weight:700;line-height:1.3;}
+.ev .evmeta{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-top:4px;}
+.ev .evcost{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.ev .evobj{grid-column:1/-1;font-size:13.5px;color:var(--ink-2);line-height:1.5;margin:6px 0 0;}
+.gates{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
+.g{
+  font-family:var(--mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;
+  padding:3px 7px;border-radius:4px;font-weight:700;
+  display:inline-flex;align-items:center;gap:4px;
+}
+.g.y{background:var(--ok-bg);color:var(--ok);}
+.g.n{background:var(--stop-bg);color:var(--stop);}
+.g.u{background:var(--surface-2);color:var(--ink-3);}
+.bar{grid-column:1/-1;height:5px;border-radius:3px;background:var(--surface-2);overflow:hidden;margin-top:11px;}
+.bar i{display:block;height:100%;background:var(--ok);border-radius:3px;}
+.pill{
+  font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;
+  padding:3px 7px;border-radius:4px;font-weight:700;margin-left:8px;
+}
+.pill.done{background:var(--ok-bg);color:var(--ok);}
+.pill.open{background:var(--warn-bg);color:var(--warn);}
 
 .toast{
   position:fixed;left:50%;bottom:22px;transform:translateX(-50%);

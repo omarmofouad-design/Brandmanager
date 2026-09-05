@@ -15,6 +15,50 @@ var PAIRS = {
   "Sales (value)":              "Target (value)"
 };
 
+/* An entry overrides the figure for that account, measure and month.
+   YTD is carried through using the rule the source file itself uses for
+   that account and measure: a Jan-Jul sum, the July value, or a figure
+   the file states outright and that a monthly edit cannot re-derive. */
+function overrideMap(){
+  var o = {};
+  entries.forEach(function(e){
+    var mi = MONTHS.indexOf(e.month);
+    if(mi < 0) return;
+    o[e.account + "|" + e.measure + "|" + mi] = e.value;   /* last one wins */
+  });
+  return o;
+}
+var OVR = {};
+function monthVal(a, measure, i){
+  var k = a.account + "|" + measure + "|" + i;
+  if(useEntries && OVR.hasOwnProperty(k)) return OVR[k];
+  var m = a.measures[measure];
+  return m ? m.m[i] : null;
+}
+function hasOverride(a, measure){
+  if(!useEntries) return false;
+  for(var i = 0; i < MONTHS.length; i++){
+    if(OVR.hasOwnProperty(a.account + "|" + measure + "|" + i)) return true;
+  }
+  return false;
+}
+function ytdVal(a, measure){
+  var m = a.measures[measure];
+  if(!m) return null;
+  if(!hasOverride(a, measure)) return m.ytd;
+  if(m.k === "sum"){
+    var t = 0, seen = false;
+    for(var i = 0; i <= SALES.ytdThrough; i++){
+      var v = monthVal(a, measure, i);
+      if(v !== null && v !== undefined && !isNaN(v)){ t += v; seen = true; }
+    }
+    return seen ? t : null;
+  }
+  if(m.k === "last") return monthVal(a, measure, SALES.ytdThrough);
+  return m.ytd;                      /* the file states it; leave it alone */
+}
+var useEntries = true;
+
 function money(n){
   if(n === null || n === undefined || isNaN(n)) return "—";
   return (Math.round(n*100)/100).toLocaleString("en-GB");
@@ -22,9 +66,8 @@ function money(n){
 function sumOf(list, measure, monthIdx){
   var t = 0, seen = false;
   list.forEach(function(a){
-    var m = a.measures[measure];
-    if(!m) return;
-    var v = (monthIdx === "ytd") ? m.ytd : m.m[monthIdx];
+    if(!a.measures[measure]) return;
+    var v = (monthIdx === "ytd") ? ytdVal(a, measure) : monthVal(a, measure, monthIdx);
     if(v !== null && v !== undefined && !isNaN(v)){ t += v; seen = true; }
   });
   return seen ? t : null;
@@ -40,9 +83,11 @@ function measureList(){
   return out;
 }
 function filteredAccounts(){
-  var own = document.getElementById("fowner").value;
+  var ctry = document.getElementById("fcountry").value;
+  var own  = document.getElementById("fowner").value;
   var city = document.getElementById("fcity").value;
   return SALES.accounts.filter(function(a){
+    if(ctry && a.country !== ctry) return false;
     if(own && a.ps !== own) return false;
     if(city && a.city !== city) return false;
     return true;
@@ -61,6 +106,8 @@ function fillSelect(el, values, allLabel){
   });
 }
 function buildSalesFilters(){
+  var ctries = Array.from(new Set(SALES.accounts.map(function(a){ return a.country; }))).sort();
+  fillSelect(document.getElementById("fcountry"), ctries, "All countries");
   var owners = Array.from(new Set(SALES.accounts.map(function(a){ return a.ps; }))).sort();
   var cities = Array.from(new Set(SALES.accounts.map(function(a){ return a.city; }))).sort();
   fillSelect(document.getElementById("fowner"), owners, "All owners");
@@ -80,7 +127,7 @@ function buildSalesFilters(){
   fillSelect(document.getElementById("fmonth"),
     MONTHS.map(function(m,i){ return {value:String(i), label:m}; }), "Year to date");
 
-  ["fowner","fcity","fmeasure","fmonth"].forEach(function(id){
+  ["fcountry","fowner","fcity","fmeasure","fmonth"].forEach(function(id){
     document.getElementById(id).addEventListener("change", renderSales);
   });
 }
@@ -195,6 +242,7 @@ function barChart(box, rows, opts){
 
 /* ---------- sales page ---------- */
 function renderSales(){
+  OVR = overrideMap();
   var list = filteredAccounts();
   var measure = document.getElementById("fmeasure").value;
   var mv = document.getElementById("fmonth").value;
@@ -203,8 +251,17 @@ function renderSales(){
   var target = PAIRS[measure];
 
   document.getElementById("salessub").textContent =
-    SALES.accounts.length + " accounts from " + SALES.source + ". " +
-    list.length + " shown with the current filters.";
+    SALES.accounts.length + " accounts across " +
+    Array.from(new Set(SALES.accounts.map(function(a){ return a.country; }))).length +
+    " countries, from " + SALES.source + ". " + list.length + " shown with the current filters.";
+
+  var note = document.getElementById("entrynote");
+  if(entries.length){
+    note.hidden = false;
+    note.innerHTML = "<b>Your entries are included</b>" +
+      entries.length + " entry" + (entries.length === 1 ? "" : " entries") +
+      " from this device override the file figures for their month. Year to date follows the rule the file uses for each measure, so where the file states a year-to-date figure outright it is left as recorded.";
+  } else { note.hidden = true; }
 
   /* tiles: the headline measures, not whatever is selected */
   var tiles = [
@@ -246,23 +303,25 @@ function renderSales(){
 
   /* by account */
   var rows = list.map(function(a){
-    var m = a.measures[measure];
-    var v = m ? ((monthIdx === "ytd") ? m.ytd : m.m[monthIdx]) : null;
-    return {label:a.account, value:(v === null || v === undefined || isNaN(v)) ? 0 : v, sub:a.city + " · " + a.ps};
+    var v = a.measures[measure] ? ((monthIdx === "ytd") ? ytdVal(a, measure) : monthVal(a, measure, monthIdx)) : null;
+    return {label:a.account + (hasOverride(a, measure) ? " *" : ""),
+            value:(v === null || v === undefined || isNaN(v)) ? 0 : v,
+            sub:a.country + " · " + a.city + " · " + a.ps};
   }).sort(function(x, y){ return y.value - x.value; });
   document.getElementById("acctitle").textContent = measure + " by account";
   document.getElementById("accsub").textContent = "Highest first, " + monthLabel + ".";
   barChart(document.getElementById("accbox"), rows, {color:C_ACTUAL, measure:measure, aria:measure + " by account"});
 
   /* table view */
-  var th = '<thead><tr><th class="txt">Account</th><th class="txt">City</th><th class="txt">Owner</th>' +
+  var th = '<thead><tr><th class="txt">Account</th><th class="txt">Country</th><th class="txt">City</th><th class="txt">Owner</th>' +
            MONTHS.map(function(m){ return '<th>' + m + '</th>'; }).join("") + '<th>YTD</th></tr></thead>';
   var tb = '<tbody>' + list.map(function(a){
-    var m = a.measures[measure];
-    return '<tr><td class="acct">' + esc(a.account) + '</td><td class="txt dim">' + esc(a.city) +
+    var has = a.measures[measure];
+    return '<tr><td class="acct">' + esc(a.account) + (hasOverride(a, measure) ? ' *' : '') +
+           '</td><td class="txt dim">' + esc(a.country) + '</td><td class="txt dim">' + esc(a.city) +
            '</td><td class="txt dim">' + esc(a.ps) + '</td>' +
-           MONTHS.map(function(_, i){ return '<td>' + (m ? money(m.m[i]) : "—") + '</td>'; }).join("") +
-           '<td><b>' + (m ? money(m.ytd) : "—") + '</b></td></tr>';
+           MONTHS.map(function(_, i){ return '<td>' + (has ? money(monthVal(a, measure, i)) : "—") + '</td>'; }).join("") +
+           '<td><b>' + (has ? money(ytdVal(a, measure)) : "—") + '</b></td></tr>';
   }).join("") + '</tbody>';
   document.getElementById("salestable").innerHTML = th + tb;
 }
@@ -319,7 +378,8 @@ function buildEntryForm(){
     document.getElementById("evalue").value = "";
     document.getElementById("enote").value = "";
     renderEntries();
-    toast(ok ? "Entry saved on this device" : "Could not save on this device");
+    if(!document.getElementById("mod-sales").hidden) renderSales();
+    toast(ok ? "Entry saved — the Sales figures now include it" : "Could not save on this device");
   });
 
   document.getElementById("exportentries").addEventListener("click", exportEntries);
@@ -327,7 +387,9 @@ function buildEntryForm(){
     var b = e.target.closest ? e.target.closest("[data-del2]") : null;
     if(!b) return;
     entries = entries.filter(function(x){ return x.id !== b.dataset.del2; });
-    saveEntries(); renderEntries(); toast("Entry deleted");
+    saveEntries(); renderEntries();
+    if(!document.getElementById("mod-sales").hidden) renderSales();
+    toast("Entry deleted");
   });
 }
 function renderEntries(){
@@ -367,30 +429,35 @@ function exportEntries(){
 
 /* ---------- ALLnONE ---------- */
 function buildAio(){
+  fillSelect(document.getElementById("aiocountry"),
+    Array.from(new Set(SALES.accounts.map(function(a){ return a.country; }))).sort(), "All countries");
   fillSelect(document.getElementById("aiocat"), Object.keys(SALES.measureCats), "All categories");
+  document.getElementById("aiocountry").addEventListener("change", renderAio);
   document.getElementById("aiocat").addEventListener("change", renderAio);
   document.getElementById("aiosearch").addEventListener("input", renderAio);
 }
 function renderAio(){
   var q = document.getElementById("aiosearch").value.trim().toLowerCase();
   var cat = document.getElementById("aiocat").value;
+  var ctry = document.getElementById("aiocountry").value;
   var terms = q ? q.split(/\s+/) : [];
-  var th = '<thead><tr><th class="txt">Account</th><th class="txt">City</th><th class="txt">Measure</th>' +
+  var th = '<thead><tr><th class="txt">Account</th><th class="txt">Country</th><th class="txt">Measure</th>' +
            MONTHS.map(function(m){ return '<th>' + m + '</th>'; }).join("") + '<th>Total</th><th>YTD</th></tr></thead>';
   var body = [], shown = 0;
   SALES.accounts.forEach(function(a){
+    if(ctry && a.country !== ctry) return;
     var ms = Object.keys(a.measures).filter(function(m){
       if(cat && a.measures[m].cat !== cat) return false;
       if(!terms.length) return true;
-      var hay = (a.account + " " + a.city + " " + a.ps + " " + m + " " + a.measures[m].cat).toLowerCase();
+      var hay = (a.account + " " + a.country + " " + a.city + " " + a.ps + " " + m + " " + a.measures[m].cat).toLowerCase();
       return terms.every(function(t){ return hay.indexOf(t) !== -1; });
     });
     if(!ms.length) return;
     body.push('<tr class="grouprow"><td class="txt" colspan="' + (MONTHS.length + 5) + '">' +
-              esc(a.account) + ' · ' + esc(a.city) + ' · ' + esc(a.category) + ' · ' + esc(a.ps) + '</td></tr>');
+              esc(a.country) + ' · ' + esc(a.account) + ' · ' + esc(a.city) + ' · ' + esc(a.category) + ' · ' + esc(a.ps) + '</td></tr>');
     ms.forEach(function(m){
       var d = a.measures[m]; shown++;
-      body.push('<tr><td class="acct">' + esc(a.account) + '</td><td class="txt dim">' + esc(a.city) +
+      body.push('<tr><td class="acct">' + esc(a.account) + '</td><td class="txt dim">' + esc(a.country) +
         '</td><td class="txt">' + esc(m) + '</td>' +
         MONTHS.map(function(_, i){ return '<td>' + money(d.m[i]) + '</td>'; }).join("") +
         '<td>' + money(d.total) + '</td><td><b>' + money(d.ytd) + '</b></td></tr>');
@@ -399,8 +466,9 @@ function renderAio(){
   document.getElementById("aiotable").innerHTML = th + '<tbody>' + (body.join("") ||
     '<tr><td class="txt" colspan="' + (MONTHS.length + 5) + '">Nothing matches.</td></tr>') + '</tbody>';
   document.getElementById("aiosub").textContent =
-    SALES.accounts.length + " accounts, " + Object.keys(SALES.measureCats).length +
-    " measure categories, every month as recorded in " + SALES.source + ".";
+    SALES.accounts.length + " accounts across " +
+    Array.from(new Set(SALES.accounts.map(function(a){ return a.country; }))).length +
+    " countries, every month as recorded in " + SALES.source + ".";
   document.getElementById("aionote").textContent = shown + " rows shown. Figures are exactly as they appear in the source file.";
 }
 
@@ -410,6 +478,7 @@ var ICONS = {
   objections:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.9-.9L3 21l1.9-4.6A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5Z"/></svg>',
   sales:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>',
   entry:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
+  activities:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>',
   allinone:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12"/></svg>'
 };
 
@@ -437,6 +506,9 @@ function renderHome(){
     {mod:"entry", ic:"entry", h:"Enter sales",
      p:"Log a figure against an account and month.",
      s:entries.length ? entries.length + " entered on this device" : "Nothing entered yet"},
+    {mod:"activities", ic:"activities", h:"Activities",
+     p:"Events, their approvals and what is still outstanding.",
+     s:ACTS.events.length + " events · " + ACTS.events.filter(function(e){return e.gatesDone===e.gatesTotal;}).length + " ready to run"},
     {mod:"allinone", ic:"allinone", h:"ALLnONE",
      p:"Every account, measure and month exactly as recorded.",
      s:all.length + " accounts · " + rows + " rows"}
@@ -457,9 +529,9 @@ function renderHome(){
    of views, Home returns to the launcher without closing anything. */
 var MOD_LABEL = {
   objections:"Objection handler", sales:"Sales",
-  entry:"Enter sales", allinone:"ALLnONE"
+  entry:"Enter sales", allinone:"ALLnONE", activities:"Activities"
 };
-var MOD_IDS = ["home","objections","sales","entry","allinone"];
+var MOD_IDS = ["home","objections","sales","entry","allinone","activities"];
 var openTabs = [];
 var navStack = [];
 var current  = "home";
@@ -502,6 +574,7 @@ function showModule(name, fromBack){
   if(name === "sales")    renderSales();
   if(name === "entry")    renderEntries();
   if(name === "allinone") renderAio();
+  if(name === "activities") renderActs();
   renderNav();
 }
 
@@ -523,6 +596,7 @@ function startSales(){
   buildSalesFilters();
   buildEntryForm();
   buildAio();
+  buildActs();
   loadEntries();
   document.body.addEventListener("click", function(e){
     var t = e.target;

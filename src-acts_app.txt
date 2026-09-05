@@ -1,0 +1,84 @@
+
+/* ==================================================================
+   ACTIVITIES
+   Events as recorded in the tracker. Speaker and chairperson names
+   are held back and shown as counts: this page is served from a
+   public location and those are third-party HCPs.
+   ================================================================== */
+function actFiltered(){
+  var by = document.getElementById("aby").value;
+  var city = document.getElementById("acity").value;
+  var st = document.getElementById("astatus").value;
+  var q = document.getElementById("asearch").value.trim().toLowerCase();
+  var terms = q ? q.split(/\s+/) : [];
+  return ACTS.events.filter(function(e){
+    if(by && e.by !== by) return false;
+    if(city && e.city !== city) return false;
+    if(st === "ready"    && e.gatesDone !== e.gatesTotal) return false;
+    if(st === "blocked"  && e.gatesDone === e.gatesTotal) return false;
+    if(st === "done"     && !e.completed) return false;
+    if(st === "upcoming" && e.completed) return false;
+    if(terms.length){
+      var hay = (e.title + " " + e.city + " " + e.venue + " " + e.objective + " " + e.by).toLowerCase();
+      if(!terms.every(function(t){ return hay.indexOf(t) !== -1; })) return false;
+    }
+    return true;
+  });
+}
+function buildActs(){
+  fillSelect(document.getElementById("aby"),
+    Array.from(new Set(ACTS.events.map(function(e){ return e.by; }))).filter(Boolean).sort(), "Everyone");
+  fillSelect(document.getElementById("acity"),
+    Array.from(new Set(ACTS.events.map(function(e){ return e.city; }))).filter(Boolean).sort(), "All cities");
+  ["aby","acity","astatus"].forEach(function(id){
+    document.getElementById(id).addEventListener("change", renderActs);
+  });
+  document.getElementById("asearch").addEventListener("input", renderActs);
+}
+function niceDate(iso){
+  if(!iso) return "No date";
+  var p = iso.split("-"), M = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return (+p[2]) + " " + M[+p[1] - 1] + " " + p[0];
+}
+function renderActs(){
+  var list = actFiltered();
+  document.getElementById("actsub").textContent =
+    ACTS.events.length + " events from " + ACTS.source + ". " + list.length + " shown.";
+
+  var cost = list.reduce(function(t, e){ return t + (e.cost || 0); }, 0);
+  var ready = list.filter(function(e){ return e.gatesDone === e.gatesTotal; }).length;
+  var done = list.filter(function(e){ return e.completed; }).length;
+  var docs = list.filter(function(e){ return e.completed && !e.postDoc; }).length;
+  document.getElementById("acttiles").innerHTML =
+    '<div class="tile"><span class="k">Events</span><span class="v">' + list.length + '</span><span class="s">of ' + ACTS.events.length + ' in the tracker</span></div>' +
+    '<div class="tile"><span class="k">Planned cost</span><span class="v">$' + money(Math.round(cost)) + '</span><span class="s">USD, as planned</span></div>' +
+    '<div class="tile"><span class="k">Ready to run</span><span class="v">' + ready + '</span><span class="s">all ' + ACTS.gates.length + ' checks cleared</span></div>' +
+    '<div class="tile"><span class="k">Completed</span><span class="v">' + done + '</span><span class="s">' + (list.length - done) + ' still to run</span></div>' +
+    '<div class="tile"><span class="k">Docs outstanding</span><span class="v">' + docs + '</span><span class="s">run, not documented</span></div>';
+
+  document.getElementById("evlist").innerHTML = list.map(function(e){
+    var pct = Math.round((e.gatesDone / e.gatesTotal) * 100);
+    var people = [];
+    if(e.speakers) people.push(e.speakers + " speaker" + (e.speakers === 1 ? "" : "s"));
+    if(e.chairs)   people.push(e.chairs + " chair" + (e.chairs === 1 ? "" : "s"));
+    return '<article class="ev">' +
+      '<div><h4>' + esc(e.title) +
+        '<span class="pill ' + (e.completed ? "done" : "open") + '">' + (e.completed ? "Completed" : "Not yet run") + '</span></h4>' +
+        '<div class="evmeta">' + esc(niceDate(e.date)) + ' · ' + esc(e.city || "—") + ' · ' + esc(e.venue || "—") +
+        ' · ' + esc(e.by || "—") + (people.length ? ' · ' + esc(people.join(", ")) : '') + '</div></div>' +
+      '<div class="evcost">' + (e.cost ? "$" + money(e.cost) : "—") + '</div>' +
+      (e.objective ? '<p class="evobj">' + esc(e.objective) + '</p>' : '') +
+      '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
+      '<div class="gates">' + e.gates.map(function(g){
+        var cls = g.v === true ? "y" : (g.v === false ? "n" : "u");
+        return '<span class="g ' + cls + '">' + (g.v === true ? "✓" : (g.v === false ? "✕" : "?")) + ' ' + esc(g.k) + '</span>';
+      }).join("") +
+        '<span class="g ' + (e.sfda === "Approved" || e.sfda === "SFDA Not Required" ? "y" : "n") + '">' + esc(e.sfda || "SFDA —") + '</span>' +
+        (e.completed ? '<span class="g ' + (e.postDoc ? "y" : "n") + '">' + (e.postDoc ? "✓" : "✕") + ' Post-event docs' + (e.postDate ? " " + esc(niceDate(e.postDate)) : "") + '</span>' : '') +
+        '<span class="g ' + (e.paid ? "y" : "u") + '">' + (e.paid ? "✓ Paid" : "Payment pending") + '</span>' +
+      '</div></article>';
+  }).join("") || '<div class="emptybox">No events match.</div>';
+
+  document.getElementById("actnote").textContent =
+    "Speaker and chairperson names are held back and shown as counts. Everything else is exactly as recorded in the tracker.";
+}

@@ -38,6 +38,10 @@
 
     <div class="filters">
       <div class="field">
+        <label for="fcountry">Country</label>
+        <select id="fcountry"></select>
+      </div>
+      <div class="field">
         <label for="fowner">Owner</label>
         <select id="fowner"></select>
       </div>
@@ -55,6 +59,7 @@
       </div>
     </div>
 
+    <p class="notice" id="entrynote" hidden></p>
     <div class="tiles" id="tiles"></div>
 
     <div class="card2">
@@ -141,6 +146,10 @@
         <input id="aiosearch" type="search" placeholder="e.g. TAWAM, Dubai, Consumption" autocomplete="off">
       </div>
       <div class="field">
+        <label for="aiocountry">Country</label>
+        <select id="aiocountry"></select>
+      </div>
+      <div class="field">
         <label for="aiocat">Measure category</label>
         <select id="aiocat"></select>
       </div>
@@ -216,6 +225,33 @@
     </form>
   </div>
 </div>
+
+<section class="module" id="mod-activities" hidden>
+  <div class="scrollpane"><div class="pagewrap">
+    <div class="pagehead">
+      <h2>Activities</h2>
+      <p id="actsub"></p>
+    </div>
+    <div class="filters">
+      <div class="field"><label for="aby">Requested by</label><select id="aby"></select></div>
+      <div class="field"><label for="acity">City</label><select id="acity"></select></div>
+      <div class="field"><label for="astatus">Status</label>
+        <select id="astatus">
+          <option value="">All events</option>
+          <option value="ready">Ready to run</option>
+          <option value="blocked">Something outstanding</option>
+          <option value="done">Completed</option>
+          <option value="upcoming">Not yet run</option>
+        </select>
+      </div>
+      <div class="field grow"><label for="asearch">Search</label>
+        <input id="asearch" type="search" placeholder="Title, venue, objective" autocomplete="off"></div>
+    </div>
+    <div class="tiles" id="acttiles"></div>
+    <div class="evlist" id="evlist"></div>
+    <p class="tablenote" id="actnote"></p>
+  </div></div>
+</section>
 
 <div class="toast" id="toast" hidden></div>
 <script>

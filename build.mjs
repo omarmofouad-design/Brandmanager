@@ -32,10 +32,12 @@ const cards = read('cards.js');
 const sales = read('salesdata.js');
 const app = read('shell_app.txt').split('</script>')[0];
 const salesApp = read('sales_app.txt');
+const acts = read('activities.js');
+const actsApp = read('acts_app.txt');
 
 const inner =
   body.trimEnd().replace(/<script>\s*$/, '<script>') + '\n' +
-  cards + '\n' + sales + '\n' + app + '\n' + salesApp + '\n' +
+  cards + '\n' + sales + '\n' + acts + '\n' + app + '\n' + salesApp + '\n' + actsApp + '\n' +
   '</script>\n\n' +
   '<textarea id="fallback" readonly aria-label="Exported data" placeholder="Your export will appear here."></textarea>\n';
 
