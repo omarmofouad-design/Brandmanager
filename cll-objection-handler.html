@@ -446,6 +446,66 @@ ul.data li b{font-family:var(--mono);font-size:13px;}
   border:1px solid var(--line-strong);border-radius:8px;background:var(--paper);
   font-family:var(--mono);font-size:12.5px;display:none;
 }
+/* ---------- sign in ---------- */
+.gate{
+  position:fixed;inset:0;z-index:300;
+  background:var(--brand-navy);
+  display:flex;flex-direction:column;overflow-y:auto;
+}
+.gate[hidden]{display:none;}
+.gatebanner{
+  background:var(--brand-red);color:#fff;flex:0 0 auto;
+  padding:9px 16px;text-align:center;font-size:13px;font-weight:700;line-height:1.3;
+}
+.gatebody{flex:1 1 auto;display:flex;align-items:center;justify-content:center;padding:24px 16px 48px;}
+.gatecard{
+  width:100%;max-width:420px;background:var(--paper);
+  border-radius:12px;padding:28px 26px;box-shadow:0 20px 60px rgba(0,0,0,.35);
+  display:flex;flex-direction:column;
+}
+.gatebrand{display:flex;align-items:center;gap:11px;margin-bottom:22px;}
+.gatebrand svg{width:34px;height:34px;flex:0 0 auto;}
+.gatebrand b{display:block;font-size:14.5px;font-weight:800;letter-spacing:-.01em;color:var(--ink);}
+.gatebrand span{display:block;font-family:var(--mono);font-size:11px;color:var(--ink-3);}
+.gatecard h2{margin:0 0 6px;font-size:21px;font-weight:800;letter-spacing:-.015em;}
+.gatelede{margin:0 0 20px;font-size:13.5px;color:var(--ink-2);line-height:1.45;}
+.gatecard label{
+  display:block;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  font-weight:700;color:var(--ink-3);margin-bottom:6px;
+}
+.gatecard input[type=text],.gatecard input[type=password],.gatecard select{
+  height:var(--tap);padding:0 12px;margin-bottom:20px;
+  border:1px solid var(--line-strong);border-radius:8px;background:var(--paper);width:100%;
+}
+.gatecard label.gatecheck{
+  display:flex;gap:11px;align-items:flex-start;margin:4px 0 18px;
+  font-family:var(--sans);font-size:13px;letter-spacing:0;text-transform:none;
+  font-weight:400;color:var(--ink-2);line-height:1.45;cursor:pointer;
+}
+.gatecard label.gatecheck input{width:20px;height:20px;flex:0 0 auto;margin:1px 0 0;cursor:pointer;}
+.gateerr{
+  margin:0 0 14px;padding:10px 12px;border-radius:7px;
+  background:var(--stop-bg);color:var(--stop);font-size:13px;font-weight:650;
+}
+.gateerr[hidden]{display:none;}
+.gatebtn{
+  min-height:var(--tap);border:0;border-radius:8px;cursor:pointer;
+  background:var(--brand-navy);color:#fff;font-size:15px;font-weight:700;
+}
+.gatebtn:hover{background:var(--brand-navy-deep);}
+.gatefoot{margin:16px 0 0;font-size:11.5px;color:var(--ink-3);line-height:1.45;}
+
+/* identity in the brand bar */
+.who{
+  display:flex;align-items:center;gap:8px;color:#C6D2E8;
+  font-size:12.5px;white-space:nowrap;overflow:hidden;
+}
+.who b{color:#fff;font-weight:650;}
+.who .role{font-family:var(--mono);font-size:10.5px;color:#8FA3C4;}
+@media (max-width:700px){ .who .role{display:none;} .who{max-width:34vw;text-overflow:ellipsis;} }
+.noteitem .byline{font-family:var(--mono);font-size:11px;color:var(--ink-3);}
+
 .toast{
   position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
   background:var(--ink);color:var(--paper);
@@ -470,7 +530,9 @@ ul.data li b{font-family:var(--mono);font-size:13px;}
     <span>Gulf field team &middot; BRUKINSA (zanubrutinib)</span>
   </div>
   <div class="brandspacer"></div>
+  <div class="who" id="who"></div>
   <button class="ghost" id="export" type="button">Export notes</button>
+  <button class="ghost" id="signout" type="button" hidden>Sign out</button>
 </header>
 
 <div class="banner">Internal draft. Not MRC approved. Do not use with HCPs until reviewed.</div>
@@ -503,6 +565,40 @@ ul.data li b{font-family:var(--mono);font-size:13px;}
     </div>
     <div class="sheetbanner">Internal draft. Not MRC approved. Do not use with HCPs until reviewed.</div>
     <div id="detail"></div>
+  </div>
+</div>
+
+<div class="gate" id="gate" hidden>
+  <div class="gatebanner">Internal draft. Not MRC approved. Do not use with HCPs until reviewed.</div>
+  <div class="gatebody">
+    <form class="gatecard" id="gateform" autocomplete="off" novalidate>
+      <div class="gatebrand">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <rect width="64" height="64" rx="15" fill="#DA2B28"/>
+          <path d="M32 6C25 20 18 27 4 32c14 5 21 12 28 26 7-14 14-21 28-26C46 27 39 20 32 6Z" fill="#fff"/>
+          <path d="M32 20c-3 7-6 10-13 12 7 2 10 5 13 12 3-7 6-10 13-12-7-2-10-5-13-12Z" fill="#DA2B28"/>
+        </svg>
+        <div><b>BeOne &middot; CLL Objection Handler</b><span>Gulf field team</span></div>
+      </div>
+
+      <h2>Sign in to continue</h2>
+      <p class="gatelede">Sign in with your work email. It is attached to any field notes you write and to anything you export, so reviewers can see who recorded what.</p>
+
+      <label for="gmail">Work email</label>
+      <input id="gmail" type="email" autocomplete="username" required placeholder="name@beonemedicines.com" inputmode="email">
+
+      <label for="gcode">Password</label>
+      <input id="gcode" type="password" autocomplete="current-password" required placeholder="Shared team password">
+
+      <label class="gatecheck">
+        <input id="gack" type="checkbox" required>
+        <span>I understand this is an internal draft, is not MRC approved, and must not be used with HCPs until it has been reviewed.</span>
+      </label>
+
+      <p class="gateerr" id="gateerr" role="alert" hidden></p>
+      <button class="gatebtn" type="submit">Continue</button>
+      <p class="gatefoot">This sign-in identifies who is using the tool on this device. It is not a security control &mdash; treat the link itself as confidential.</p>
+    </form>
   </div>
 </div>
 
@@ -1680,6 +1776,90 @@ var CARDS = [
    ------------------------------------------------------------------ */
 var CATS = ["Fixed duration","Efficacy","Safety and tolerability","Comparative and ITC","Access and cost","Dosing and administration","Other"];
 var NOTES_KEY = "beone_cll_objection_notes_v1";
+var USER_KEY  = "beone_cll_objection_user_v1";
+
+/* ------------------------------------------------------------------
+   SIGN IN
+   A shared team password plus an allowlist of work emails, both held
+   as hashes so neither the password nor anyone's address sits in the
+   source in readable form — the repository is public and a plain list
+   would be scraped.
+
+   A page served to a browser can always be read, so this is a
+   deterrent and an attribution record, not access control. Real
+   restriction has to come from wherever the file is hosted.
+
+   To regenerate either value:  node make-access.mjs "Password" emails.txt
+   ------------------------------------------------------------------ */
+var PASSWORD_HASH  = "19d0a3d6";
+var ALLOWED_EMAILS = [];      /* hashes; empty means any work email is accepted */
+var user = null;
+
+function hashWith(s, upper){
+  var t = "bg1|" + (upper ? String(s).trim().toUpperCase() : String(s).trim().toLowerCase());
+  var x = 5381;
+  for(var i=0;i<t.length;i++){ x = ((x<<5) + x + t.charCodeAt(i)) | 0; }
+  return (x>>>0).toString(16);
+}
+function emailHash(e){ return hashWith(e, false); }
+function codeHash(c){ return hashWith(c, true); }
+
+/* "omar.fouad@beonemedicines.com" -> "Omar Fouad" */
+function nameFromEmail(email){
+  var local = String(email).split("@")[0].replace(/[._\-]+/g, " ").trim();
+  return local.split(/\s+/).map(function(w){
+    return w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w;
+  }).join(" ") || email;
+}
+function loadUser(){
+  try{ user = JSON.parse(localStorage.getItem(USER_KEY) || "null"); }
+  catch(e){ user = null; }
+  if(user && !user.email) user = null;
+}
+function signOut(){
+  try{ localStorage.removeItem(USER_KEY); }catch(e){}
+  location.reload();
+}
+function showWho(){
+  if(!user) return;
+  var slot = document.getElementById("who");
+  slot.innerHTML = '<b></b> <span class="role"></span>';
+  slot.querySelector("b").textContent = user.name;
+  slot.querySelector(".role").textContent = user.email;
+  document.getElementById("signout").hidden = false;
+}
+function openGate(){
+  var g = document.getElementById("gate");
+  g.hidden = false;
+  document.getElementById("gmail").focus();
+
+  document.getElementById("gateform").addEventListener("submit", function(e){
+    e.preventDefault();
+    var email = document.getElementById("gmail").value.trim().toLowerCase();
+    var code  = document.getElementById("gcode").value;
+    var ack   = document.getElementById("gack").checked;
+    var err   = document.getElementById("gateerr");
+
+    function fail(msg, focusId){
+      err.textContent = msg; err.hidden = false;
+      var el = document.getElementById(focusId); if(el) el.focus();
+    }
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return fail("Enter your work email address.", "gmail");
+    if(!ack) return fail("Please confirm you have read the notice above the form.", "gack");
+    if(codeHash(code) !== PASSWORD_HASH) return fail("That password is not right. Check with your manager.", "gcode");
+    if(ALLOWED_EMAILS.length && ALLOWED_EMAILS.indexOf(emailHash(email)) === -1){
+      return fail("That email is not on the team list. Ask your manager to have it added.", "gmail");
+    }
+
+    user = { email:email, name:nameFromEmail(email), at:new Date().toISOString() };
+    try{ localStorage.setItem(USER_KEY, JSON.stringify(user)); }catch(e){}
+    err.hidden = true;
+    g.hidden = true;
+    showWho();
+    startApp();
+  });
+}
+
 
 var state = { q:"", cats:{}, selected:null };
 var notes = {};
@@ -1715,7 +1895,7 @@ function addNote(id){
   var text = box.value.trim();
   if(!text){ box.focus(); return; }
   if(!Array.isArray(notes[id])) notes[id] = [];
-  notes[id].push({ t:new Date().toISOString(), text:text });
+  notes[id].push({ t:new Date().toISOString(), text:text, who:(user && user.name) || "" });
   var ok = saveNotes();
   box.value = "";
   document.getElementById("notelog").innerHTML = noteLogHTML(id);
@@ -1740,7 +1920,7 @@ function noteLogHTML(id){
   var h = "";
   for(var i = list.length - 1; i >= 0; i--){          /* newest first */
     h += '<li class="noteitem">'
-       + '<div class="notehead"><time>' + esc(stamp(list[i].t)) + '</time>'
+       + '<div class="notehead"><time>' + esc(stamp(list[i].t)) + (list[i].who ? '  \u00b7  ' + esc(list[i].who) : '') + '</time>'
        + '<button class="delnote" type="button" data-del="' + i + '" aria-label="Delete this note">Delete</button></div>'
        + '<p>' + esc(list[i].text) + '</p></li>';
   }
@@ -2021,6 +2201,7 @@ function notesText(){
   L.push("BeOne Gulf - CLL Objection Handler - field notes export");
   L.push("Internal draft. Not MRC approved. Do not use with HCPs until reviewed.");
   L.push("Exported: " + new Date().toString());
+  if(user) L.push("Exported by: " + user.name + " <" + user.email + ">");
   L.push("");
   var cards = 0, entries = 0;
   CARDS.forEach(function(c){
@@ -2035,7 +2216,7 @@ function notesText(){
     L.push("");
     list.forEach(function(en){          /* oldest first, as written */
       entries++;
-      L.push("  " + stamp(en.t));
+      L.push("  " + stamp(en.t) + (en.who ? "  \u00b7  " + en.who : ""));
       en.text.split("\n").forEach(function(line){ L.push("    " + line); });
       L.push("");
     });
@@ -2140,9 +2321,20 @@ window.addEventListener("resize", function(){
   }
 });
 
-loadNotes();
-buildChips();
-render();
+function startApp(){
+  loadNotes();
+  buildChips();
+  render();
+}
+
+document.getElementById("signout").addEventListener("click", signOut);
+
+loadUser();
+if(user){ showWho(); startApp(); }
+else { openGate(); }
 </script>
+
+<textarea id="fallback" readonly aria-label="Exported field notes" placeholder="Your exported notes will appear here."></textarea>
+
 </body>
 </html>
