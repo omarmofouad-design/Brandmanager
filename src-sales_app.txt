@@ -910,16 +910,16 @@ function renderHome(){
   var tgt = sumOf(all, "Brukinsa patient target", "ytd");
   var cards = [
     {mod:"objections", ic:"objections", h:"Objection handler",
-     p:"Every objection, its approved answer, and the slide it came from.",
+     p:"What to say, and the slide it came from.",
      s:CARDS.length + " objections · " + CATS.length + " categories"},
     {mod:"sales", ic:"sales", h:"Sales",
-     p:"Targets, trends and how each account is tracking.",
+     p:"Where every account stands.",
      s:money(pts) + " patients YTD" + (tgt ? " · " + Math.round((pts/tgt)*100) + "% to target" : "")},
     {mod:"entry", ic:"entry", h:"Enter sales",
-     p:"Log a figure against an account and month.",
+     p:"Add a figure to an account.",
      s:entries.length ? entries.length + " entered on this device" : "Nothing entered yet"},
     {mod:"activities", ic:"activities", h:"Activities",
-     p:"Events, their approvals and what is still outstanding.",
+     p:"What's booked, and what's holding it up.",
      s:(function(){ var ev = scopedEvents();
         return ev.length + " event" + (ev.length===1?"":"s") + " · " +
                ev.filter(function(e){return e.gatesDone===e.gatesTotal;}).length + " ready to run"; })()}

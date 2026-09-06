@@ -25,7 +25,7 @@
     <p class="greet" id="greet"></p>
     <h2 id="hometitle"></h2>
     <div class="launch" id="launch"></div>
-    <p class="homefoot">Internal draft. Not MRC approved. Nothing here goes to an HCP until it has been reviewed.</p>
+    <p class="homefoot">Internal draft. Not MRC approved. Nothing here goes to an HCP until it's reviewed.</p>
   </div></div>
 </section>
 
@@ -121,7 +121,7 @@
         <h3>Field notes on this account</h3>
         <p class="sub">Dated and signed, kept in this browser, and included in <b style="font-weight:700;">Export notes</b>.</p>
         <div class="notes">
-          <textarea id="anoteinput" placeholder="Who you saw, what was agreed, what is blocking. Each note is saved with the date you added it."></textarea>
+          <textarea id="anoteinput" placeholder="Who you saw, what was agreed, what is blocking."></textarea>
           <div class="noterow">
             <button class="act primary" type="button" id="addanote">Add dated note</button>
             <span class="saved" id="asavedmsg"></span>
@@ -221,7 +221,7 @@
       </div>
       <div class="field grow" style="margin-bottom:16px;">
         <label for="enote">Note (optional)</label>
-        <input id="enote" type="text" placeholder="Anything a reviewer should know about this figure">
+        <input id="enote" type="text" placeholder="Anything a reviewer should know">
       </div>
       <p class="gateerr" id="entryerr" role="alert" hidden></p>
       <div class="formrow">

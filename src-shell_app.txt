@@ -405,7 +405,7 @@ function detailHTML(c){
 
   h += '<h2 class="sec">Field notes</h2>';
   h += '<div class="notes">';
-  h += '<textarea id="noteinput" data-id="' + esc(c.id) + '" placeholder="What worked, what did not. Each note is saved with the date you added it."></textarea>';
+  h += '<textarea id="noteinput" data-id="' + esc(c.id) + '" placeholder="What worked, what did not."></textarea>';
   h += '<div class="noterow"><button class="act primary" type="button" id="addnote">Add dated note</button>'
      + '<span class="saved" id="savedmsg"></span></div>';
   h += '<ol class="notelog" id="notelog">' + noteLogHTML(c.id) + '</ol>';
