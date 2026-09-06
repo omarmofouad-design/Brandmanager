@@ -1,0 +1,644 @@
+# /rules/sources.yaml — Source register for the CLL decision-support tool
+#
+# STATUS: PROVISIONAL — NOT YET CONFIRMED BY THE PROJECT OWNER.
+# Phase 1 (rule authoring) is gated on confirmation of this register.
+#
+# ---------------------------------------------------------------------------
+# READ THIS BEFORE USING THE REGISTER
+# ---------------------------------------------------------------------------
+# Every entry below has access_method: not_obtained.
+#
+# This session's network egress policy blocks outbound HTTPS to every external
+# host except GitHub. Document retrieval was attempted and refused at the
+# proxy (HTTP 403 on CONNECT) for, among others: annalsofoncology.org,
+# esmo.org, ashpublications.org, pmc.ncbi.nlm.nih.gov, pubmed.ncbi.nlm.nih.gov,
+# onlinelibrary.wiley.com, accessdata.fda.gov, ema.europa.eu, nccn.org,
+# jnccn.org, nejm.org, clinicaltrials.gov, b-s-h.org.uk, europepmc.org,
+# doi.org. Keyword web search still functions and returns result metadata.
+#
+# CONSEQUENCE: I have identified these documents. I have not read any of them.
+# The `verified` field on every entry records exactly what was established:
+#
+#   bibliographic_only  — title, authors, publisher, year, identifier were
+#                         established from search-result metadata. The
+#                         document's CONTENT is unread.
+#   content_read        — the document was retrieved and read. (No entry
+#                         currently holds this value.)
+#
+# Under the project's own sourcing rules, search-result metadata is a
+# secondary channel. It is adequate to establish WHICH document is current.
+# It is NOT adequate to establish what a document says. Therefore:
+#
+#   *** NO RULE MAY BE WRITTEN AGAINST ANY ENTRY IN THIS REGISTER UNTIL ITS
+#   *** access_method BECOMES user_supplied OR web_fetch AND ITS verified
+#   *** FIELD BECOMES content_read.
+#
+# The `reliability` field describes the INTRINSIC standing of the document
+# (what it would be worth once read), not the strength of my current access
+# to it. Access strength lives in access_method + verified. Do not conflate
+# them: an entry may be reliability: primary_guideline and still be unusable
+# because it is unread.
+# ---------------------------------------------------------------------------
+
+register_version: "0.1.0-provisional"
+compiled_on: "2026-09-06"
+compiled_by: "Claude (Phase 0 sourcing)"
+confirmed_by_owner: false
+gate_status: "Phase 1 blocked pending owner confirmation and document supply"
+
+egress_note: >
+  Outbound HTTPS is blocked by this environment's egress policy for all
+  external hosts except GitHub. Zero source documents were retrieved.
+  See ACCESS-REQUESTS.md for the precise supply list.
+
+sources:
+
+  # =========================================================================
+  # TIER 1 — PRIMARY GUIDELINES
+  # =========================================================================
+
+  - id: iwcll-2018
+    title: >-
+      iwCLL guidelines for diagnosis, indications for treatment, response
+      assessment, and supportive management of CLL
+    publisher: >-
+      International Workshop on Chronic Lymphocytic Leukaemia (iwCLL),
+      published in Blood (American Society of Hematology)
+    version_or_year: "2018 (Blood 131(25):2745-2760)"
+    url_or_doi: "10.1182/blood-2017-09-806398"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_guideline
+    verified: bibliographic_only
+    intended_use:
+      - Diagnostic criteria for CLL/SLL/MBL
+      - Indications for treatment (active disease criteria)
+      - Response assessment criteria
+      - MRD definitions
+    notes: >-
+      Search found no successor iwCLL consensus document. As of this access
+      date, the 2018 edition still appears to be the standing iwCLL statement,
+      making it EIGHT YEARS OLD and the oldest load-bearing source in the
+      register. Whether the 2026 EHA guideline restates, amends or supersedes
+      its treatment-initiation criteria is UNRESOLVED and is the single most
+      important open question in Phase 0 — the tool's initiation logic depends
+      on the answer. Do not assume iwCLL 2018 still governs initiation.
+    open_questions:
+      - "Is a post-2018 iwCLL update in existence or in press?"
+      - "Does EHA 2026 defer to, restate, or modify the iwCLL 2018 initiation criteria?"
+
+  - id: eha-2026
+    title: >-
+      EHA Guidelines on management of chronic lymphocytic leukemia and
+      Richter transformation
+    publisher: >-
+      European Hematology Association (EHA), published in HemaSphere (Wiley)
+    version_or_year: "2026 (HemaSphere 10(6):e70403; published 2026-06-10)"
+    url_or_doi: "10.1002/hem3.70403"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_guideline
+    verified: bibliographic_only
+    intended_use:
+      - Primary European recommendation set (first-line and relapsed)
+      - Active surveillance and treatment-need assessment
+      - Richter transformation pathway
+    notes: >-
+      *** THIS IS A POST-TRAINING-CUTOFF DOCUMENT AND IT CHANGES THE SOURCE
+      HIERARCHY. *** Search metadata indicates the European CLL guideline has
+      moved from ESMO to EHA: this 2026 edition is described as the first
+      written on behalf of EHA, with EHA solely responsible for subsequent
+      annual editions. It therefore supersedes the ESMO CLL guideline line
+      (esmo-2020, esmo-2024-interim) as the current European source of record.
+      I had no knowledge of this document before searching. It is the highest
+      supply priority in ACCESS-REQUESTS.md.
+    supersedes: [esmo-2020, esmo-2024-interim]
+    authors_as_listed_in_search: >-
+      Eichhorst B, Ghia P, Bosch F, Clifford R, Gregor M, Guieze R, Kater AP,
+      Niemann CU, Pospisilova S, Robak T, Schuh A, Stamatopoulos K, Tadmor T,
+      York N
+
+  - id: nccn-cll-current
+    title: >-
+      NCCN Clinical Practice Guidelines in Oncology: Chronic Lymphocytic
+      Leukemia / Small Lymphocytic Lymphoma
+    publisher: "National Comprehensive Cancer Network (NCCN)"
+    version_or_year: >-
+      Latest version CONFIRMED by search: 2.2026 (released 2025-12-22).
+      Version 1.2026 released 2025-10-10. WHETHER A LATER 2026 VERSION EXISTS
+      AS OF THE ACCESS DATE IS UNVERIFIED — NCCN ships multiple versions a
+      year and nccn.org is unreachable from this session.
+    url_or_doi: "https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1478"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_guideline
+    verified: bibliographic_only
+    access_barrier: "Login-gated (free NCCN registration) AND egress-blocked"
+    intended_use:
+      - First-line and relapsed treatment algorithms
+      - del(17p)/TP53 branch
+      - Fixed-duration vs continuous vs MRD-guided regimen classification
+    notes: >-
+      Two structural changes reported in the v2.2026 update summary matter to
+      this tool's design and must be checked against the document itself:
+      (a) regimens are now explicitly classified time-limited vs continuous
+      and fixed-duration vs MRD-guided — which maps directly onto a required
+      tool output field; (b) the "Response Definitions After Treatment" table
+      and the "Venetoclax: Recommended TLS Prophylaxis and Monitoring Based on
+      Tumor Burden" table were REMOVED. If confirmed, NCCN no longer carries
+      the TLS table, and TLS rules must be sourced from the venetoclax label
+      (fda-venetoclax-uspi) rather than from NCCN. Do not build TLS logic
+      against NCCN until this is confirmed.
+    open_questions:
+      - "What is the current version number as of 2026-09-06?"
+      - "Confirm removal of the TLS and response-definition tables, and what replaced them."
+
+  - id: nccn-insights-v2-2026
+    title: >-
+      NCCN Guidelines Insights: Chronic Lymphocytic Leukemia / Small
+      Lymphocytic Lymphoma, Version 2.2026
+    publisher: >-
+      Journal of the National Comprehensive Cancer Network (JNCCN)
+    version_or_year: "2026 (JNCCN 24(3), article p68); PMID 41825137"
+    url_or_doi: "https://jnccn.org/view/journals/jnccn/24/3/article-p68.xml"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_guideline
+    verified: bibliographic_only
+    intended_use:
+      - Narrative rationale for the v2.2026 changes
+    notes: >-
+      Insights papers document what changed and why; they are not the
+      algorithm. Useful for the CHANGELOG rationale, not as the rule source.
+      Use nccn-cll-current for the algorithm itself.
+
+  - id: bsh-2025
+    title: >-
+      2025 British Society for Haematology Guideline for the treatment of
+      chronic lymphocytic leukaemia
+    publisher: >-
+      British Society for Haematology, published in British Journal of
+      Haematology (Wiley)
+    version_or_year: "2025 (Br J Haematol 207(6):2296-2313; published 2025-10-09)"
+    url_or_doi: "10.1111/bjh.70100"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_guideline
+    verified: bibliographic_only
+    intended_use:
+      - Treatment recommendations, UK perspective
+      - Fixed-duration vs continuous selection framing
+      - Prehabilitation / patient optimisation
+    notes: >-
+      Scope is TREATMENT only — the title is explicit about this. It is not a
+      diagnosis or staging source, and it should not be cited for the
+      initiation criteria unless the document itself restates them. A separate
+      BSH diagnosis/investigation guideline may exist; its existence and
+      currency have NOT been established. See ACCESS-REQUESTS.md.
+
+  - id: eric-tp53-2024
+    title: >-
+      ERIC recommendations for TP53 mutation analysis in chronic lymphocytic
+      leukemia — 2024 update
+    publisher: >-
+      European Research Initiative on CLL (ERIC), published in Leukemia
+      (Nature Portfolio)
+    version_or_year: "2024; PMID 38755420"
+    url_or_doi: "10.1038/s41375-024-02267-x"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_guideline
+    verified: bibliographic_only
+    intended_use:
+      - How TP53 aberration is defined and reported
+      - Interpretation of low-burden TP53-mutated clones
+    notes: >-
+      Search metadata indicates this update REMOVED the recommendation of a
+      specific variant-allele-frequency cut-off for reporting TP53 mutations,
+      shifting the emphasis to laboratory method validation. If confirmed on
+      reading, the tool must NOT hard-code a VAF threshold, and must instead
+      treat the reporting laboratory's validated call as the input. This
+      matches gap C3, which was declared not-held pre-search. Confirm before
+      building the TP53 branch.
+
+  - id: eric-ighv-2022
+    title: >-
+      Immunoglobulin gene sequence analysis in chronic lymphocytic leukemia:
+      the 2022 update of the recommendations by ERIC
+    publisher: >-
+      European Research Initiative on CLL (ERIC), published in Leukemia
+      (Nature Portfolio)
+    version_or_year: "2022"
+    url_or_doi: "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9343247/"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_guideline
+    verified: bibliographic_only
+    intended_use:
+      - IGHV mutational status definition and reporting
+    notes: >-
+      DOI not established by search; only the PMC identifier was surfaced.
+      Needed to resolve gap C4 (IGHV mutated/unmutated definition). Whether a
+      post-2022 ERIC IGHV update exists has not been checked.
+
+  # =========================================================================
+  # TIER 1b — REGIONAL GUIDANCE (Gulf / Arab populations)
+  # =========================================================================
+
+  - id: saudi-cll-2026
+    title: >-
+      Clinical practice guidelines for the diagnosis and management of chronic
+      lymphocytic leukemia in Saudi Arabia: consensus statement by an expert
+      panel
+    publisher: "Frontiers in Medicine"
+    version_or_year: "Published 2026-01-14; Frontiers in Medicine vol. 12"
+    url_or_doi: "10.3389/fmed.2025.1719364"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_guideline
+    verified: bibliographic_only
+    intended_use:
+      - Regional adaptation of diagnosis, staging and first-line/R-R management
+      - Evidence of what regional expert practice actually recommends
+    notes: >-
+      National (Saudi) consensus, not a Gulf-wide instrument, and not a
+      formulary. Classified primary_guideline as a named national consensus
+      statement, but it is a consensus document rather than a systematically
+      graded guideline — weight it below iwCLL/EHA/NCCN/BSH on clinical
+      thresholds, and above them on nothing except regional applicability.
+      Closest available proxy for GCC practice; NOT a substitute for UAE,
+      Qatar, Oman or Kuwait guidance, none of which was located.
+
+  - id: gulf-fixed-duration-2025
+    title: >-
+      Upfront fixed-duration treatment strategies for chronic lymphocytic
+      leukemia in Arab populations: a position statement from the Gulf region
+    publisher: "Frontiers in Medicine"
+    version_or_year: "Published 2025-02-26; PMID 40078401"
+    url_or_doi: "10.3389/fmed.2025.1509074"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_guideline
+    verified: bibliographic_only
+    intended_use:
+      - Regional position on fixed-duration first-line therapy
+      - Rationale grounded in a younger Arab patient demographic
+    notes: >-
+      A POSITION STATEMENT, not a guideline — the weakest instrument type in
+      Tier 1b, and it takes a directive stance that search metadata reports as
+      ibrutinib-venetoclax being the first choice for all fit patients in the
+      region regardless of age. That is more prescriptive than the
+      international guidelines are likely to be, and it is recorded in
+      CONFLICTS.md as conflict C-01 rather than adopted. Authors listed in
+      search: Yassin MA, Al Farsi K, Hamad A, Ghasoub R, Alhuraiji A,
+      Mheidly K, Aal Yaseen H, Osman H, Trepel M.
+
+  - id: gulf-consensus-2024
+    title: >-
+      Evidence-Based Management of Chronic Lymphocytic Leukemia: Consensus
+      Statements from the Gulf Region
+    publisher: "Acta Haematologica (Karger)"
+    version_or_year: "2024 (Acta Haematol 147(3):260-279; published 2024-05-28)"
+    url_or_doi: "https://karger.com/aha/article-abstract/147/3/260/863398/"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_guideline
+    verified: bibliographic_only
+    intended_use:
+      - Gulf-wide consensus on definitions, classification, staging, prognosis
+    notes: >-
+      Described in search metadata as eight experts responding to 50
+      statements — a Delphi-style consensus, so its statements carry consensus
+      weight, not evidence grading, and the panel is small. Predates the 2026
+      first-line approvals (acalabrutinib-venetoclax) and the CLL17 readout,
+      so its treatment content is likely stale even though its
+      definition/staging content may not be. DOI not established by search.
+
+  # =========================================================================
+  # TIER 2 — PRIMARY LITERATURE (pivotal trials)
+  # =========================================================================
+  # Only trials whose bibliographic identity was actually established by
+  # search appear here. Regimens whose pivotal citation could NOT be pinned
+  # down are listed under `pending_identification` below — they are NOT
+  # sources and must not be cited.
+
+  - id: cll17-nejm-2025
+    title: >-
+      Fixed-Duration versus Continuous Treatment for Chronic Lymphocytic
+      Leukemia (CLL17)
+    publisher: "New England Journal of Medicine"
+    version_or_year: "2025; PMID 41358601; presented ASH 2025 plenary session"
+    url_or_doi: "https://pubmed.ncbi.nlm.nih.gov/41358601/"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_literature
+    verified: bibliographic_only
+    intended_use:
+      - Head-to-head evidence on fixed-duration vs continuous first-line therapy
+    notes: >-
+      POST-CUTOFF AND POTENTIALLY THE MOST CONSEQUENTIAL SINGLE READOUT for
+      this tool's first-line logic — a three-arm randomised comparison of two
+      fixed-duration regimens against continuous BTKi monotherapy. Search
+      metadata reports a non-inferiority result on investigator-assessed PFS
+      at ~34 months median follow-up. No efficacy figure from this trial may
+      enter the tool until the paper is read. Note that guidelines published
+      before this readout (gulf-consensus-2024, and possibly bsh-2025) cannot
+      have accounted for it, whereas eha-2026 may have.
+
+  - id: cll13-gaia-nejm-2023
+    title: "First-Line Venetoclax Combinations in Chronic Lymphocytic Leukemia (CLL13/GAIA)"
+    publisher: "New England Journal of Medicine"
+    version_or_year: "2023"
+    url_or_doi: "10.1056/NEJMoa2213093"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_literature
+    verified: bibliographic_only
+    intended_use:
+      - Comparison of first-line venetoclax-based combinations vs chemoimmunotherapy
+
+  - id: glow-nejm-evid-2022
+    title: >-
+      Fixed-Duration Ibrutinib-Venetoclax in Patients with Chronic Lymphocytic
+      Leukemia and Comorbidities (GLOW)
+    publisher: "NEJM Evidence"
+    version_or_year: "2022"
+    url_or_doi: "10.1056/EVIDoa2200006"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_literature
+    verified: bibliographic_only
+    intended_use:
+      - Pivotal evidence for fixed-duration ibrutinib-venetoclax in a comorbid population
+
+  # =========================================================================
+  # TIER 3 — REGULATORY LABELS
+  # =========================================================================
+  # Labels are the source of record for dosing, ramp-up, TLS stratification,
+  # organ-impairment adjustment and drug interactions. NONE were retrievable.
+  # Label revision dates are unverified in every case: the current revision
+  # must be confirmed at supply time, because a label read at the wrong
+  # revision is worse than no label.
+
+  - id: fda-venetoclax-uspi
+    title: "VENCLEXTA (venetoclax) US Prescribing Information"
+    publisher: "US Food and Drug Administration / AbbVie / Genentech"
+    version_or_year: >-
+      NDA 208573. Most recent revision surfaced by search: label document
+      208573s032 (2026). CURRENT REVISION UNVERIFIED.
+    url_or_doi: "https://www.accessdata.fda.gov/drugsatfda_docs/label/2026/208573s032lbl.pdf"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: regulatory_label
+    verified: bibliographic_only
+    intended_use:
+      - TLS risk stratification (tumour burden and renal function)
+      - 5-week dose ramp-up schedule
+      - TLS prophylaxis, hydration and laboratory monitoring schedule
+      - CYP3A and P-gp interaction dose modifications
+      - Renal and hepatic impairment adjustment
+    notes: >-
+      HIGHEST-PRIORITY LABEL. This is the sole source of record for the entire
+      TLS section (gap section I), which is the most patient-safety-sensitive
+      logic in the tool — and, if the NCCN table removal is confirmed, the
+      ONLY source for it. Gap I1 flags that I do not confidently hold how the
+      tumour-burden and renal axes combine into a risk tier; that combination
+      must be transcribed from this label's own table structure, not inferred.
+      Must be supplied as the complete label, not an excerpt of the highlights.
+
+  - id: fda-acalabrutinib-uspi
+    title: "CALQUENCE (acalabrutinib) US Prescribing Information"
+    publisher: "US Food and Drug Administration / AstraZeneca"
+    version_or_year: >-
+      NDA 216387 (tablets) / NDA 210259 (capsules). Revision following the
+      2026-02-19 acalabrutinib-plus-venetoclax approval. CURRENT REVISION
+      UNVERIFIED.
+    url_or_doi: "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=216387"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: regulatory_label
+    verified: bibliographic_only
+    intended_use:
+      - Indications, dose, fixed-duration schedule for the venetoclax combination
+      - Cardiac arrhythmia and haemorrhage warnings
+      - Acid-reducing-agent interaction (tablet vs capsule formulation)
+    notes: >-
+      Two formulations with historically different interaction profiles
+      (gap K7 flags the acid-reducing-agent difference between capsule and
+      tablet as a formulation-specific trap). The tool must not treat
+      "acalabrutinib" as one entity until this is read for both.
+
+  - id: fda-zanubrutinib-uspi
+    title: "BRUKINSA (zanubrutinib) US Prescribing Information"
+    publisher: "US Food and Drug Administration / BeiGene (BeOne Medicines)"
+    version_or_year: "CURRENT REVISION UNVERIFIED"
+    url_or_doi: "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=BasicSearch.process"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: regulatory_label
+    verified: bibliographic_only
+    intended_use:
+      - Dose and schedule options, organ-impairment adjustment, cardiac warnings
+    notes: "Application number not established by search; do not cite one until confirmed."
+
+  - id: fda-ibrutinib-uspi
+    title: "IMBRUVICA (ibrutinib) US Prescribing Information"
+    publisher: "US Food and Drug Administration / Pharmacyclics / Janssen"
+    version_or_year: "CURRENT REVISION UNVERIFIED"
+    url_or_doi: "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=BasicSearch.process"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: regulatory_label
+    verified: bibliographic_only
+    intended_use:
+      - Dose, cardiac warnings (atrial and ventricular arrhythmia), anticoagulation guidance
+    notes: >-
+      Needed for gap section J. Gap J5/J6 flag that I hold neither the current
+      ventricular-arrhythmia label wording nor any peri-procedural hold
+      duration. Both must come from this document.
+
+  - id: fda-obinutuzumab-uspi
+    title: "GAZYVA (obinutuzumab) US Prescribing Information"
+    publisher: "US Food and Drug Administration / Genentech"
+    version_or_year: "CURRENT REVISION UNVERIFIED"
+    url_or_doi: "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=BasicSearch.process"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: regulatory_label
+    verified: bibliographic_only
+    intended_use:
+      - First-infusion TLS and infusion-related-reaction management, dose splitting
+      - Hepatitis B reactivation boxed warning and screening requirement
+
+  - id: fda-pirtobrutinib-uspi
+    title: "JAYPIRCA (pirtobrutinib) US Prescribing Information"
+    publisher: "US Food and Drug Administration / Eli Lilly"
+    version_or_year: >-
+      Revision following traditional approval reported as 2025-12-03.
+      CURRENT REVISION UNVERIFIED.
+    url_or_doi: "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=BasicSearch.process"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: regulatory_label
+    verified: bibliographic_only
+    intended_use:
+      - Relapsed/refractory indication wording and required prior therapy
+      - Dose and schedule
+    notes: >-
+      THE INDICATION APPEARS TO HAVE BROADENED SINCE MY CUTOFF. Search
+      metadata reports a 2023 accelerated approval requiring at least two
+      prior lines including a BTK inhibitor and a BCL-2 inhibitor, and a
+      2025-12-03 traditional approval for relapsed/refractory CLL/SLL after a
+      covalent BTK inhibitor. If confirmed, the prior-therapy requirement in
+      the tool's R/R branch changes materially. Read the indication section
+      verbatim before writing that rule.
+
+  - id: fda-lisocel-pi
+    title: "BREYANZI (lisocabtagene maraleucel) US Prescribing Information"
+    publisher: "US Food and Drug Administration (CBER) / Bristol Myers Squibb"
+    version_or_year: >-
+      CLL/SLL accelerated approval reported as 2024-03-14. CURRENT REVISION
+      UNVERIFIED.
+    url_or_doi: "https://www.fda.gov/vaccines-blood-biologics/cellular-gene-therapy-products/breyanzi"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: regulatory_label
+    verified: bibliographic_only
+    intended_use:
+      - CAR-T eligibility and required prior therapy in CLL/SLL
+      - Boxed warnings (CRS, neurotoxicity, secondary malignancy)
+    notes: >-
+      Accelerated approval — confirm at supply time whether it has since been
+      converted, amended or withdrawn.
+
+  - id: fda-approval-acala-ven-2026
+    title: >-
+      FDA approval announcement: acalabrutinib with venetoclax for chronic
+      lymphocytic leukemia or small lymphocytic lymphoma
+    publisher: "US Food and Drug Administration"
+    version_or_year: "Approval reported as 2026-02-19"
+    url_or_doi: "https://www.fda.gov/drugs/resources-information-approved-drugs/fda-approves-acalabrutinib-venetoclax-chronic-lymphocytic-leukemia-or-small-lymphocytic-lymphoma"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: regulatory_label
+    verified: bibliographic_only
+    intended_use:
+      - Establishing the approved first-line population and fixed duration
+    notes: >-
+      POST-CUTOFF. Search metadata reports approval for previously untreated
+      CLL/SLL, a fixed duration of 14 cycles of 28 days, and an AMPLIFY trial
+      population excluding del(17p)/TP53-mutated disease. Every one of those
+      three facts is load-bearing for the first-line rules and NONE is
+      verified against the document. Note the divergence from the EU position
+      recorded as conflict C-02.
+
+  - id: ema-venclyxto-smpc
+    title: "VENCLYXTO (venetoclax) EU Summary of Product Characteristics"
+    publisher: "European Medicines Agency / AbbVie"
+    version_or_year: >-
+      Post-2026-05-29 European Commission label expansion. CURRENT REVISION
+      UNVERIFIED.
+    url_or_doi: "https://www.ema.europa.eu/en/medicines/human/EPAR/venclyxto"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: regulatory_label
+    verified: bibliographic_only
+    intended_use:
+      - EU-approved combinations and indication wording
+    notes: >-
+      Search metadata reports a 2026-05-29 EC authorisation expanding the
+      label to include combination with acalabrutinib (± obinutuzumab) and
+      with ibrutinib in previously untreated CLL. Relevant because Gulf
+      regulators frequently follow EMA rather than FDA. See conflict C-02.
+
+  - id: ema-calquence-smpc
+    title: "CALQUENCE (acalabrutinib) EU Summary of Product Characteristics"
+    publisher: "European Medicines Agency / AstraZeneca"
+    version_or_year: >-
+      Post-2025-06-06 European Commission authorisation of the fixed-duration
+      regimens. CURRENT REVISION UNVERIFIED.
+    url_or_doi: "https://www.ema.europa.eu/en/medicines/human/EPAR/calquence"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: regulatory_label
+    verified: bibliographic_only
+    intended_use:
+      - EU indication wording for fixed-duration acalabrutinib regimens
+    notes: >-
+      Search metadata reports EC approval on 2025-06-06 for fixed-duration
+      acalabrutinib plus venetoclax WITH OR WITHOUT obinutuzumab — an
+      apparently broader combination set than the US approval. Central to
+      conflict C-02.
+
+# ===========================================================================
+# PENDING IDENTIFICATION — NOT SOURCES
+# ===========================================================================
+# These are needed but their bibliographic identity was NOT established.
+# Nothing here may be cited by any rule. Entries graduate into `sources`
+# above only once identified, and become usable only once read.
+
+pending_identification:
+
+  pivotal_trials:
+    - regimen: "Venetoclax + obinutuzumab, first line"
+      believed_trial: "CLL14"
+      status: "Trial name not confirmed by search; no citation established"
+    - regimen: "Acalabrutinib ± obinutuzumab, first line"
+      believed_trial: "ELEVATE-TN"
+      status: "Not confirmed; no citation established"
+    - regimen: "Acalabrutinib vs ibrutinib, relapsed"
+      believed_trial: "ELEVATE-RR"
+      status: "Not confirmed; needed as the head-to-head cardiac-safety citation"
+    - regimen: "Zanubrutinib, first line"
+      believed_trial: "SEQUOIA"
+      status: "Not confirmed; del(17p) cohort detail needed"
+    - regimen: "Zanubrutinib vs ibrutinib, relapsed"
+      believed_trial: "ALPINE"
+      status: "Not confirmed"
+    - regimen: "Acalabrutinib + venetoclax ± obinutuzumab, first line"
+      believed_trial: "AMPLIFY"
+      status: >-
+        Trial name corroborated by regulatory announcements but no peer-reviewed
+        citation established. Required — this underpins a 2026 approval.
+    - regimen: "Ibrutinib + venetoclax, first line"
+      believed_trial: "CAPTIVATE (GLOW is separately identified)"
+      status: "Not confirmed which is registrational for which population"
+    - regimen: "Venetoclax + rituximab, relapsed"
+      believed_trial: "MURANO"
+      status: "Not confirmed; needed for the R/R duration rule"
+    - regimen: "Pirtobrutinib, relapsed"
+      believed_trial: "BRUIN"
+      status: "Not confirmed; registrational cohort unclear"
+    - regimen: "Lisocabtagene maraleucel, relapsed"
+      believed_trial: "TRANSCEND CLL 004"
+      status: "Not confirmed"
+    - regimen: "Ibrutinib monotherapy, first line (historical)"
+      believed_trial: "RESONATE-2"
+      status: "Not confirmed"
+    - regimen: "Early treatment of high-risk asymptomatic disease"
+      believed_trial: "CLL12 and/or EVOLVE"
+      status: >-
+        Not confirmed. Needed to resolve gaps B8/D10 — whether watch-and-wait
+        remains standard for asymptomatic high-risk genetics.
+
+  documents:
+    - "BSH diagnosis/investigation guideline for CLL (existence and currency unestablished; bsh-2025 covers treatment only)"
+    - "Any post-2018 iwCLL consensus update (existence unestablished)"
+    - "Any post-2022 ERIC IGHV recommendations update (existence unchecked)"
+    - "UAE national or emirate-level CLL protocol or formulary (none located)"
+    - "Qatar national CLL protocol or formulary (none located)"
+    - "Oman national CLL protocol or formulary (none located)"
+    - "Kuwait national CLL protocol or formulary (none located)"
+    - "SFDA, UAE MOH/DoH/DHA, Qatar MoPH, Oman MoH, Kuwait MoH approval and formulary status for every agent (none located)"
+
+  investigational_agents_confirmed_not_approved:
+    note: >-
+      Recorded so the tool can state their status rather than omit them.
+      Search metadata as of 2026-09-06 indicates none of the following had
+      regulatory approval in CLL; BGB-16673 was reported as pursuing an
+      accelerated-approval pathway. Status is volatile and MUST be re-checked
+      at build time and before any release.
+    agents:
+      - "BGB-16673 / bexobrutideg-class BTK degraders (BeOne Medicines)"
+      - "NX-5948 / bexobrutideg (Nurix)"
+      - "Sonrotoclax (BCL2 inhibitor)"
