@@ -112,7 +112,7 @@
 
       <div class="card2">
         <h3>Field notes on this account</h3>
-        <p class="sub">Each note is stamped with the date and who wrote it, kept on this device, and included in <b style="font-weight:700;">Export notes</b>.</p>
+        <p class="sub">Dated and signed, kept in this browser, and included in <b style="font-weight:700;">Export notes</b>.</p>
         <div class="notes">
           <textarea id="anoteinput" placeholder="Who you saw, what was agreed, what is blocking. Each note is saved with the date you added it."></textarea>
           <div class="noterow">
@@ -163,8 +163,9 @@
 
       <div class="card2">
         <h3>The same figures as a table</h3>
-        <p class="sub">Every value plotted above, for reading or copying. Click an account to open it.</p>
+        <p class="sub">Click a row to open the account.</p>
         <div class="tablewrap"><table class="grid" id="salestable"></table></div>
+        <p class="tablenote" id="salesnote"></p>
       </div>
     </div>
   </div></div>
@@ -175,13 +176,13 @@
   <div class="scrollpane"><div class="pagewrap">
     <div class="pagehead">
       <h2>Enter sales</h2>
-      <p>Record a figure against an account and month. Entries are listed below and included in your export.</p>
+      <p>Record a figure against an account and month.</p>
     </div>
 
     <div class="notice">
       <b>Read this first</b>
-      Entries are saved in this browser on this device only. They do not reach anyone else and they do not
-      change the ALLnONE file. To pass figures on, use <b style="display:inline;text-transform:none;letter-spacing:0;font-size:inherit;font-family:inherit;">Export entries</b> and send the file.
+      Entries stay in this browser. Nobody else sees them and the source file is untouched. Use
+      <b style="display:inline;text-transform:none;letter-spacing:0;font-size:inherit;font-family:inherit;">Export entries</b> to pass them on.
     </div>
 
     <form class="formcard" id="entryform" novalidate>
@@ -267,7 +268,7 @@
       </div>
 
       <h2>Sign in to continue</h2>
-      <p class="gatelede">Sign in with your work email. It is attached to any field notes you write and to anything you export, so reviewers can see who recorded what.</p>
+      <p class="gatelede">Your work email is attached to anything you write or export, so reviewers can see who recorded what.</p>
 
       <label for="gmail">Work email</label>
       <input id="gmail" type="email" autocomplete="username" required placeholder="name@beonemed.com" inputmode="email">
@@ -282,7 +283,7 @@
 
       <p class="gateerr" id="gateerr" role="alert" hidden></p>
       <button class="gatebtn" type="submit">Continue</button>
-      <p class="gatefoot">This sign-in identifies who is using the tool on this device. It is not a security control &mdash; treat the link itself as confidential.</p>
+      <p class="gatefoot">This identifies who is using the tool. It is not a security control &mdash; treat the link as confidential.</p>
     </form>
   </div>
 </div>
@@ -319,7 +320,7 @@
       </div>
       <div class="card2">
         <h3>Where events are held up</h3>
-        <p class="sub">How far the events in view have got through each approval check.</p>
+        <p class="sub">Events cleared at each check.</p>
         <div class="legend" id="gatelegend"></div>
         <div class="chartbox" id="gatebox"></div>
       </div>
@@ -333,7 +334,7 @@
       </div>
       <div class="card2">
         <h3>Approvals, documents and payment</h3>
-        <p class="sub">The state of the events in view, as recorded.</p>
+        <p class="sub">As recorded in the tracker.</p>
         <div id="stripbox"></div>
       </div>
     </div>

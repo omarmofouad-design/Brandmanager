@@ -569,7 +569,9 @@ ul.data li b{font-family:var(--mono);font-size:13px;}
 
 /* ---------- filter row ---------- */
 .filters{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin:0 0 20px;}
-.field{display:flex;flex-direction:column;gap:5px;}
+/* min-width:0 or a select refuses to shrink below its longest option and
+   runs off the side of a phone */
+.field{display:flex;flex-direction:column;gap:5px;min-width:0;max-width:100%;}
 .field label{
   font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
   font-weight:700;color:var(--ink-3);
@@ -578,8 +580,14 @@ ul.data li b{font-family:var(--mono);font-size:13px;}
   min-height:40px;padding:0 10px;border:1px solid var(--line-strong);
   border-radius:7px;background:var(--paper);min-width:150px;
 }
+.field select{max-width:100%;text-overflow:ellipsis;}
 .field.grow{flex:1 1 220px;}
-.field.grow input{width:100%;}
+.field.grow input,.field.grow select{width:100%;}
+@media (max-width:620px){
+  .filters{gap:10px 8px;}
+  .field{flex:1 1 100%;}
+  .field select,.field input{width:100%;}
+}
 
 /* ---------- stat tiles ---------- */
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:10px;margin:0 0 22px;}

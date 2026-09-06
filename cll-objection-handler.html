@@ -574,7 +574,9 @@ ul.data li b{font-family:var(--mono);font-size:13px;}
 
 /* ---------- filter row ---------- */
 .filters{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin:0 0 20px;}
-.field{display:flex;flex-direction:column;gap:5px;}
+/* min-width:0 or a select refuses to shrink below its longest option and
+   runs off the side of a phone */
+.field{display:flex;flex-direction:column;gap:5px;min-width:0;max-width:100%;}
 .field label{
   font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
   font-weight:700;color:var(--ink-3);
@@ -583,8 +585,14 @@ ul.data li b{font-family:var(--mono);font-size:13px;}
   min-height:40px;padding:0 10px;border:1px solid var(--line-strong);
   border-radius:7px;background:var(--paper);min-width:150px;
 }
+.field select{max-width:100%;text-overflow:ellipsis;}
 .field.grow{flex:1 1 220px;}
-.field.grow input{width:100%;}
+.field.grow input,.field.grow select{width:100%;}
+@media (max-width:620px){
+  .filters{gap:10px 8px;}
+  .field{flex:1 1 100%;}
+  .field select,.field input{width:100%;}
+}
 
 /* ---------- stat tiles ---------- */
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:10px;margin:0 0 22px;}
@@ -917,7 +925,7 @@ table.grid tr.acctrow:hover td{background:var(--surface-2);}
 
       <div class="card2">
         <h3>Field notes on this account</h3>
-        <p class="sub">Each note is stamped with the date and who wrote it, kept on this device, and included in <b style="font-weight:700;">Export notes</b>.</p>
+        <p class="sub">Dated and signed, kept in this browser, and included in <b style="font-weight:700;">Export notes</b>.</p>
         <div class="notes">
           <textarea id="anoteinput" placeholder="Who you saw, what was agreed, what is blocking. Each note is saved with the date you added it."></textarea>
           <div class="noterow">
@@ -968,8 +976,9 @@ table.grid tr.acctrow:hover td{background:var(--surface-2);}
 
       <div class="card2">
         <h3>The same figures as a table</h3>
-        <p class="sub">Every value plotted above, for reading or copying. Click an account to open it.</p>
+        <p class="sub">Click a row to open the account.</p>
         <div class="tablewrap"><table class="grid" id="salestable"></table></div>
+        <p class="tablenote" id="salesnote"></p>
       </div>
     </div>
   </div></div>
@@ -980,13 +989,13 @@ table.grid tr.acctrow:hover td{background:var(--surface-2);}
   <div class="scrollpane"><div class="pagewrap">
     <div class="pagehead">
       <h2>Enter sales</h2>
-      <p>Record a figure against an account and month. Entries are listed below and included in your export.</p>
+      <p>Record a figure against an account and month.</p>
     </div>
 
     <div class="notice">
       <b>Read this first</b>
-      Entries are saved in this browser on this device only. They do not reach anyone else and they do not
-      change the ALLnONE file. To pass figures on, use <b style="display:inline;text-transform:none;letter-spacing:0;font-size:inherit;font-family:inherit;">Export entries</b> and send the file.
+      Entries stay in this browser. Nobody else sees them and the source file is untouched. Use
+      <b style="display:inline;text-transform:none;letter-spacing:0;font-size:inherit;font-family:inherit;">Export entries</b> to pass them on.
     </div>
 
     <form class="formcard" id="entryform" novalidate>
@@ -1072,7 +1081,7 @@ table.grid tr.acctrow:hover td{background:var(--surface-2);}
       </div>
 
       <h2>Sign in to continue</h2>
-      <p class="gatelede">Sign in with your work email. It is attached to any field notes you write and to anything you export, so reviewers can see who recorded what.</p>
+      <p class="gatelede">Your work email is attached to anything you write or export, so reviewers can see who recorded what.</p>
 
       <label for="gmail">Work email</label>
       <input id="gmail" type="email" autocomplete="username" required placeholder="name@beonemed.com" inputmode="email">
@@ -1087,7 +1096,7 @@ table.grid tr.acctrow:hover td{background:var(--surface-2);}
 
       <p class="gateerr" id="gateerr" role="alert" hidden></p>
       <button class="gatebtn" type="submit">Continue</button>
-      <p class="gatefoot">This sign-in identifies who is using the tool on this device. It is not a security control &mdash; treat the link itself as confidential.</p>
+      <p class="gatefoot">This identifies who is using the tool. It is not a security control &mdash; treat the link as confidential.</p>
     </form>
   </div>
 </div>
@@ -1124,7 +1133,7 @@ table.grid tr.acctrow:hover td{background:var(--surface-2);}
       </div>
       <div class="card2">
         <h3>Where events are held up</h3>
-        <p class="sub">How far the events in view have got through each approval check.</p>
+        <p class="sub">Events cleared at each check.</p>
         <div class="legend" id="gatelegend"></div>
         <div class="chartbox" id="gatebox"></div>
       </div>
@@ -1138,7 +1147,7 @@ table.grid tr.acctrow:hover td{background:var(--surface-2);}
       </div>
       <div class="card2">
         <h3>Approvals, documents and payment</h3>
-        <p class="sub">The state of the events in view, as recorded.</p>
+        <p class="sub">As recorded in the tracker.</p>
         <div id="stripbox"></div>
       </div>
     </div>
@@ -3423,6 +3432,11 @@ function selectedAccount(){
   if(!el || !el.value) return null;
   return scopedAccounts().filter(function(a){ return a.id === el.value; })[0] || null;
 }
+function setSub(id, text){
+  var el = document.getElementById(id);
+  el.textContent = text || "";
+  el.hidden = !text;
+}
 function tileHTML(k, v, sub, good){
   return '<div class="tile"><span class="k">' + esc(k) + '</span><span class="v">' + v + '</span>' +
          '<span class="s' + (good ? " up" : "") + '">' + sub + '</span></div>';
@@ -3439,20 +3453,18 @@ function renderSales(){
   var target = PAIRS[measure];
   var universe = scopedAccounts();
 
+  var nCtry = Array.from(new Set(universe.map(function(a){ return a.country; }))).length;
   document.getElementById("salessub").textContent =
-    universe.length + " accounts across " +
-    (function(n){ return n + (n === 1 ? " country" : " countries"); })(
-      Array.from(new Set(universe.map(function(a){ return a.country; }))).length) +
-    ", from " + SALES.source + ". " +
-    (acc ? "One account open." : list.length + " shown with the current filters.") +
-    (scope === "mine" && myKam() ? "  Showing your accounts only." : "");
+    ((scope === "mine" && myKam()) ? "Your " : "All ") + universe.length + " accounts, " +
+    nCtry + (nCtry === 1 ? " country." : " countries.") +
+    (!acc && list.length !== universe.length ? "  " + list.length + " match the filters." : "");
 
   var note = document.getElementById("entrynote");
   if(entries.length){
     note.hidden = false;
     note.innerHTML = "<b>Your entries are included</b>" +
-      entries.length + " entry" + (entries.length === 1 ? "" : " entries") +
-      " from this device override the file figures for their month. Year to date follows the rule the file uses for each measure, so where the file states a year-to-date figure outright it is left as recorded.";
+      entries.length + " figure" + (entries.length === 1 ? "" : "s") +
+      " from this device override the file for their month. Year to date follows the file's own rule for each measure.";
   } else { note.hidden = true; }
 
   document.getElementById("acctview").hidden = !acc;
@@ -3492,15 +3504,13 @@ function renderAccount(a, measure, monthIdx, monthLabel, target){
       cover === null ? "as at " + MONTHS[SALES.ytdThrough]
                      : (Math.round(cover * 10) / 10) + " months of cover") +
     tileHTML("Share of therapies", share === null ? "&mdash;" : Math.round(share) + "%",
-      "Brukinsa of all therapy columns");
+      "of every therapy column");
 
   /* chart 1: whichever measure is selected */
   var s1 = [{name:measure, color:C_ACTUAL, values:seriesOf(list, measure)}];
   if(target) s1.push({name:target, color:C_TARGET, values:seriesOf(list, target)});
   document.getElementById("a1title").textContent = measure + " by month";
-  document.getElementById("a1sub").textContent =
-    "Change the Measure filter above to plot any of the " +
-    measureList().length + " columns the file holds for this account.";
+  setSub("a1sub", "Any of the " + measureList().length + " measures, from the filter above.");
   legendHTML("a1legend", s1);
   lineChart(document.getElementById("a1box"), s1, {aria:measure + " by month for " + a.account});
 
@@ -3513,14 +3523,13 @@ function renderAccount(a, measure, monthIdx, monthLabel, target){
     {name:fixed.t, color:C_TARGET, values:seriesOf(list, fixed.t)}
   ];
   document.getElementById("a2title").textContent = fixed.title;
-  document.getElementById("a2sub").textContent = "Every month in the file for this account.";
+  setSub("a2sub", "");
   legendHTML("a2legend", s2);
   lineChart(document.getElementById("a2box"), s2, {aria:fixed.title + " for " + a.account});
 
   /* chart 3: therapies */
   var trows = therapyRows(list, monthIdx).filter(function(r){ return r.value > 0; });
-  document.getElementById("a3sub").textContent =
-    "Each therapy column as the file records it, " + monthLabel + ". Nothing is combined or recalculated.";
+  setSub("a3sub", monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1) + ", each column as recorded.");
   if(trows.length) barChart(document.getElementById("a3box"), trows,
     {color:C_ACTUAL, measure:"Patients", aria:"Patients by therapy at " + a.account});
   else document.getElementById("a3box").innerHTML =
@@ -3531,10 +3540,8 @@ function renderAccount(a, measure, monthIdx, monthLabel, target){
     {name:"Ending stock", color:C_ACTUAL, values:seriesOf(list, "Ending stock")},
     {name:"Consumption",  color:C_TARGET, values:seriesOf(list, "Consumption")}
   ];
-  document.getElementById("a4sub").textContent =
-    cover === null ? "Stock and consumption by month."
-                   : "Stock and consumption by month. At the average month of consumption, the stock on hand covers " +
-                     (Math.round(cover * 10) / 10) + " months.";
+  setSub("a4sub", cover === null ? "" :
+    (Math.round(cover * 10) / 10) + " months of cover at the average month's consumption.");
   legendHTML("a4legend", s4);
   lineChart(document.getElementById("a4box"), s4, {aria:"Stock against consumption at " + a.account});
 
@@ -3543,9 +3550,7 @@ function renderAccount(a, measure, monthIdx, monthLabel, target){
   document.getElementById("asavedmsg").textContent = "";
 
   /* every measure */
-  document.getElementById("a5sub").textContent =
-    "All " + measureList().length + " columns the file holds for " + a.account +
-    ". A figure you entered is marked with an asterisk.";
+  setSub("a5sub", "An asterisk marks a figure you entered.");
   var th = '<thead><tr><th class="txt">Measure</th>' +
            MONTHS.map(function(m){ return '<th>' + m + '</th>'; }).join("") + '<th>YTD</th></tr></thead>';
   var body = "";
@@ -3589,14 +3594,13 @@ function renderAllAccounts(list, universe, measure, monthIdx, monthLabel, target
       cover === null ? "as at " + MONTHS[SALES.ytdThrough]
                      : (Math.round(cover * 10) / 10) + " months of cover") +
     tileHTML("Share of therapies", share === null ? "&mdash;" : Math.round(share) + "%",
-      "Brukinsa of all therapy columns");
+      "of every therapy column");
 
   /* trend */
   var series = [{name:measure, color:C_ACTUAL, values:seriesOf(list, measure)}];
   if(target) series.push({name:target, color:C_TARGET, values:seriesOf(list, target)});
   document.getElementById("trendtitle").textContent = measure + " by month";
-  document.getElementById("trendsub").textContent =
-    "Every month in the file, summed across the " + list.length + " account" + (list.length === 1 ? "" : "s") + " selected.";
+  setSub("trendsub", "Summed across " + list.length + " account" + (list.length === 1 ? "" : "s") + ".");
   legendHTML("trendlegend", series);
   lineChart(document.getElementById("trendbox"), series, {aria:measure + " by month"});
 
@@ -3615,12 +3619,9 @@ function renderAllAccounts(list, universe, measure, monthIdx, monthLabel, target
       var behind = arows.filter(function(r){ return r.pct < 70; }).length;
       var shown = arows.slice(0, 20);
       document.getElementById("atttitle").textContent = measure + " against target, by account";
-      document.getElementById("attsub").textContent =
-        "Furthest behind first, " + monthLabel + ". " + arows.length + " account" +
-        (arows.length === 1 ? " has" : "s have") + " a target on this measure" +
-        (behind ? "; " + behind + " " + (behind === 1 ? "is" : "are") + " below 70%." : ".") +
-        (arows.length > shown.length ? "  The 20 furthest behind are plotted; the rest are in the table."
-                                     : "  Every one of them is plotted.");
+      setSub("attsub", "Worst first, " + monthLabel + ". " +
+        (behind ? behind + " of " + arows.length + " below 70%." : "None below 70%.") +
+        (arows.length > shown.length ? "  Showing the " + shown.length + " furthest behind." : ""));
       document.getElementById("attlegend").innerHTML =
         '<span><span class="swatch" style="background:var(--ok)"></span>At or above target</span>' +
         '<span><span class="swatch" style="background:var(--warn)"></span>70&ndash;99%</span>' +
@@ -3638,16 +3639,14 @@ function renderAllAccounts(list, universe, measure, monthIdx, monthLabel, target
             sub:a.country + " · " + a.city + " · " + a.ps};
   }).sort(function(x, y){ return y.value - x.value; });
   document.getElementById("acctitle").textContent = measure + " by account";
-  document.getElementById("accsub").textContent = "Highest first, " + monthLabel + ".";
+  setSub("accsub", "Highest first, " + monthLabel + ".");
   if(rows.length) barChart(document.getElementById("accbox"), rows, {color:C_ACTUAL, measure:measure, aria:measure + " by account"});
   else document.getElementById("accbox").innerHTML =
     '<div class="emptybox">No accounts match these filters. Clear them, or switch to <b>Everyone</b> above.</div>';
 
   /* therapies */
   var trows = therapyRows(list, monthIdx).filter(function(r){ return r.value > 0; });
-  document.getElementById("thersub").textContent =
-    "Each therapy column as the file records it, " + monthLabel +
-    ", across the accounts in view. Nothing is combined or recalculated.";
+  setSub("thersub", monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1) + ", each column as recorded.");
   if(trows.length) barChart(document.getElementById("therbox"), trows,
     {color:C_ACTUAL, measure:"Patients", aria:"Patients by therapy"});
   else document.getElementById("therbox").innerHTML =
@@ -3665,6 +3664,7 @@ function renderAllAccounts(list, universe, measure, monthIdx, monthLabel, target
            '<td><b>' + (has ? money(ytdVal(a, measure)) : "—") + '</b></td></tr>';
   }).join("") + '</tbody>';
   document.getElementById("salestable").innerHTML = th + tb;
+  document.getElementById("salesnote").textContent = "Source: " + SALES.source + ".";
 }
 
 /* ---------- enter sales ---------- */
@@ -4117,9 +4117,11 @@ function renderActs(){
   var evAll = scopedEvents();
   var G = ACTS.gates;
 
+  var nCity = Array.from(new Set(evAll.map(function(e){ return e.city; }).filter(Boolean))).length;
   document.getElementById("actsub").textContent =
-    evAll.length + " events from " + ACTS.source + ". " + list.length + " shown." +
-    (scope === "mine" && myKam() ? "  Yours only." : "");
+    ((scope === "mine" && myKam()) ? "Your " : "All ") + evAll.length + " events, " +
+    nCity + (nCity === 1 ? " city." : " cities.") +
+    (list.length !== evAll.length ? "  " + list.length + " match the filters." : "");
 
   var cost = list.reduce(function(t, e){ return t + (e.cost || 0); }, 0);
   var ready = list.filter(function(e){ return e.gatesDone === e.gatesTotal; }).length;
@@ -4165,7 +4167,7 @@ function renderActs(){
   var sbox = document.getElementById("spendbox");
   if(mrows.length){
     document.getElementById("spendsub").textContent =
-      "Planned cost in USD. The count under each column is the number of events that month.";
+      "Planned cost in USD, with the event count under each column.";
     monthColumns(sbox, mrows, "Planned spend by month");
   } else {
     document.getElementById("spendsub").textContent = "No dated events in view.";
@@ -4212,8 +4214,7 @@ function renderActs(){
   if(crows.length)     parts.push({ id:"citybox", lab:"By city",      rows:crows, color:"var(--series-1)" });
 
   document.getElementById("reqsub").textContent =
-    parts.length ? "Planned cost in USD. Hover a bar for the event counts behind it."
-                 : "Nothing to break down in the current view.";
+    parts.length ? "Planned cost in USD. Hover for event counts." : "Nothing to break down here.";
   var wrap = document.getElementById("reqwrap");
   wrap.innerHTML = parts.length
     ? parts.map(function(p){
@@ -4308,7 +4309,7 @@ function renderActs(){
     '</div>';
 
   document.getElementById("actnote").textContent =
-    "Speaker and chairperson names are held back and shown as counts. Everything else is exactly as recorded in the tracker.";
+    "Speaker and chair names are shown as counts. Everything else is as recorded in the " + ACTS.source + ".";
 }
 
 /* ==================================================================

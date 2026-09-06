@@ -175,9 +175,11 @@ function renderActs(){
   var evAll = scopedEvents();
   var G = ACTS.gates;
 
+  var nCity = Array.from(new Set(evAll.map(function(e){ return e.city; }).filter(Boolean))).length;
   document.getElementById("actsub").textContent =
-    evAll.length + " events from " + ACTS.source + ". " + list.length + " shown." +
-    (scope === "mine" && myKam() ? "  Yours only." : "");
+    ((scope === "mine" && myKam()) ? "Your " : "All ") + evAll.length + " events, " +
+    nCity + (nCity === 1 ? " city." : " cities.") +
+    (list.length !== evAll.length ? "  " + list.length + " match the filters." : "");
 
   var cost = list.reduce(function(t, e){ return t + (e.cost || 0); }, 0);
   var ready = list.filter(function(e){ return e.gatesDone === e.gatesTotal; }).length;
@@ -223,7 +225,7 @@ function renderActs(){
   var sbox = document.getElementById("spendbox");
   if(mrows.length){
     document.getElementById("spendsub").textContent =
-      "Planned cost in USD. The count under each column is the number of events that month.";
+      "Planned cost in USD, with the event count under each column.";
     monthColumns(sbox, mrows, "Planned spend by month");
   } else {
     document.getElementById("spendsub").textContent = "No dated events in view.";
@@ -270,8 +272,7 @@ function renderActs(){
   if(crows.length)     parts.push({ id:"citybox", lab:"By city",      rows:crows, color:"var(--series-1)" });
 
   document.getElementById("reqsub").textContent =
-    parts.length ? "Planned cost in USD. Hover a bar for the event counts behind it."
-                 : "Nothing to break down in the current view.";
+    parts.length ? "Planned cost in USD. Hover for event counts." : "Nothing to break down here.";
   var wrap = document.getElementById("reqwrap");
   wrap.innerHTML = parts.length
     ? parts.map(function(p){
@@ -366,5 +367,5 @@ function renderActs(){
     '</div>';
 
   document.getElementById("actnote").textContent =
-    "Speaker and chairperson names are held back and shown as counts. Everything else is exactly as recorded in the tracker.";
+    "Speaker and chair names are shown as counts. Everything else is as recorded in the " + ACTS.source + ".";
 }
