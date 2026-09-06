@@ -491,11 +491,19 @@ plan rather than implying a target of zero.
 
 **What it is compared against.** `Brukinsa New Pts recruited`. The workbook
 leaves the year-to-date cell empty for that column, so the parser recorded no
-derivation rule and the tool had been showing a dash. The workbook's own
-Total column for it is the sum of the monthly cells — 99 across the Gulf,
-which is exactly what summing the months gives — so the tool now sums it.
-That reproduces the file's own arithmetic; it does not introduce a figure the
-file does not hold.
+derivation rule and the tool had been showing a dash.
+
+Its own Total column is the sum of every month it has filled in — 99 across
+the Gulf — and that is the rule the tool now uses. Note that this column runs
+one month further than the rest of the file: the other measures stop at July,
+but new patients carry an August figure (7 across the Gulf). Summing only to
+July would give 92 and contradict the file's own total, so the sum runs to the
+last month with a figure. This reproduces the file's arithmetic; it does not
+introduce a figure the file does not hold.
+
+Because the plan covers 14 of Omar's 24 accounts, the plan card counts only
+those 14 (20 new patients against 62) while the tile and the monthly chart
+count every account in view (21). Each states its own scope on screen.
 
 ### Two data defects found in the workbook while doing this
 
