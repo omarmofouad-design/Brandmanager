@@ -10,6 +10,7 @@
  *   shell_body.txt   markup, ending with <script>
  *   cards.js         objection card data
  *   salesdata.js     ALLnONE figures
+ *   plan2026.js      the 2026 patient plan (a separate source)
  *   shell_app.txt    objection-handler logic  (trailing </script> stripped)
  *   sales_app.txt    sales / entry logic
  *   acts_app.txt     activities logic
@@ -32,6 +33,7 @@ const head = read('shell_head.txt');
 const body = read('shell_body.txt');
 const cards = read('cards.js');
 const sales = read('salesdata.js');
+const plan  = read('plan2026.js');
 const app = read('shell_app.txt').split('</script>')[0];
 const salesApp = read('sales_app.txt');
 const acts = read('activities.js');
@@ -40,7 +42,7 @@ const boot = read('boot.txt');        /* always last: see the note in the file *
 
 const inner =
   body.trimEnd().replace(/<script>\s*$/, '<script>') + '\n' +
-  cards + '\n' + sales + '\n' + acts + '\n' + app + '\n' + salesApp + '\n' + actsApp + '\n' + boot + '\n' +
+  cards + '\n' + sales + '\n' + plan + '\n' + acts + '\n' + app + '\n' + salesApp + '\n' + actsApp + '\n' + boot + '\n' +
   '</script>\n\n' +
   '<textarea id="fallback" readonly aria-label="Exported data" placeholder="Your export will appear here."></textarea>\n';
 

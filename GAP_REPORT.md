@@ -466,3 +466,43 @@ Therapy column names are reproduced exactly as the file spells them,
 **Account field notes** were added: dated, attributed to the signed-in user,
 held in that browser only, and carried into the Export notes file alongside
 the objection notes.
+
+---
+
+## 10. Change log — the 2026 patient plan, a second source (6 September 2026)
+
+A second source was added: the table headed **"Omar Fouad / 2026 Target of
+Patients"**. It is not part of the ALLnONE workbook, so it is held in its own
+file (`plan2026.js`) and named on screen wherever its figures appear.
+
+**How it was joined.** Each of its fourteen rows carries a 2026 sales target
+alongside the patient target. Every one of those sales targets matches the
+workbook's `Target (units)` total for the account exactly, and the column
+totals reconcile — 702 units and 62 patients, as the table itself states.
+Two rows needed the sales target to identify the account: **"BOC"** is the
+workbook's *Hamad* (Bahrain, 31 units) and **"Qatar / NCCCR"** its *HMC*
+(120 units).
+
+**What it covers.** Omar's accounts only, and only fourteen of his
+twenty-four. Nothing is shown against the plan for Layan, Renad or Abdullah,
+or for Omar's other ten accounts, until their own plans are supplied. The
+"New patients against the 2026 plan" card hides itself where there is no
+plan rather than implying a target of zero.
+
+**What it is compared against.** `Brukinsa New Pts recruited`. The workbook
+leaves the year-to-date cell empty for that column, so the parser recorded no
+derivation rule and the tool had been showing a dash. The workbook's own
+Total column for it is the sum of the monthly cells — 99 across the Gulf,
+which is exactly what summing the months gives — so the tool now sums it.
+That reproduces the file's own arithmetic; it does not introduce a figure the
+file does not hold.
+
+### Two data defects found in the workbook while doing this
+
+- **Ending stock is recorded below zero on three of Omar's accounts** — Yas
+  Clinic (−8 from April), Dubai Hospital (−11 from May) and KCCC (−8 from
+  July). The tool plots the negative figures as recorded rather than
+  flooring them at zero, and the ending-stock tile says "recorded below zero
+  in the file" instead of quoting a negative months-of-cover figure. These
+  look like uncorrected consumption entries and should be checked at source.
+- The **787 vs 788** ending-stock discrepancy noted earlier is unchanged.

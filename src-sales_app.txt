@@ -42,11 +42,17 @@ function hasOverride(a, measure){
   }
   return false;
 }
+/* The workbook leaves the year-to-date cell empty for new patients, so
+   the parser recorded no rule for it. Its own Total column is the sum of
+   the months, so summing is the file's own arithmetic, not a new figure. */
+var YTD_RULE = { "Brukinsa New Pts recruited": "sum" };
+
 function ytdVal(a, measure){
   var m = a.measures[measure];
   if(!m) return null;
-  if(!hasOverride(a, measure)) return m.ytd;
-  if(m.k === "sum"){
+  var forced = YTD_RULE.hasOwnProperty(measure);
+  if(!forced && !hasOverride(a, measure)) return m.ytd;
+  if((forced ? YTD_RULE[measure] : m.k) === "sum"){
     var t = 0, seen = false;
     for(var i = 0; i <= SALES.ytdThrough; i++){
       var v = monthVal(a, measure, i);
@@ -54,7 +60,7 @@ function ytdVal(a, measure){
     }
     return seen ? t : null;
   }
-  if(m.k === "last") return monthVal(a, measure, SALES.ytdThrough);
+  if((forced ? YTD_RULE[measure] : m.k) === "last") return monthVal(a, measure, SALES.ytdThrough);
   return m.ytd;                      /* the file states it; leave it alone */
 }
 var useEntries = true;
@@ -170,6 +176,20 @@ function openAccount(id){
   if(p) p.scrollTop = 0;
 }
 
+/* ---------- the 2026 patient plan ---------- */
+function planTarget(a){
+  return PLAN2026.patients.hasOwnProperty(a.id) ? PLAN2026.patients[a.id] : null;
+}
+function planTotal(list){
+  var t = 0, n = 0;
+  list.forEach(function(a){ var v = planTarget(a); if(v !== null){ t += v; n++; } });
+  return n ? { target:t, accounts:n } : null;
+}
+var TICK_LEGEND =
+  '<span><svg width="13" height="13" aria-hidden="true" style="flex:0 0 auto;">' +
+  '<line x1="6.5" y1="0" x2="6.5" y2="13" stroke="var(--ink-3)" stroke-width="1.5" stroke-dasharray="2 2"/>' +
+  '</svg>Target</span>';
+
 /* ---------- charts ---------- */
 var C_ACTUAL = "var(--series-1)";
 var C_TARGET = "var(--series-2)";
@@ -190,19 +210,25 @@ function lineChart(box, series, opts){
   var iw = W - P.l - P.r, ih = H - P.t - P.b;
   var all = [];
   series.forEach(function(s){ s.values.forEach(function(v){ if(v !== null) all.push(v); }); });
+  if(opts.ref && opts.ref.value > 0) all.push(opts.ref.value);
   var max = all.length ? Math.max.apply(null, all) : 1;
+  var min = all.length ? Math.min.apply(null, all) : 0;
   if(max <= 0) max = 1;
-  var step = Math.pow(10, Math.floor(Math.log10(max))) / 2 || 1;
+  var step = Math.pow(10, Math.floor(Math.log10(Math.max(max, -min) || 1))) / 2 || 1;
   var top = Math.ceil(max / step) * step;
+  /* stock corrections and the like go negative — the scale has to follow */
+  var base = min < 0 ? -Math.ceil(-min / step) * step : 0;
+  if(top <= base) top = base + step;
+  var span = top - base;
   var ticks = 4;
 
   var x = function(i){ return P.l + (iw * i) / (MONTHS.length - 1); };
-  var y = function(v){ return P.t + ih - (ih * v) / top; };
+  var y = function(v){ return P.t + ih - (ih * (v - base)) / span; };
 
   var svg = ['<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="' + esc(opts.aria) + '">'];
   svg.push('<g class="axis">');
   for(var k = 0; k <= ticks; k++){
-    var v = (top / ticks) * k, yy = y(v);
+    var v = base + (span / ticks) * k, yy = y(v);
     svg.push('<line class="gridline" x1="' + P.l + '" x2="' + (W - P.r) + '" y1="' + yy + '" y2="' + yy + '"/>');
     svg.push('<text x="' + (P.l - 8) + '" y="' + (yy + 3.5) + '" text-anchor="end">' + money(v) + '</text>');
   }
@@ -211,6 +237,12 @@ function lineChart(box, series, opts){
   });
   svg.push('<line class="axisline" x1="' + P.l + '" x2="' + (W - P.r) + '" y1="' + y(0) + '" y2="' + y(0) + '"/>');
   svg.push('</g>');
+  if(opts.ref && opts.ref.value > 0 && opts.ref.value <= top){
+    var ry = y(opts.ref.value);
+    svg.push('<line class="refline" x1="' + P.l + '" x2="' + (W - P.r) + '" y1="' + ry + '" y2="' + ry + '"/>');
+    svg.push('<text class="reflabel" x="' + (W - P.r) + '" y="' + (ry - 6) + '" text-anchor="end">' +
+             esc(opts.ref.label) + '</text>');
+  }
 
   series.forEach(function(s){
     /* a month with no figure breaks the line rather than being bridged */
@@ -226,7 +258,8 @@ function lineChart(box, series, opts){
       svg.push('<circle cx="' + x(i) + '" cy="' + y(v) + '" r="4.5" fill="' + s.color + '" stroke="var(--paper)" stroke-width="2"/>');
     });
     if(last >= 0){
-      svg.push('<text class="dlabel" x="' + (x(last) + 8) + '" y="' + (y(s.values[last]) + 4) + '" fill="' + s.color + '">' + money(s.values[last]) + '</text>');
+      var ly = Math.max(P.t + 9, Math.min(y(s.values[last]) + 4, P.t + ih - 2));
+      svg.push('<text class="dlabel" x="' + (x(last) + 8) + '" y="' + ly + '" fill="' + s.color + '">' + money(s.values[last]) + '</text>');
     }
   });
 
@@ -257,7 +290,8 @@ function barChart(box, rows, opts){
   var rowH = 26, P = {t:6, r:56, b:6, l:Math.min(190, Math.round(W * 0.34))};
   var H = P.t + P.b + rows.length * rowH;
   var iw = W - P.l - P.r;
-  var max = Math.max.apply(null, rows.map(function(r){ return r.value || 0; }).concat([1]));
+  var max = Math.max.apply(null, rows.map(function(r){ return r.value || 0; })
+              .concat(rows.map(function(r){ return r.target || 0; })).concat([1]));
   /* the label column is fixed, so trim a long name to fit it — the full name stays in the tooltip */
   var maxCh = Math.max(8, Math.floor((P.l - 14) / 6.95));
   var fit = function(t){
@@ -268,11 +302,17 @@ function barChart(box, rows, opts){
   var svg = ['<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="' + esc(opts.aria) + '">'];
   rows.forEach(function(r, i){
     var yy = P.t + i * rowH, bh = 14;
-    var w = r.value ? Math.max(2, (iw * r.value) / max) : 0;
+    var w = r.value > 0 ? Math.max(2, (iw * r.value) / max) : 0;   /* negatives read from the number */
     var lab = fit(r.label);
     svg.push('<text class="axis" x="' + (P.l - 10) + '" y="' + (yy + bh) + '" text-anchor="end" fill="var(--ink-2)" font-size="11.5"><title>' + esc(r.label) + '</title>' + esc(lab) + '</text>');
     svg.push('<rect data-i="' + i + '" x="' + P.l + '" y="' + (yy + 4) + '" width="' + w + '" height="' + bh + '" rx="4" fill="' + opts.color + '"/>');
-    svg.push('<text class="dlabel" x="' + (P.l + w + 8) + '" y="' + (yy + bh - 1) + '" fill="var(--ink-2)">' + money(r.value) + '</text>');
+    if(r.target !== null && r.target !== undefined && r.target > 0){
+      var tx = P.l + (iw * r.target) / max;
+      svg.push('<line class="tgtmark" x1="' + tx + '" x2="' + tx + '" y1="' + (yy + 1) +
+               '" y2="' + (yy + bh + 7) + '"/>');
+    }
+    svg.push('<text class="dlabel" x="' + (P.l + Math.max(w, r.target ? (iw * r.target) / max : 0) + 8) +
+             '" y="' + (yy + bh - 1) + '" fill="var(--ink-2)">' + money(r.value) + '</text>');
   });
   svg.push('</svg>');
   box.innerHTML = svg.join("");
@@ -281,6 +321,7 @@ function barChart(box, rows, opts){
       var r = rows[+rc.dataset.i];
       var bb = rc.getBoundingClientRect(), pb = box.getBoundingClientRect();
       showTip(box, '<b>' + esc(r.label) + '</b><br>' + esc(opts.measure) + ' <b>' + money(r.value) + '</b>' +
+                   (r.target ? '<br>Target <b>' + money(r.target) + '</b>' : '') +
                    (r.sub ? '<br>' + esc(r.sub) : ''), bb.left - pb.left + bb.width, bb.top - pb.top - 6);
     });
     rc.addEventListener("mouseleave", function(){ hideTip(box); });
@@ -399,7 +440,8 @@ function stockCover(list){
     var v = sumOf(list, "Consumption", i);
     if(v !== null && !isNaN(v)){ t += v; n++; }
   }
-  if(!n || !t || stock === null) return null;
+  /* a stock recorded below zero cannot be expressed as months of cover */
+  if(!n || !t || stock === null || stock < 0) return null;
   return stock / (t / n);
 }
 
@@ -515,6 +557,7 @@ function renderAccount(a, measure, monthIdx, monthLabel, target){
   var un = sumOf(list, "Sales (units)", monthIdx);
   var unT = sumOf(list, "Target (units)", monthIdx);
   var cover = stockCover(list);
+  var endStock = sumOf(list, "Ending stock", SALES.ytdThrough);
   var share = brukShare(list, monthIdx);
   var newPts = sumOf(list, "Brukinsa New Pts recruited", monthIdx);
   var pct = function(v, t){ return (t && v !== null) ? Math.round((v / t) * 100) : null; };
@@ -523,13 +566,16 @@ function renderAccount(a, measure, monthIdx, monthLabel, target){
   document.getElementById("acctiles").innerHTML =
     tileHTML("Patients recruited", money(pat),
       patT ? (pp + "% of target " + money(patT)) : esc(monthLabel), pp >= 100) +
-    (newPts === null ? "" : tileHTML("New patients", money(newPts), esc(monthLabel))) +
+    (newPts === null ? "" : tileHTML("New patients", money(newPts),
+      planTarget(a) === null ? esc(monthLabel) : ("of " + planTarget(a) + " planned for 2026"),
+      planTarget(a) !== null && newPts >= planTarget(a))) +
     tileHTML("Sales (units)", money(un),
       unT ? (up + "% of target " + money(unT)) : esc(monthLabel), up >= 100) +
     tileHTML("Consumption", money(sumOf(list, "Consumption", monthIdx)), esc(monthLabel)) +
-    tileHTML("Ending stock", money(sumOf(list, "Ending stock", SALES.ytdThrough)),
-      cover === null ? "as at " + MONTHS[SALES.ytdThrough]
-                     : (Math.round(cover * 10) / 10) + " months of cover") +
+    tileHTML("Ending stock", money(endStock),
+      (endStock !== null && endStock < 0) ? "recorded below zero in the file"
+        : cover === null ? "as at " + MONTHS[SALES.ytdThrough]
+                         : (Math.round(cover * 10) / 10) + " months of cover") +
     tileHTML("Share of therapies", share === null ? "&mdash;" : Math.round(share) + "%",
       "of every therapy column");
 
@@ -572,6 +618,25 @@ function renderAccount(a, measure, monthIdx, monthLabel, target){
   legendHTML("a4legend", s4);
   lineChart(document.getElementById("a4box"), s4, {aria:"Stock against consumption at " + a.account});
 
+  /* new patients against the year's plan */
+  var pt = planTarget(a);
+  var ncard = document.getElementById("anewcard");
+  if(pt !== null){
+    ncard.hidden = false;
+    var run = 0, cum = seriesOf(list, "Brukinsa New Pts recruited").map(function(v){
+      if(v === null || isNaN(v)) return null;
+      run += v; return run;
+    });
+    var sofar = run;
+    setSub("anewsub", sofar + " of " + pt + " planned for the year" +
+      (sofar >= pt ? " — the plan is met." : ", " + (pt - sofar) + " to go."));
+    lineChart(document.getElementById("anewbox"),
+      [{name:"New patients, running total", color:C_ACTUAL, values:cum}],
+      {aria:"New patients running total against the 2026 plan for " + a.account,
+       ref:{value:pt, label:"2026 plan · " + pt}});
+    document.getElementById("anewnote").textContent = "Plan from " + PLAN2026.source + ".";
+  } else { ncard.hidden = true; }
+
   /* notes */
   document.getElementById("anotelog").innerHTML = acctNoteLogHTML(a.id);
   document.getElementById("asavedmsg").textContent = "";
@@ -602,11 +667,13 @@ function legendHTML(id, series){
 /* ---------- all accounts ---------- */
 function renderAllAccounts(list, universe, measure, monthIdx, monthLabel, target){
   var cover = stockCover(list);
+  var endStock = sumOf(list, "Ending stock", SALES.ytdThrough);
   var share = brukShare(list, monthIdx);
   var pat = sumOf(list, "Brukinsa patient recruited", monthIdx);
   var patT = sumOf(list, "Brukinsa patient target", monthIdx);
   var un = sumOf(list, "Sales (units)", monthIdx);
   var unT = sumOf(list, "Target (units)", monthIdx);
+  var newPts = sumOf(list, "Brukinsa New Pts recruited", monthIdx);
   var pct = function(v, t){ return (t && v !== null) ? Math.round((v / t) * 100) : null; };
   var pp = pct(pat, patT), up = pct(un, unT);
 
@@ -616,10 +683,11 @@ function renderAllAccounts(list, universe, measure, monthIdx, monthLabel, target
       patT ? (pp + "% of target " + money(patT)) : esc(monthLabel), pp >= 100) +
     tileHTML("Sales (units)", money(un),
       unT ? (up + "% of target " + money(unT)) : esc(monthLabel), up >= 100) +
-    tileHTML("Consumption", money(sumOf(list, "Consumption", monthIdx)), esc(monthLabel)) +
-    tileHTML("Ending stock", money(sumOf(list, "Ending stock", SALES.ytdThrough)),
-      cover === null ? "as at " + MONTHS[SALES.ytdThrough]
-                     : (Math.round(cover * 10) / 10) + " months of cover") +
+    tileHTML("New patients", money(newPts), esc(monthLabel)) +
+    tileHTML("Ending stock", money(endStock),
+      (endStock !== null && endStock < 0) ? "recorded below zero in the file"
+        : cover === null ? "as at " + MONTHS[SALES.ytdThrough]
+                         : (Math.round(cover * 10) / 10) + " months of cover") +
     tileHTML("Share of therapies", share === null ? "&mdash;" : Math.round(share) + "%",
       "of every therapy column");
 
@@ -658,11 +726,37 @@ function renderAllAccounts(list, universe, measure, monthIdx, monthLabel, target
     } else { att.hidden = true; }
   } else { att.hidden = true; }
 
+  /* new patients against the 2026 plan */
+  var plan = planTotal(list);
+  var ncard = document.getElementById("newcard");
+  if(plan){
+    ncard.hidden = false;
+    var nrows = list.filter(function(a){ return planTarget(a) !== null; }).map(function(a){
+      var v = ytdVal(a, "Brukinsa New Pts recruited");
+      return { label:a.account,
+               value:(v === null || isNaN(v)) ? 0 : v,
+               target:planTarget(a),
+               sub:a.country + " · " + a.ps };
+    }).sort(function(x, y){ return (x.value - x.target) - (y.value - y.target); });  /* furthest short, first */
+    var got = nrows.reduce(function(t, r){ return t + r.value; }, 0);
+    var met = nrows.filter(function(r){ return r.value >= r.target; }).length;
+    setSub("newsub", "Furthest short first. " + got + " of " + plan.target + " planned for the year, " +
+      met + " of " + plan.accounts + " account" + (plan.accounts === 1 ? "" : "s") + " already there.");
+    document.getElementById("newlegend").innerHTML =
+      '<span><span class="swatch" style="background:' + C_ACTUAL + '"></span>New patients so far</span>' + TICK_LEGEND;
+    barChart(document.getElementById("newbox"), nrows,
+      {color:C_ACTUAL, measure:"New patients", aria:"New patients against the 2026 plan, by account"});
+    document.getElementById("newnote").textContent = "Plan from " + PLAN2026.source + ".";
+  } else { ncard.hidden = true; }
+
   /* by account */
   var rows = list.map(function(a){
     var v = a.measures[measure] ? ((monthIdx === "ytd") ? ytdVal(a, measure) : monthVal(a, measure, monthIdx)) : null;
+    var t = (target && a.measures[target])
+      ? ((monthIdx === "ytd") ? ytdVal(a, target) : monthVal(a, target, monthIdx)) : null;
     return {label:a.account + (hasOverride(a, measure) ? " *" : ""),
             value:(v === null || v === undefined || isNaN(v)) ? 0 : v,
+            target:(t === null || t === undefined || isNaN(t)) ? null : t,
             sub:a.country + " · " + a.city + " · " + a.ps};
   }).sort(function(x, y){ return y.value - x.value; });
   document.getElementById("acctitle").textContent = measure + " by account";

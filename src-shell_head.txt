@@ -737,6 +737,7 @@ table.grid tr.acctrow{cursor:pointer;}
 table.grid tr.acctrow:hover td{background:var(--surface-2);}
 .reflabel{font-size:10.5px;font-family:var(--mono);fill:var(--ink-3);}
 .refline{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 3;}
+.tgtmark{stroke:var(--ink-3);stroke-width:1.5;stroke-dasharray:2 2;}
 .chartlab{margin:0 0 7px;font-size:12.5px;font-weight:700;color:var(--ink);}
 .chartpart{margin:0 0 16px;}
 .chartpart:last-child{margin-bottom:0;}

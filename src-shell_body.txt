@@ -110,6 +110,13 @@
         </div>
       </div>
 
+      <div class="card2" id="anewcard">
+        <h3>New patients against the 2026 plan</h3>
+        <p class="sub" id="anewsub"></p>
+        <div class="chartbox" id="anewbox"></div>
+        <p class="tablenote" id="anewnote"></p>
+      </div>
+
       <div class="card2">
         <h3>Field notes on this account</h3>
         <p class="sub">Dated and signed, kept in this browser, and included in <b style="font-weight:700;">Export notes</b>.</p>
@@ -146,6 +153,14 @@
         <p class="sub" id="attsub"></p>
         <div class="legend" id="attlegend"></div>
         <div class="chartbox" id="attbox"></div>
+      </div>
+
+      <div class="card2" id="newcard">
+        <h3>New patients against the 2026 plan</h3>
+        <p class="sub" id="newsub"></p>
+        <div class="legend" id="newlegend"></div>
+        <div class="chartbox" id="newbox"></div>
+        <p class="tablenote" id="newnote"></p>
       </div>
 
       <div class="chartgrid">
