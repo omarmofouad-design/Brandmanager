@@ -740,6 +740,13 @@ table.grid tr.mcat th{
 table.grid td.mname{text-align:left;font-weight:600;}
 table.grid tr.acctrow{cursor:pointer;}
 table.grid tr.acctrow:hover td{background:var(--surface-2);}
+table.grid tr.totrow td{
+  border-top:2px solid var(--line-strong);border-bottom:none;
+  font-weight:800;background:var(--surface-2);
+}
+table.grid td.zero{color:var(--ink-3);}
+.newgrid{display:grid;grid-template-columns:1fr;gap:18px;align-items:start;}
+@media (min-width:820px){ .newgrid{grid-template-columns:1.25fr 1fr;} }
 .reflabel{font-size:10.5px;font-family:var(--mono);fill:var(--ink-3);}
 .refline{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 3;}
 .tgtmark{stroke:var(--ink-3);stroke-width:1.5;stroke-dasharray:2 2;}
@@ -924,11 +931,18 @@ table.grid tr.acctrow:hover td{background:var(--surface-2);}
         </div>
       </div>
 
-      <div class="card2" id="anewcard">
-        <h3>New patients against the 2026 plan</h3>
-        <p class="sub" id="anewsub"></p>
-        <div class="chartbox" id="anewbox"></div>
-        <p class="tablenote" id="anewnote"></p>
+      <div class="newgrid">
+        <div class="card2" id="anewcard">
+          <h3>New patients against the 2026 plan</h3>
+          <p class="sub" id="anewsub"></p>
+          <div class="chartbox" id="anewbox"></div>
+          <p class="tablenote" id="anewnote"></p>
+        </div>
+        <div class="card2" id="anewtablecard">
+          <h3>New patients recruited</h3>
+          <p class="sub" id="anewtablesub"></p>
+          <div class="tablewrap"><table class="grid" id="anewtable"></table></div>
+        </div>
       </div>
 
       <div class="card2">
@@ -967,6 +981,12 @@ table.grid tr.acctrow:hover td{background:var(--surface-2);}
         <p class="sub" id="attsub"></p>
         <div class="legend" id="attlegend"></div>
         <div class="chartbox" id="attbox"></div>
+      </div>
+
+      <div class="card2" id="newmonthcard">
+        <h3>New patients by month</h3>
+        <p class="sub" id="newmonthsub"></p>
+        <div class="chartbox" id="newmonthbox"></div>
       </div>
 
       <div class="card2" id="newcard">
@@ -3059,25 +3079,29 @@ function hasOverride(a, measure){
   }
   return false;
 }
-/* The workbook leaves the year-to-date cell empty for new patients, so
-   the parser recorded no rule for it. Its own Total column is the sum of
-   the months, so summing is the file's own arithmetic, not a new figure. */
-var YTD_RULE = { "Brukinsa New Pts recruited": "sum" };
+/* The workbook leaves the year-to-date cell empty for new patients, so the
+   parser recorded no rule for it. Its own Total column is the sum of every
+   month it has filled in — 99 across the Gulf, which runs one month past
+   the July boundary the other measures stop at — so that is the rule here.
+   It reproduces the file's own arithmetic rather than adding a figure. */
+var YTD_RULE = { "Brukinsa New Pts recruited": "sumAll" };
 
 function ytdVal(a, measure){
   var m = a.measures[measure];
   if(!m) return null;
   var forced = YTD_RULE.hasOwnProperty(measure);
   if(!forced && !hasOverride(a, measure)) return m.ytd;
-  if((forced ? YTD_RULE[measure] : m.k) === "sum"){
+  var rule = forced ? YTD_RULE[measure] : m.k;
+  if(rule === "sum" || rule === "sumAll"){
+    var last = (rule === "sumAll") ? MONTHS.length - 1 : SALES.ytdThrough;
     var t = 0, seen = false;
-    for(var i = 0; i <= SALES.ytdThrough; i++){
+    for(var i = 0; i <= last; i++){
       var v = monthVal(a, measure, i);
       if(v !== null && v !== undefined && !isNaN(v)){ t += v; seen = true; }
     }
     return seen ? t : null;
   }
-  if((forced ? YTD_RULE[measure] : m.k) === "last") return monthVal(a, measure, SALES.ytdThrough);
+  if(rule === "last") return monthVal(a, measure, SALES.ytdThrough);
   return m.ytd;                      /* the file states it; leave it alone */
 }
 var useEntries = true;
@@ -3462,6 +3486,75 @@ function stockCover(list){
   return stock / (t / n);
 }
 
+/* One column per month. Counts are small whole numbers, so every column
+   carries its value and the tooltip adds where the year stood after it. */
+function columnChart(box, rows, opts){
+  var W = Math.max(box.clientWidth || 640, 320), H = 250;
+  var P = {t:24, r:14, b:34, l:46};
+  var iw = W - P.l - P.r, ih = H - P.t - P.b;
+  var max = Math.max.apply(null, rows.map(function(r){ return r.value || 0; }).concat([1]));
+  var step = Math.pow(10, Math.floor(Math.log10(max))) / 2 || 1;
+  var top = Math.max(Math.ceil(max / step) * step, 1);
+  var ticks = 4;
+  var band = iw / Math.max(rows.length, 1);
+  var bw = Math.min(44, band * 0.58);
+  var cx = function(i){ return P.l + band * i + band / 2; };
+  var y = function(v){ return P.t + ih - (ih * v) / top; };
+
+  var s = ['<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H +
+           '" role="img" aria-label="' + esc(opts.aria) + '">', '<g class="axis">'];
+  for(var k = 0; k <= ticks; k++){
+    var v = (top / ticks) * k, yy = y(v);
+    s.push('<line class="gridline" x1="' + P.l + '" x2="' + (W - P.r) + '" y1="' + yy + '" y2="' + yy + '"/>');
+    s.push('<text x="' + (P.l - 8) + '" y="' + (yy + 3.5) + '" text-anchor="end">' + money(v) + '</text>');
+  }
+  rows.forEach(function(r, i){
+    s.push('<text x="' + cx(i) + '" y="' + (H - 12) + '" text-anchor="middle">' + esc(r.label) + '</text>');
+  });
+  s.push('<line class="axisline" x1="' + P.l + '" x2="' + (W - P.r) + '" y1="' + y(0) + '" y2="' + y(0) + '"/>');
+  s.push('</g>');
+  rows.forEach(function(r, i){
+    if(r.value > 0){
+      s.push('<rect x="' + (cx(i) - bw / 2) + '" y="' + y(r.value) + '" width="' + bw +
+             '" height="' + Math.max(2, y(0) - y(r.value)) + '" rx="4" fill="' + opts.color + '"/>');
+      s.push('<text class="dlabel" x="' + cx(i) + '" y="' + (y(r.value) - 7) +
+             '" text-anchor="middle" fill="var(--ink-2)">' + money(r.value) + '</text>');
+    }
+    s.push('<rect data-i="' + i + '" x="' + (cx(i) - band / 2) + '" y="' + P.t +
+           '" width="' + band + '" height="' + ih + '" fill="transparent"/>');
+  });
+  s.push('</svg>');
+  box.innerHTML = s.join("");
+  box.querySelectorAll("rect[data-i]").forEach(function(hit){
+    hit.addEventListener("mouseenter", function(){
+      var i = +hit.dataset.i, r = rows[i];
+      showTip(box, '<b>' + esc(r.full || r.label) + '</b><br>' + esc(opts.measure) + ' <b>' +
+                   money(r.value) + '</b>' + (r.sub ? '<br>' + esc(r.sub) : ''), cx(i), 4);
+    });
+    hit.addEventListener("mouseleave", function(){ hideTip(box); });
+  });
+  box.addEventListener("mouseleave", function(){ hideTip(box); });
+}
+
+/* New patients month by month, with the year's running total alongside.
+   Months the file has not filled in yet are left out. */
+function newPatientMonths(list){
+  var rows = [], run = 0, lastWith = -1;
+  MONTHS.forEach(function(m, i){
+    var v = sumOf(list, "Brukinsa New Pts recruited", i);
+    if(v !== null && !isNaN(v)) lastWith = i;
+  });
+  MONTHS.forEach(function(m, i){
+    if(i > lastWith) return;
+    var v = sumOf(list, "Brukinsa New Pts recruited", i);
+    var n = (v === null || isNaN(v)) ? null : v;
+    if(n !== null) run += n;
+    rows.push({ label:m, full:m, value:n === null ? 0 : n, blank:n === null, running:run,
+                sub:run + " so far this year" });
+  });
+  return rows;
+}
+
 /* ---------- attainment chart ---------- */
 /* Percent of target per account, against a 100% reference line. The
    number is written on every bar, so the bands are never colour alone. */
@@ -3636,7 +3729,7 @@ function renderAccount(a, measure, monthIdx, monthLabel, target){
   lineChart(document.getElementById("a4box"), s4, {aria:"Stock against consumption at " + a.account});
 
   /* new patients against the year's plan */
-  var pt = planTarget(a);
+  var pt = planTarget(a);   /* also used by the month table below */
   var ncard = document.getElementById("anewcard");
   if(pt !== null){
     ncard.hidden = false;
@@ -3653,6 +3746,22 @@ function renderAccount(a, measure, monthIdx, monthLabel, target){
        ref:{value:pt, label:"2026 plan · " + pt}});
     document.getElementById("anewnote").textContent = "Plan from " + PLAN2026.source + ".";
   } else { ncard.hidden = true; }
+
+  /* new patients, month by month */
+  var nrows = newPatientMonths(list);
+  var ntotal = nrows.length ? nrows[nrows.length - 1].running : 0;
+  setSub("anewtablesub", ntotal + " so far this year" +
+    (pt === null ? "." : " against a plan of " + pt + "."));
+  document.getElementById("anewtable").innerHTML =
+    '<thead><tr><th class="txt">Month</th><th>New patients</th><th>Running total</th></tr></thead><tbody>' +
+    nrows.map(function(r){
+      return '<tr><td class="txt">' + r.label + '</td>' +
+             '<td' + (r.blank || !r.value ? ' class="zero"' : '') + '>' +
+             (r.blank ? "&mdash;" : money(r.value)) + '</td>' +
+             '<td' + (r.running ? '' : ' class="zero"') + '>' + money(r.running) + '</td></tr>';
+    }).join("") +
+    '<tr class="totrow"><td class="txt">Total</td><td>' + money(ntotal) + '</td>' +
+    '<td>' + (pt === null ? "&mdash;" : "of " + pt) + '</td></tr></tbody>';
 
   /* notes */
   document.getElementById("anotelog").innerHTML = acctNoteLogHTML(a.id);
@@ -3742,6 +3851,16 @@ function renderAllAccounts(list, universe, measure, monthIdx, monthLabel, target
         {measure:measure, aria:measure + " as a percentage of target, by account"});
     } else { att.hidden = true; }
   } else { att.hidden = true; }
+
+  /* new patients, month by month */
+  var nmRows = newPatientMonths(list);
+  var nmTotal = nmRows.length ? nmRows[nmRows.length - 1].running : 0;
+  var nmBest = nmRows.slice().sort(function(x, y){ return y.value - x.value; })[0];
+  setSub("newmonthsub", nmTotal + " so far this year across " + list.length + " account" +
+    (list.length === 1 ? "" : "s") +
+    (nmBest && nmBest.value ? ". Best month " + nmBest.label + ", " + nmBest.value + "." : "."));
+  columnChart(document.getElementById("newmonthbox"), nmRows,
+    {color:C_ACTUAL, measure:"New patients", aria:"New patients recruited by month"});
 
   /* new patients against the 2026 plan */
   var plan = planTotal(list);

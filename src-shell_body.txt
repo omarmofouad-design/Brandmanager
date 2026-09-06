@@ -110,11 +110,18 @@
         </div>
       </div>
 
-      <div class="card2" id="anewcard">
-        <h3>New patients against the 2026 plan</h3>
-        <p class="sub" id="anewsub"></p>
-        <div class="chartbox" id="anewbox"></div>
-        <p class="tablenote" id="anewnote"></p>
+      <div class="newgrid">
+        <div class="card2" id="anewcard">
+          <h3>New patients against the 2026 plan</h3>
+          <p class="sub" id="anewsub"></p>
+          <div class="chartbox" id="anewbox"></div>
+          <p class="tablenote" id="anewnote"></p>
+        </div>
+        <div class="card2" id="anewtablecard">
+          <h3>New patients recruited</h3>
+          <p class="sub" id="anewtablesub"></p>
+          <div class="tablewrap"><table class="grid" id="anewtable"></table></div>
+        </div>
       </div>
 
       <div class="card2">
@@ -153,6 +160,12 @@
         <p class="sub" id="attsub"></p>
         <div class="legend" id="attlegend"></div>
         <div class="chartbox" id="attbox"></div>
+      </div>
+
+      <div class="card2" id="newmonthcard">
+        <h3>New patients by month</h3>
+        <p class="sub" id="newmonthsub"></p>
+        <div class="chartbox" id="newmonthbox"></div>
       </div>
 
       <div class="card2" id="newcard">

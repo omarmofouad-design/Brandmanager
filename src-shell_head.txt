@@ -735,6 +735,13 @@ table.grid tr.mcat th{
 table.grid td.mname{text-align:left;font-weight:600;}
 table.grid tr.acctrow{cursor:pointer;}
 table.grid tr.acctrow:hover td{background:var(--surface-2);}
+table.grid tr.totrow td{
+  border-top:2px solid var(--line-strong);border-bottom:none;
+  font-weight:800;background:var(--surface-2);
+}
+table.grid td.zero{color:var(--ink-3);}
+.newgrid{display:grid;grid-template-columns:1fr;gap:18px;align-items:start;}
+@media (min-width:820px){ .newgrid{grid-template-columns:1.25fr 1fr;} }
 .reflabel{font-size:10.5px;font-family:var(--mono);fill:var(--ink-3);}
 .refline{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 3;}
 .tgtmark{stroke:var(--ink-3);stroke-width:1.5;stroke-dasharray:2 2;}
