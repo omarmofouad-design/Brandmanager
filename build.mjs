@@ -11,7 +11,9 @@
  *   cards.js         objection card data
  *   salesdata.js     ALLnONE figures
  *   shell_app.txt    objection-handler logic  (trailing </script> stripped)
- *   sales_app.txt    sales / entry / ALLnONE logic
+ *   sales_app.txt    sales / entry logic
+ *   acts_app.txt     activities logic
+ *   boot.txt         signs in or opens the gate — MUST be last
  */
 import fs from 'fs';
 import path from 'path';
@@ -34,10 +36,11 @@ const app = read('shell_app.txt').split('</script>')[0];
 const salesApp = read('sales_app.txt');
 const acts = read('activities.js');
 const actsApp = read('acts_app.txt');
+const boot = read('boot.txt');        /* always last: see the note in the file */
 
 const inner =
   body.trimEnd().replace(/<script>\s*$/, '<script>') + '\n' +
-  cards + '\n' + sales + '\n' + acts + '\n' + app + '\n' + salesApp + '\n' + actsApp + '\n' +
+  cards + '\n' + sales + '\n' + acts + '\n' + app + '\n' + salesApp + '\n' + actsApp + '\n' + boot + '\n' +
   '</script>\n\n' +
   '<textarea id="fallback" readonly aria-label="Exported data" placeholder="Your export will appear here."></textarea>\n';
 
@@ -59,3 +62,11 @@ console.log('built cll-objection-handler.html —',
   'body', tags(doc, '<body>') + '/' + tags(doc, '</body>'),
   'script', tags(doc, '<script>') + '/' + tags(doc, '</script>'));
 if (/claude|anthropic/i.test(doc)) console.error('WARNING: build contains a vendor reference');
+
+/* the boot block must sit after every part it touches, or a signed-in
+   visitor boots against vars that are hoisted but not yet assigned */
+const bootAt = doc.indexOf('loadUser();');
+for (const [name, part] of [['sales_app', salesApp], ['acts_app', actsApp]]) {
+  const at = doc.indexOf(part.trim().slice(0, 60));
+  if (at > bootAt) console.error('WARNING: ' + name + ' is parsed after boot');
+}

@@ -69,6 +69,7 @@ function setScope(v){
   try{ localStorage.setItem(SCOPE_KEY, v); }catch(e){}
   renderScope();
   if(!document.getElementById("mod-home").hidden)       renderHome();
+  if(typeof buildAccountFilter === "function") buildAccountFilter();
   if(!document.getElementById("mod-sales").hidden)      renderSales();
   if(!document.getElementById("mod-activities").hidden) renderActs();
 }
@@ -526,12 +527,13 @@ function notesText(){
       L.push("");
     });
   });
-  if(!entries) L.push("(No field notes saved on this device yet.)");
-  else {
+  var acctText = (typeof accountNotesText === "function") ? accountNotesText() : "";
+  if(!entries && !acctText) L.push("(No field notes saved on this device yet.)");
+  else if(entries){
     L.push("----------------------------------------------------------");
     L.push("Total: " + entries + " note" + (entries===1?"":"s") + " across " + cards + " objection" + (cards===1?"":"s"));
   }
-  return L.join("\n");
+  return L.join("\n") + acctText;
 }
 
 function showNotesInline(text, msg){

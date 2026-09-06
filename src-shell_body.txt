@@ -50,6 +50,10 @@
         <label for="fcity">City</label>
         <select id="fcity"></select>
       </div>
+      <div class="field grow">
+        <label for="faccount">Account</label>
+        <select id="faccount"></select>
+      </div>
       <div class="field">
         <label for="fmeasure">Measure</label>
         <select id="fmeasure"></select>
@@ -61,25 +65,107 @@
     </div>
 
     <p class="notice" id="entrynote" hidden></p>
-    <div class="tiles" id="tiles"></div>
 
-    <div class="card2">
-      <h3 id="trendtitle"></h3>
-      <p class="sub" id="trendsub"></p>
-      <div class="legend" id="trendlegend"></div>
-      <div class="chartbox" id="trendbox"></div>
+    <!-- ---------- one account ---------- -->
+    <div id="acctview" hidden>
+      <div class="acchead">
+        <div>
+          <h3 id="acctitle2"></h3>
+          <div class="accmeta" id="accmeta"></div>
+        </div>
+        <div class="accact">
+          <button class="act" type="button" id="accall">All accounts</button>
+          <button class="act" type="button" id="accentry">Add a figure</button>
+        </div>
+      </div>
+
+      <div class="tiles" id="acctiles"></div>
+
+      <div class="chartgrid">
+        <div class="card2">
+          <h3 id="a1title"></h3>
+          <p class="sub" id="a1sub"></p>
+          <div class="legend" id="a1legend"></div>
+          <div class="chartbox" id="a1box"></div>
+        </div>
+        <div class="card2">
+          <h3 id="a2title"></h3>
+          <p class="sub" id="a2sub"></p>
+          <div class="legend" id="a2legend"></div>
+          <div class="chartbox" id="a2box"></div>
+        </div>
+      </div>
+
+      <div class="chartgrid">
+        <div class="card2">
+          <h3>Patients by therapy</h3>
+          <p class="sub" id="a3sub"></p>
+          <div class="chartbox" id="a3box"></div>
+        </div>
+        <div class="card2">
+          <h3>Stock against consumption</h3>
+          <p class="sub" id="a4sub"></p>
+          <div class="legend" id="a4legend"></div>
+          <div class="chartbox" id="a4box"></div>
+        </div>
+      </div>
+
+      <div class="card2">
+        <h3>Field notes on this account</h3>
+        <p class="sub">Each note is stamped with the date and who wrote it, kept on this device, and included in <b style="font-weight:700;">Export notes</b>.</p>
+        <div class="notes">
+          <textarea id="anoteinput" placeholder="Who you saw, what was agreed, what is blocking. Each note is saved with the date you added it."></textarea>
+          <div class="noterow">
+            <button class="act primary" type="button" id="addanote">Add dated note</button>
+            <span class="saved" id="asavedmsg"></span>
+          </div>
+          <ol class="notelog" id="anotelog"></ol>
+        </div>
+      </div>
+
+      <div class="card2">
+        <h3>Every measure, month by month</h3>
+        <p class="sub" id="a5sub"></p>
+        <div class="tablewrap"><table class="grid" id="acctable"></table></div>
+      </div>
     </div>
 
-    <div class="card2">
-      <h3 id="acctitle"></h3>
-      <p class="sub" id="accsub"></p>
-      <div class="chartbox" id="accbox"></div>
-    </div>
+    <!-- ---------- all accounts ---------- -->
+    <div id="allview">
+      <div class="tiles" id="tiles"></div>
 
-    <div class="card2">
-      <h3>The same figures as a table</h3>
-      <p class="sub">Every value plotted above, for reading or copying.</p>
-      <div class="tablewrap"><table class="grid" id="salestable"></table></div>
+      <div class="card2">
+        <h3 id="trendtitle"></h3>
+        <p class="sub" id="trendsub"></p>
+        <div class="legend" id="trendlegend"></div>
+        <div class="chartbox" id="trendbox"></div>
+      </div>
+
+      <div class="card2" id="attcard">
+        <h3 id="atttitle"></h3>
+        <p class="sub" id="attsub"></p>
+        <div class="legend" id="attlegend"></div>
+        <div class="chartbox" id="attbox"></div>
+      </div>
+
+      <div class="chartgrid">
+        <div class="card2">
+          <h3 id="acctitle"></h3>
+          <p class="sub" id="accsub"></p>
+          <div class="chartbox" id="accbox"></div>
+        </div>
+        <div class="card2">
+          <h3>Patients by therapy</h3>
+          <p class="sub" id="thersub"></p>
+          <div class="chartbox" id="therbox"></div>
+        </div>
+      </div>
+
+      <div class="card2">
+        <h3>The same figures as a table</h3>
+        <p class="sub">Every value plotted above, for reading or copying. Click an account to open it.</p>
+        <div class="tablewrap"><table class="grid" id="salestable"></table></div>
+      </div>
     </div>
   </div></div>
 </section>

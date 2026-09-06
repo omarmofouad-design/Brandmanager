@@ -127,9 +127,47 @@ function buildSalesFilters(){
   fillSelect(document.getElementById("fmonth"),
     MONTHS.map(function(m,i){ return {value:String(i), label:m}; }), "Year to date");
 
-  ["fcountry","fowner","fcity","fmeasure","fmonth"].forEach(function(id){
+  buildAccountFilter();
+
+  /* narrowing country, owner or city narrows the account list with it */
+  ["fcountry","fowner","fcity"].forEach(function(id){
+    document.getElementById(id).addEventListener("change", function(){
+      buildAccountFilter();
+      renderSales();
+    });
+  });
+  ["faccount","fmeasure","fmonth"].forEach(function(id){
     document.getElementById(id).addEventListener("change", renderSales);
   });
+}
+
+/* The account list follows the other filters, and keeps the open account
+   selected if it is still in range. */
+function buildAccountFilter(){
+  var el = document.getElementById("faccount");
+  var was = el.value;
+  var pool = filteredAccounts().slice().sort(function(a, b){
+    return a.account.localeCompare(b.account);
+  });
+  fillSelect(el, pool.map(function(a){
+    return { value:a.id, label:a.account + " — " + a.city };
+  }), "All accounts (" + pool.length + ")");
+  el.value = pool.some(function(a){ return a.id === was; }) ? was : "";
+}
+function openAccount(id){
+  var el = document.getElementById("faccount");
+  if(!Array.prototype.some.call(el.options, function(o){ return o.value === id; })){
+    /* the account is outside the current filters — clear them and try again */
+    document.getElementById("fcountry").value = "";
+    document.getElementById("fowner").value = "";
+    document.getElementById("fcity").value = "";
+    buildAccountFilter();
+  }
+  el.value = id;
+  renderSales();
+  var m = document.getElementById("mod-sales");
+  var p = m.querySelector(".scrollpane");
+  if(p) p.scrollTop = 0;
 }
 
 /* ---------- charts ---------- */
@@ -175,11 +213,12 @@ function lineChart(box, series, opts){
   svg.push('</g>');
 
   series.forEach(function(s){
-    var d = "", started = false, last = -1;
+    /* a month with no figure breaks the line rather than being bridged */
+    var d = "", pen = false, last = -1;
     s.values.forEach(function(v, i){
-      if(v === null) return;
-      d += (started ? "L" : "M") + x(i) + " " + y(v) + " ";
-      started = true; last = i;
+      if(v === null || v === undefined || isNaN(v)){ pen = false; return; }
+      d += (pen ? "L" : "M") + x(i) + " " + y(v) + " ";
+      pen = true; last = i;
     });
     if(d) svg.push('<path d="' + d.trim() + '" fill="none" stroke="' + s.color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>');
     s.values.forEach(function(v, i){
@@ -248,22 +287,200 @@ function barChart(box, rows, opts){
   });
 }
 
+/* ---------- account field notes ---------- */
+var ACCT_NOTES_KEY = "beone_account_notes_v1";
+var anotes = {};
+function loadAccountNotes(){
+  try{ anotes = JSON.parse(localStorage.getItem(ACCT_NOTES_KEY) || "{}") || {}; }
+  catch(e){ anotes = {}; }
+  Object.keys(anotes).forEach(function(k){ if(!Array.isArray(anotes[k])) anotes[k] = []; });
+}
+function saveAccountNotes(){
+  try{ localStorage.setItem(ACCT_NOTES_KEY, JSON.stringify(anotes)); return true; }
+  catch(e){ return false; }
+}
+function acctNotesFor(id){ return Array.isArray(anotes[id]) ? anotes[id] : []; }
+function acctNoteLogHTML(id){
+  var list = acctNotesFor(id);
+  if(!list.length) return '<li class="noneyet">No notes on this account yet.</li>';
+  var h = "";
+  for(var i = list.length - 1; i >= 0; i--){          /* newest first */
+    h += '<li class="noteitem">'
+       + '<div class="notehead"><time>' + esc(stamp(list[i].t)) + (list[i].who ? '  ·  ' + esc(list[i].who) : '') + '</time>'
+       + '<button class="delnote" type="button" data-adel="' + i + '" aria-label="Delete this note">Delete</button></div>'
+       + '<p>' + esc(list[i].text) + '</p></li>';
+  }
+  return h;
+}
+function addAccountNote(){
+  var a = selectedAccount();
+  if(!a) return;
+  var box = document.getElementById("anoteinput");
+  var text = box.value.trim();
+  if(!text){ box.focus(); return; }
+  if(!Array.isArray(anotes[a.id])) anotes[a.id] = [];
+  anotes[a.id].push({ t:new Date().toISOString(), text:text,
+                      who:(user && user.name) || "", role:(user && user.role) || "" });
+  var ok = saveAccountNotes();
+  box.value = "";
+  document.getElementById("anotelog").innerHTML = acctNoteLogHTML(a.id);
+  document.getElementById("asavedmsg").textContent = ok ? "" : "This browser is blocking storage";
+  toast(ok ? "Note added to " + a.account : "Could not save on this device");
+  box.focus();
+}
+function deleteAccountNote(i){
+  var a = selectedAccount();
+  if(!a) return;
+  var list = acctNotesFor(a.id);
+  if(i < 0 || i >= list.length) return;
+  list.splice(i, 1);
+  saveAccountNotes();
+  document.getElementById("anotelog").innerHTML = acctNoteLogHTML(a.id);
+  toast("Note deleted");
+}
+/* appended to the export by notesText() */
+function accountNotesText(){
+  var L = [], n = 0, accs = 0;
+  SALES.accounts.forEach(function(a){
+    var list = acctNotesFor(a.id);
+    if(!list.length) return;
+    accs++;
+    L.push("----------------------------------------------------------");
+    L.push("ACCOUNT: " + a.account);
+    L.push("         " + a.city + ", " + a.country + "  ·  owner " + a.ps + "  ·  " + a.category);
+    L.push("");
+    list.forEach(function(en){
+      n++;
+      L.push("  " + stamp(en.t) + (en.who ? "  ·  " + en.who + (en.role ? " (" + en.role + ")" : "") : ""));
+      en.text.split("\n").forEach(function(line){ L.push("    " + line); });
+      L.push("");
+    });
+  });
+  if(!n) return "";
+  return "\n\n==========================================================\n" +
+         "ACCOUNT FIELD NOTES\n" +
+         "==========================================================\n" +
+         L.join("\n") +
+         "----------------------------------------------------------\n" +
+         "Total: " + n + " note" + (n === 1 ? "" : "s") + " across " + accs +
+         " account" + (accs === 1 ? "" : "s");
+}
+
+/* ---------- derived figures ---------- */
+/* Therapy columns exactly as the file names them. Nothing is renamed,
+   combined or recalculated; each bar is that column's own figure. */
+var THERAPIES = ["Brukinsa patient recruited", "Acala CLL", "Acala MCL", "A+V",
+                 "Ibrutinib mono", "I+V", "Pirtubrutinb", "Ibrutinib"];
+
+function therapyRows(list, monthIdx){
+  return THERAPIES.map(function(m){
+    var v = sumOf(list, m, monthIdx);
+    return { label:(m === "Brukinsa patient recruited" ? "BRUKINSA" : m),
+             value:(v === null || isNaN(v)) ? 0 : v,
+             sub:(m === "Brukinsa patient recruited" ? "Brukinsa patient recruited" : m) };
+  }).sort(function(a, b){ return b.value - a.value; });
+}
+/* Brukinsa as a share of every therapy column added together. A ratio of
+   the file's own figures — the file does not state this number itself. */
+function brukShare(list, monthIdx){
+  var tot = 0, bru = sumOf(list, "Brukinsa patient recruited", monthIdx);
+  THERAPIES.forEach(function(m){
+    var v = sumOf(list, m, monthIdx);
+    if(v !== null && !isNaN(v)) tot += v;
+  });
+  if(!tot || bru === null) return null;
+  return (bru / tot) * 100;
+}
+/* Ending stock measured against the average month of consumption. */
+function stockCover(list){
+  var stock = sumOf(list, "Ending stock", SALES.ytdThrough);
+  var t = 0, n = 0;
+  for(var i = 0; i <= SALES.ytdThrough; i++){
+    var v = sumOf(list, "Consumption", i);
+    if(v !== null && !isNaN(v)){ t += v; n++; }
+  }
+  if(!n || !t || stock === null) return null;
+  return stock / (t / n);
+}
+
+/* ---------- attainment chart ---------- */
+/* Percent of target per account, against a 100% reference line. The
+   number is written on every bar, so the bands are never colour alone. */
+function attainChart(box, rows, opts){
+  var W = Math.max(box.clientWidth || 640, 320);
+  var rowH = 26, P = {t:20, r:58, b:6, l:Math.min(190, Math.round(W * 0.34))};
+  var H = P.t + P.b + rows.length * rowH;
+  var iw = W - P.l - P.r;
+  /* the scale stops at 150% so one runaway account cannot squash the rest;
+     a bar past it runs full width and keeps its true number as its label */
+  var top = Math.min(150, Math.max(120, Math.ceil(Math.max.apply(null,
+              rows.map(function(r){ return r.pct; }).concat([100])) / 20) * 20));
+  var x = function(v){ return P.l + (iw * Math.min(v, top)) / top; };
+  var maxCh = Math.max(8, Math.floor((P.l - 14) / 6.95));
+  var fit = function(t){
+    if(t.length <= maxCh) return t;
+    var head = Math.ceil((maxCh - 1) * 0.55);
+    return t.slice(0, head).replace(/[ ,\-]+$/, "") + "…" + t.slice(-(maxCh - 1 - head));
+  };
+  var band = function(p){ return p >= 100 ? "var(--ok)" : (p >= 70 ? "var(--warn)" : "var(--stop)"); };
+
+  var s = ['<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H +
+           '" role="img" aria-label="' + esc(opts.aria) + '">'];
+  s.push('<line class="refline" x1="' + x(100) + '" x2="' + x(100) + '" y1="' + (P.t - 6) +
+         '" y2="' + (H - P.b) + '"/>');
+  s.push('<text class="reflabel" x="' + x(100) + '" y="' + (P.t - 10) + '" text-anchor="middle">target</text>');
+  rows.forEach(function(r, i){
+    var yy = P.t + i * rowH, bh = 14;
+    var w = Math.max(2, x(r.pct) - P.l);
+    s.push('<text class="axis" x="' + (P.l - 10) + '" y="' + (yy + bh) + '" text-anchor="end" ' +
+           'fill="var(--ink-2)" font-size="11.5"><title>' + esc(r.label) + '</title>' + esc(fit(r.label)) + '</text>');
+    s.push('<rect data-i="' + i + '" x="' + P.l + '" y="' + (yy + 4) + '" width="' + w +
+           '" height="' + bh + '" rx="4" fill="' + band(r.pct) + '"/>');
+    s.push('<text class="dlabel" x="' + (P.l + w + 8) + '" y="' + (yy + bh - 1) +
+           '" fill="var(--ink-2)">' + Math.round(r.pct) + '%</text>');
+  });
+  s.push('</svg>');
+  box.innerHTML = s.join("");
+  box.querySelectorAll("rect[data-i]").forEach(function(rc){
+    rc.addEventListener("mouseenter", function(){
+      var r = rows[+rc.dataset.i];
+      var bb = rc.getBoundingClientRect(), pb = box.getBoundingClientRect();
+      showTip(box, '<b>' + esc(r.label) + '</b><br>' + esc(opts.measure) + ' <b>' + money(r.actual) +
+                   '</b><br>Target <b>' + money(r.target) + '</b><br>' + Math.round(r.pct) + '% of target',
+              bb.left - pb.left + bb.width, bb.top - pb.top - 6);
+    });
+    rc.addEventListener("mouseleave", function(){ hideTip(box); });
+  });
+}
+
 /* ---------- sales page ---------- */
+function selectedAccount(){
+  var el = document.getElementById("faccount");
+  if(!el || !el.value) return null;
+  return scopedAccounts().filter(function(a){ return a.id === el.value; })[0] || null;
+}
+function tileHTML(k, v, sub, good){
+  return '<div class="tile"><span class="k">' + esc(k) + '</span><span class="v">' + v + '</span>' +
+         '<span class="s' + (good ? " up" : "") + '">' + sub + '</span></div>';
+}
+
 function renderSales(){
   OVR = overrideMap();
-  var list = filteredAccounts();
+  var acc = selectedAccount();
+  var list = acc ? [acc] : filteredAccounts();
   var measure = document.getElementById("fmeasure").value;
   var mv = document.getElementById("fmonth").value;
   var monthIdx = mv === "" ? "ytd" : +mv;
   var monthLabel = mv === "" ? "year to date" : MONTHS[monthIdx];
   var target = PAIRS[measure];
-
   var universe = scopedAccounts();
+
   document.getElementById("salessub").textContent =
     universe.length + " accounts across " +
     (function(n){ return n + (n === 1 ? " country" : " countries"); })(
       Array.from(new Set(universe.map(function(a){ return a.country; }))).length) +
-    ", from " + SALES.source + ". " + list.length + " shown with the current filters." +
+    ", from " + SALES.source + ". " +
+    (acc ? "One account open." : list.length + " shown with the current filters.") +
     (scope === "mine" && myKam() ? "  Showing your accounts only." : "");
 
   var note = document.getElementById("entrynote");
@@ -274,32 +491,141 @@ function renderSales(){
       " from this device override the file figures for their month. Year to date follows the rule the file uses for each measure, so where the file states a year-to-date figure outright it is left as recorded.";
   } else { note.hidden = true; }
 
-  /* tiles: the headline measures, not whatever is selected */
-  var tiles = [
-    {k:"Patients recruited", m:"Brukinsa patient recruited", t:"Brukinsa patient target"},
-    {k:"New patients",       m:"Brukinsa New Pts recruited"},
-    {k:"Sales (units)",      m:"Sales (units)", t:"Target (units)"},
-    {k:"Consumption",        m:"Consumption"},
-    {k:"Ending stock",       m:"Ending stock"},
-    {k:"Accounts",           special:list.length}
+  document.getElementById("acctview").hidden = !acc;
+  document.getElementById("allview").hidden = !!acc;
+  if(acc) renderAccount(acc, measure, monthIdx, monthLabel, target);
+  else    renderAllAccounts(list, universe, measure, monthIdx, monthLabel, target);
+}
+
+/* ---------- one account ---------- */
+function renderAccount(a, measure, monthIdx, monthLabel, target){
+  var list = [a];
+  document.getElementById("acctitle2").textContent = a.account;
+  document.getElementById("accmeta").innerHTML =
+    [a.category, a.city, a.country, "Owner " + a.ps].map(function(t){
+      return "<span>" + esc(t) + "</span>";
+    }).join('<span aria-hidden="true">·</span>');
+
+  /* tiles */
+  var pat = sumOf(list, "Brukinsa patient recruited", monthIdx);
+  var patT = sumOf(list, "Brukinsa patient target", monthIdx);
+  var un = sumOf(list, "Sales (units)", monthIdx);
+  var unT = sumOf(list, "Target (units)", monthIdx);
+  var cover = stockCover(list);
+  var share = brukShare(list, monthIdx);
+  var newPts = sumOf(list, "Brukinsa New Pts recruited", monthIdx);
+  var pct = function(v, t){ return (t && v !== null) ? Math.round((v / t) * 100) : null; };
+  var pp = pct(pat, patT), up = pct(un, unT);
+
+  document.getElementById("acctiles").innerHTML =
+    tileHTML("Patients recruited", money(pat),
+      patT ? (pp + "% of target " + money(patT)) : esc(monthLabel), pp >= 100) +
+    (newPts === null ? "" : tileHTML("New patients", money(newPts), esc(monthLabel))) +
+    tileHTML("Sales (units)", money(un),
+      unT ? (up + "% of target " + money(unT)) : esc(monthLabel), up >= 100) +
+    tileHTML("Consumption", money(sumOf(list, "Consumption", monthIdx)), esc(monthLabel)) +
+    tileHTML("Ending stock", money(sumOf(list, "Ending stock", SALES.ytdThrough)),
+      cover === null ? "as at " + MONTHS[SALES.ytdThrough]
+                     : (Math.round(cover * 10) / 10) + " months of cover") +
+    tileHTML("Share of therapies", share === null ? "&mdash;" : Math.round(share) + "%",
+      "Brukinsa of all therapy columns");
+
+  /* chart 1: whichever measure is selected */
+  var s1 = [{name:measure, color:C_ACTUAL, values:seriesOf(list, measure)}];
+  if(target) s1.push({name:target, color:C_TARGET, values:seriesOf(list, target)});
+  document.getElementById("a1title").textContent = measure + " by month";
+  document.getElementById("a1sub").textContent =
+    "Change the Measure filter above to plot any of the " +
+    measureList().length + " columns the file holds for this account.";
+  legendHTML("a1legend", s1);
+  lineChart(document.getElementById("a1box"), s1, {aria:measure + " by month for " + a.account});
+
+  /* chart 2: an actual-against-target pair, never the one already plotted above */
+  var fixed = (measure === "Brukinsa patient recruited")
+    ? {a:"Sales (units)", t:"Target (units)", title:"Sales against target"}
+    : {a:"Brukinsa patient recruited", t:"Brukinsa patient target", title:"Patients recruited against target"};
+  var s2 = [
+    {name:fixed.a, color:C_ACTUAL, values:seriesOf(list, fixed.a)},
+    {name:fixed.t, color:C_TARGET, values:seriesOf(list, fixed.t)}
   ];
-  document.getElementById("tiles").innerHTML = tiles.map(function(t){
-    if(t.special !== undefined){
-      return '<div class="tile"><span class="k">' + esc(t.k) + '</span><span class="v">' + t.special +
-             '</span><span class="s">of ' + universe.length + ' in view</span></div>';
-    }
-    var v = sumOf(list, t.m, monthIdx);
-    var sub = "";
-    if(t.t){
-      var tv = sumOf(list, t.t, monthIdx);
-      if(tv){
-        var pct = Math.round((v / tv) * 100);
-        sub = '<span class="s ' + (pct >= 100 ? "up" : "") + '">' + pct + '% of target ' + money(tv) + '</span>';
-      }
-    }
-    return '<div class="tile"><span class="k">' + esc(t.k) + '</span><span class="v">' + money(v) + '</span>' +
-           (sub || '<span class="s">' + esc(monthLabel) + '</span>') + '</div>';
-  }).join("");
+  document.getElementById("a2title").textContent = fixed.title;
+  document.getElementById("a2sub").textContent = "Every month in the file for this account.";
+  legendHTML("a2legend", s2);
+  lineChart(document.getElementById("a2box"), s2, {aria:fixed.title + " for " + a.account});
+
+  /* chart 3: therapies */
+  var trows = therapyRows(list, monthIdx).filter(function(r){ return r.value > 0; });
+  document.getElementById("a3sub").textContent =
+    "Each therapy column as the file records it, " + monthLabel + ". Nothing is combined or recalculated.";
+  if(trows.length) barChart(document.getElementById("a3box"), trows,
+    {color:C_ACTUAL, measure:"Patients", aria:"Patients by therapy at " + a.account});
+  else document.getElementById("a3box").innerHTML =
+    '<div class="emptybox">No therapy figures recorded for this account.</div>';
+
+  /* chart 4: stock against consumption */
+  var s4 = [
+    {name:"Ending stock", color:C_ACTUAL, values:seriesOf(list, "Ending stock")},
+    {name:"Consumption",  color:C_TARGET, values:seriesOf(list, "Consumption")}
+  ];
+  document.getElementById("a4sub").textContent =
+    cover === null ? "Stock and consumption by month."
+                   : "Stock and consumption by month. At the average month of consumption, the stock on hand covers " +
+                     (Math.round(cover * 10) / 10) + " months.";
+  legendHTML("a4legend", s4);
+  lineChart(document.getElementById("a4box"), s4, {aria:"Stock against consumption at " + a.account});
+
+  /* notes */
+  document.getElementById("anotelog").innerHTML = acctNoteLogHTML(a.id);
+  document.getElementById("asavedmsg").textContent = "";
+
+  /* every measure */
+  document.getElementById("a5sub").textContent =
+    "All " + measureList().length + " columns the file holds for " + a.account +
+    ". A figure you entered is marked with an asterisk.";
+  var th = '<thead><tr><th class="txt">Measure</th>' +
+           MONTHS.map(function(m){ return '<th>' + m + '</th>'; }).join("") + '<th>YTD</th></tr></thead>';
+  var body = "";
+  Object.keys(SALES.measureCats).forEach(function(cat){
+    body += '<tr class="mcat"><th colspan="' + (MONTHS.length + 2) + '">' + esc(cat) + '</th></tr>';
+    SALES.measureCats[cat].forEach(function(m){
+      if(!a.measures[m]) return;
+      body += '<tr><td class="mname">' + esc(m) + (hasOverride(a, m) ? ' *' : '') + '</td>' +
+        MONTHS.map(function(_, i){ return '<td>' + money(monthVal(a, m, i)) + '</td>'; }).join("") +
+        '<td><b>' + money(ytdVal(a, m)) + '</b></td></tr>';
+    });
+  });
+  document.getElementById("acctable").innerHTML = th + '<tbody>' + body + '</tbody>';
+}
+
+function legendHTML(id, series){
+  document.getElementById(id).innerHTML = series.length > 1 ? series.map(function(s){
+    return '<span><span class="swatch" style="background:' + s.color + '"></span>' + esc(s.name) + '</span>';
+  }).join("") : "";
+}
+
+/* ---------- all accounts ---------- */
+function renderAllAccounts(list, universe, measure, monthIdx, monthLabel, target){
+  var cover = stockCover(list);
+  var share = brukShare(list, monthIdx);
+  var pat = sumOf(list, "Brukinsa patient recruited", monthIdx);
+  var patT = sumOf(list, "Brukinsa patient target", monthIdx);
+  var un = sumOf(list, "Sales (units)", monthIdx);
+  var unT = sumOf(list, "Target (units)", monthIdx);
+  var pct = function(v, t){ return (t && v !== null) ? Math.round((v / t) * 100) : null; };
+  var pp = pct(pat, patT), up = pct(un, unT);
+
+  document.getElementById("tiles").innerHTML =
+    tileHTML("Accounts", list.length, "of " + universe.length + " in view") +
+    tileHTML("Patients recruited", money(pat),
+      patT ? (pp + "% of target " + money(patT)) : esc(monthLabel), pp >= 100) +
+    tileHTML("Sales (units)", money(un),
+      unT ? (up + "% of target " + money(unT)) : esc(monthLabel), up >= 100) +
+    tileHTML("Consumption", money(sumOf(list, "Consumption", monthIdx)), esc(monthLabel)) +
+    tileHTML("Ending stock", money(sumOf(list, "Ending stock", SALES.ytdThrough)),
+      cover === null ? "as at " + MONTHS[SALES.ytdThrough]
+                     : (Math.round(cover * 10) / 10) + " months of cover") +
+    tileHTML("Share of therapies", share === null ? "&mdash;" : Math.round(share) + "%",
+      "Brukinsa of all therapy columns");
 
   /* trend */
   var series = [{name:measure, color:C_ACTUAL, values:seriesOf(list, measure)}];
@@ -307,10 +633,38 @@ function renderSales(){
   document.getElementById("trendtitle").textContent = measure + " by month";
   document.getElementById("trendsub").textContent =
     "Every month in the file, summed across the " + list.length + " account" + (list.length === 1 ? "" : "s") + " selected.";
-  document.getElementById("trendlegend").innerHTML = series.length > 1 ? series.map(function(s){
-    return '<span><span class="swatch" style="background:' + s.color + '"></span>' + esc(s.name) + '</span>';
-  }).join("") : "";
+  legendHTML("trendlegend", series);
   lineChart(document.getElementById("trendbox"), series, {aria:measure + " by month"});
+
+  /* attainment, only where the measure has a target in the file */
+  var att = document.getElementById("attcard");
+  if(target){
+    var arows = list.map(function(a){
+      var v = (monthIdx === "ytd") ? ytdVal(a, measure) : monthVal(a, measure, monthIdx);
+      var t = (monthIdx === "ytd") ? ytdVal(a, target)  : monthVal(a, target, monthIdx);
+      if(!t || t <= 0 || v === null || v === undefined || isNaN(v)) return null;
+      return { label:a.account, actual:v, target:t, pct:(v / t) * 100 };
+    }).filter(Boolean).sort(function(x, y){ return x.pct - y.pct; });
+
+    if(arows.length){
+      att.hidden = false;
+      var behind = arows.filter(function(r){ return r.pct < 70; }).length;
+      var shown = arows.slice(0, 20);
+      document.getElementById("atttitle").textContent = measure + " against target, by account";
+      document.getElementById("attsub").textContent =
+        "Furthest behind first, " + monthLabel + ". " + arows.length + " account" +
+        (arows.length === 1 ? " has" : "s have") + " a target on this measure" +
+        (behind ? "; " + behind + " " + (behind === 1 ? "is" : "are") + " below 70%." : ".") +
+        (arows.length > shown.length ? "  The 20 furthest behind are plotted; the rest are in the table."
+                                     : "  Every one of them is plotted.");
+      document.getElementById("attlegend").innerHTML =
+        '<span><span class="swatch" style="background:var(--ok)"></span>At or above target</span>' +
+        '<span><span class="swatch" style="background:var(--warn)"></span>70&ndash;99%</span>' +
+        '<span><span class="swatch" style="background:var(--stop)"></span>Below 70%</span>';
+      attainChart(document.getElementById("attbox"), shown,
+        {measure:measure, aria:measure + " as a percentage of target, by account"});
+    } else { att.hidden = true; }
+  } else { att.hidden = true; }
 
   /* by account */
   var rows = list.map(function(a){
@@ -325,12 +679,22 @@ function renderSales(){
   else document.getElementById("accbox").innerHTML =
     '<div class="emptybox">No accounts match these filters. Clear them, or switch to <b>Everyone</b> above.</div>';
 
-  /* table view */
+  /* therapies */
+  var trows = therapyRows(list, monthIdx).filter(function(r){ return r.value > 0; });
+  document.getElementById("thersub").textContent =
+    "Each therapy column as the file records it, " + monthLabel +
+    ", across the accounts in view. Nothing is combined or recalculated.";
+  if(trows.length) barChart(document.getElementById("therbox"), trows,
+    {color:C_ACTUAL, measure:"Patients", aria:"Patients by therapy"});
+  else document.getElementById("therbox").innerHTML =
+    '<div class="emptybox">No therapy figures recorded for the accounts in view.</div>';
+
+  /* table */
   var th = '<thead><tr><th class="txt">Account</th><th class="txt">Country</th><th class="txt">City</th><th class="txt">Owner</th>' +
            MONTHS.map(function(m){ return '<th>' + m + '</th>'; }).join("") + '<th>YTD</th></tr></thead>';
   var tb = '<tbody>' + list.map(function(a){
     var has = a.measures[measure];
-    return '<tr><td class="acct">' + esc(a.account) + (hasOverride(a, measure) ? ' *' : '') +
+    return '<tr class="acctrow" data-acc="' + esc(a.id) + '"><td class="acct">' + esc(a.account) + (hasOverride(a, measure) ? ' *' : '') +
            '</td><td class="txt dim">' + esc(a.country) + '</td><td class="txt dim">' + esc(a.city) +
            '</td><td class="txt dim">' + esc(a.ps) + '</td>' +
            MONTHS.map(function(_, i){ return '<td>' + (has ? money(monthVal(a, measure, i)) : "—") + '</td>'; }).join("") +
@@ -554,12 +918,40 @@ function closeTab(name){
 }
 
 function startSales(){
+  loadEntries();
+  loadAccountNotes();
   buildSalesFilters();
   buildEntryForm();
   buildActs();
   loadScope();
   renderScope();
-  loadEntries();
+
+  /* account detail: open, close, note keeping */
+  document.getElementById("accall").addEventListener("click", function(){
+    document.getElementById("faccount").value = "";
+    renderSales();
+  });
+  document.getElementById("accentry").addEventListener("click", function(){
+    var a = selectedAccount();
+    showModule("entry");
+    if(a){
+      document.getElementById("eaccount").value = a.id;
+      document.getElementById("emeasure").focus();
+    }
+  });
+  document.getElementById("addanote").addEventListener("click", addAccountNote);
+  document.getElementById("anoteinput").addEventListener("keydown", function(e){
+    if(e.key === "Enter" && (e.metaKey || e.ctrlKey)){ e.preventDefault(); addAccountNote(); }
+  });
+  document.getElementById("anotelog").addEventListener("click", function(e){
+    var d = e.target.closest ? e.target.closest("[data-adel]") : null;
+    if(d) deleteAccountNote(parseInt(d.dataset.adel, 10));
+  });
+  document.getElementById("salestable").addEventListener("click", function(e){
+    var r = e.target.closest ? e.target.closest("tr[data-acc]") : null;
+    if(r) openAccount(r.dataset.acc);
+  });
+
   document.body.addEventListener("click", function(e){
     var t = e.target;
     var close = t.closest ? t.closest("[data-close]") : null;
@@ -583,10 +975,3 @@ function startSales(){
     }, 180);
   });
 }
-
-/* ---------- boot ---------- */
-document.getElementById("signout").addEventListener("click", signOut);
-
-loadUser();
-if(user){ showWho(); startApp(); }
-else { openGate(); }

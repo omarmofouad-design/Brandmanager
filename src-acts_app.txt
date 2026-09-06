@@ -127,10 +127,12 @@ function gateBars(box, rows, total, aria){
            'fill="var(--ink-2)" font-size="11.5">' + esc(r.label) + '</text>');
     s.push('<g clip-path="url(#' + uid + i + ')">');
     s.push('<rect x="' + P.l + '" y="' + yy + '" width="' + iw + '" height="' + bh + '" fill="var(--surface-2)"/>');
-    [[r.y, C_OK], [r.n, C_NO], [r.u, C_UNK]].forEach(function(seg){
-      if(!seg[0]) return;
+    var segs = [[r.y, C_OK], [r.n, C_NO], [r.u, C_UNK]].filter(function(g){ return g[0]; });
+    segs.forEach(function(seg, si){
       var w = (iw * seg[0]) / Math.max(total, 1);
-      s.push('<rect x="' + x + '" y="' + yy + '" width="' + w + '" height="' + bh + '" fill="' + seg[1] + '"/>');
+      var gap = (si < segs.length - 1) ? 2 : 0;      /* surface gap, not a border */
+      s.push('<rect x="' + x + '" y="' + yy + '" width="' + Math.max(1, w - gap) +
+             '" height="' + bh + '" fill="' + seg[1] + '"/>');
       x += w;
     });
     s.push('</g>');

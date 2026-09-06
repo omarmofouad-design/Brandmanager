@@ -1,0 +1,10 @@
+/* ==================================================================
+   BOOT — must be the last part in the bundle.
+   startApp() reaches into every module, so nothing here may run until
+   every var in every part has been assigned, not merely hoisted.
+   ================================================================== */
+document.getElementById("signout").addEventListener("click", signOut);
+
+loadUser();
+if(user){ showWho(); startApp(); }
+else { openGate(); }

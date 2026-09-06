@@ -433,3 +433,36 @@ answered from the field.
 being the most serious), the missing Mayo / KHAN / 61-trial analyses in §2,
 the two medical decks being non-promotional and reactive-use-only, and the
 source-material defects in §5. The compliance banner was kept in the tool.
+
+---
+
+## 9. Change log — figures derived in the Sales module (6 September 2026)
+
+The Sales module now shows three numbers the ALLnONE file does not state
+itself. Every other figure in the tool is the file's own, reproduced as
+recorded. These three are arithmetic on the file's figures, and each is
+labelled in the interface so no one mistakes it for a source figure:
+
+| Derived figure | How it is worked out | Where it appears |
+|---|---|---|
+| **% of target** | actual ÷ target for the same measure, month and account, using the pair the file itself defines (patients / patient target, units / target units, value / target value) | stat tiles, and the "against target" chart |
+| **Months of cover** | ending stock at the last month with data ÷ the mean of the months of consumption recorded to date | ending-stock tile, stock chart |
+| **Share of therapies** | Brukinsa patients recruited ÷ the sum of every therapy column (Brukinsa + Acala CLL + Acala MCL + A+V + Ibrutinib mono + I+V + Pirtubrutinb + Ibrutinib) | its own tile |
+
+**A caveat on share of therapies.** The file's therapy columns are not all the
+same kind of number. `Brukinsa patient recruited` accumulates across the year
+(the file's own year-to-date rule for it is a Jan–Jul sum), while several
+competitor columns hold a patient count as at each month (their year-to-date
+rule is the July figure, not a sum). Dividing one by the other mixes a flow
+by a stock, so the percentage is indicative of relative presence, not a
+market share as a market-research house would define it. It is not a figure
+to quote externally. The underlying columns are shown unaltered in the
+"Patients by therapy" chart and in the account table, which is where the
+defensible reading is.
+
+Therapy column names are reproduced exactly as the file spells them,
+`Pirtubrutinb` included. Nothing is renamed, merged or recalculated.
+
+**Account field notes** were added: dated, attributed to the signed-in user,
+held in that browser only, and carried into the Export notes file alongside
+the objection notes.
