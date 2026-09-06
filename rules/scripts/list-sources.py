@@ -178,13 +178,31 @@ def summarise(data: dict, rows: list[dict], problems: list[str]) -> dict:
     oldest_year = min(years) if years else None
     oldest_entries = [r["id"] for r in rows if r["year"] == oldest_year] if years else []
 
+    # Staleness is a property of *guidance*, not of literature. A pivotal trial
+    # from 2015 is not stale — it is history, and it does not get reissued. A
+    # guideline or a drug label from 2015 would be a live problem. The UI
+    # signal must therefore come from guidance only, or an old landmark trial
+    # drowns out a genuinely ageing guideline.
+    guidance = [r for r in rows
+                if r["reliability"] in ("primary_guideline", "regulatory_label")
+                and r["year"] is not None]
+    guidance_years = [r["year"] for r in guidance]
+    oldest_guidance_year = min(guidance_years) if guidance_years else None
+    oldest_guidance_ids = [r["id"] for r in guidance if r["year"] == oldest_guidance_year]
+
     return {
         "register_version": data.get("register_version"),
         "compiled_on": data.get("compiled_on"),
         "confirmed_by_owner": bool(data.get("confirmed_by_owner")),
         "generated_on": today.isoformat(),
         "source_count": len(rows),
-        # The UI staleness signal.
+        # The UI staleness signal — guidance only. See note in summarise().
+        "oldest_guidance_year": oldest_guidance_year,
+        "oldest_guidance_ids": oldest_guidance_ids,
+        "oldest_guidance_age_years": (
+            (today.year - oldest_guidance_year) if oldest_guidance_year else None
+        ),
+        # Whole-register floor, literature included. Context, not a signal.
         "oldest_source_year": oldest_year,
         "oldest_source_ids": oldest_entries,
         "oldest_source_age_years": (today.year - oldest_year) if oldest_year else None,
@@ -233,9 +251,12 @@ def print_report(summary: dict, rows: list[dict]) -> None:
     print(line)
     print("SUMMARY")
     print(line)
+    print(f"oldest GUIDANCE      : {summary['oldest_guidance_year']} "
+          f"({summary['oldest_guidance_age_years']} years old) "
+          f"— {', '.join(summary['oldest_guidance_ids'])}   <- UI staleness signal")
     print(f"oldest source year   : {summary['oldest_source_year']} "
           f"({summary['oldest_source_age_years']} years old) "
-          f"— {', '.join(summary['oldest_source_ids'])}")
+          f"— {', '.join(summary['oldest_source_ids'])}   (literature included)")
     print(f"oldest access date   : {summary['oldest_access_date']}")
     print(f"newest access date   : {summary['newest_access_date']}")
     print(f"by access method     : {summary['counts_by_access_method']}")

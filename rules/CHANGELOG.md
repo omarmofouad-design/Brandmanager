@@ -9,6 +9,76 @@ Format: `[YYYY-MM-DD] TYPE — summary`, where TYPE is one of
 
 ---
 
+## [2026-09-06] Phase 0 — Drive sweep, trial identification, prototype 1
+
+### REGISTER — `sources.yaml` at `0.2.0-provisional`
+
+**38 sources (was 23). One is now readable (was zero).**
+
+- **`oman-royal-hospital-2026` — first document actually read.** CLL protocols,
+  Royal Hospital, Ministry of Health Oman, doc control `MoH/DGQAC/P&P/002`,
+  approved 2026-02-11. Found in the project owner's Google Drive.
+  `access_method: user_supplied`, `verified: content_read`.
+  Recorded with explicit `usable_for` / `not_usable_for` lists: it is an
+  institutional protocol that restates NCCN/ESMO, is draft-quality (unfilled
+  effective dates, an unfinished editing note in the body), and its content
+  and reference list disagree on guideline versions. Usable for Oman-specific
+  operational facts; not usable for any clinical threshold.
+- **14 pivotal trials promoted** from `pending_identification` into `sources`
+  with full citations — AMPLIFY, CLL14 (primary + 6-year), ELEVATE-TN, SEQUOIA,
+  ALPINE, ELEVATE-RR, MURANO, CAPTIVATE, BRUIN, BRUIN CLL-321, TRANSCEND
+  CLL 004, RESONATE-2, CLL12. All unread. `pending_identification.pivotal_trials`
+  is now RESOLVED; two items stay open (ELEVATE-RR DOI, EVOLVE readout status).
+- **New `excluded_materials` block.** 7 manufacturer-produced items found in
+  the Drive, recorded with reasons rather than dropped silently.
+
+### RULES — still none
+
+`list-sources.py` reports **1 of 38 usable**. One readable source, and it is
+explicitly not usable for thresholds, so no rule may yet be written.
+
+### DOCS
+
+- **`PROCUREMENT.md`** — new, and now the primary request document. 37
+  documents with exact citations and per-section requirements, 5 categories of
+  regional data, 4 decisions. Each entry tagged by access route; notes that
+  opening egress to five hosts would clear 16 without owner effort.
+- `CONFLICTS.md` gains **C-07** (independence: the sources nearest to hand are
+  the ones that cannot be used).
+
+### TOOLING — staleness metric corrected
+
+Adding trial literature exposed a flaw: "oldest source" jumped to 2015
+(RESONATE-2), which is not staleness — a landmark trial is history and is
+never reissued, whereas a 2015 *guideline* would be a live problem. The script
+now reports `oldest_guidance_year` (primary_guideline + regulatory_label only)
+as the UI signal, keeping `oldest_source_year` as context. Guidance floor is
+back to **2018 · `iwcll-2018`**.
+
+### PROTOTYPE — first build
+
+`prototype/index.html`, published as an Artifact. A working shell: real
+inputs, real decision spine (15 nodes), real citation paths, and every
+clinical threshold visibly absent with the exact document and section named in
+its place. Nodes 7 and 13 move to a new `partial` state — the Oman protocol
+answers the surveillance cadence and the Oman assay/drug availability
+questions, and nothing else does.
+
+### Findings
+
+- **CLL12** (`cll12-blood-2022`) randomised asymptomatic early-stage patients
+  *at high risk of progression* to ibrutinib or placebo. Reporting indicates
+  EFS improved but **OS did not**, and that watch-and-wait remains standard
+  regardless of genetic risk. Gap B8/D10 was a declared blank; it is now a
+  named, unread, high-priority paper that determines a load-bearing tool
+  behaviour.
+- The Oman protocol supplies the first regional operational facts in the
+  project: TP53 sequencing is **sent abroad**, MRD is "if available", drugs
+  are subject to hospital pharmacy availability. This makes node 4 conditional
+  and may make node 9's MRD-guided option unreachable in Oman.
+
+---
+
 ## [2026-09-06] Phase 0 — initial sourcing pass
 
 ### REGISTER — `sources.yaml` created at `0.1.0-provisional`

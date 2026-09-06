@@ -1,0 +1,1010 @@
+<title>CLL Decision Trace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  /* ---- tokens: complete light palette on bare :root ---- */
+  :root {
+    --paper:      #F4F6F5;
+    --surface:    #FFFFFF;
+    --surface-2:  #EDF1F0;
+    --ink:        #141817;
+    --ink-2:      #3E4A48;
+    --ink-3:      #6B7876;
+    --rule:       #D6DEDC;
+    --rule-2:     #BFCBC8;
+
+    --accent:     #155E63;
+    --accent-2:   #0E4448;
+    --accent-wash:#E2EEEE;
+
+    --blocked:    #8A5A00;
+    --blocked-bg: #FBF0DA;
+    --blocked-br: #E4C88A;
+
+    --conflict:   #61389B;
+    --conflict-bg:#F0EAF9;
+    --conflict-br:#CDBBE8;
+
+    --uncovered:  #5A6A78;
+    --uncovered-bg:#E9EEF2;
+    --uncovered-br:#C4D0D9;
+
+    --ready:      #1A6B41;
+    --ready-bg:   #E2F0E8;
+
+    --shadow: 0 1px 2px rgba(20,24,23,.05), 0 6px 18px -12px rgba(20,24,23,.28);
+
+    --f-display: "Newsreader", Georgia, "Times New Roman", serif;
+    --f-ui: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #0E1413;
+      --surface:    #161D1C;
+      --surface-2:  #1D2625;
+      --ink:        #E8EEEC;
+      --ink-2:      #B3C0BD;
+      --ink-3:      #7E8D8A;
+      --rule:       #28312F;
+      --rule-2:     #3A4644;
+
+      --accent:     #57B8B4;
+      --accent-2:   #8CD6D0;
+      --accent-wash:#152A2B;
+
+      --blocked:    #E0AE55;
+      --blocked-bg: #2A2113;
+      --blocked-br: #55411D;
+
+      --conflict:   #B99BE8;
+      --conflict-bg:#221B31;
+      --conflict-br:#3E3157;
+
+      --uncovered:  #9BAEBB;
+      --uncovered-bg:#1A2228;
+      --uncovered-br:#2F3C44;
+
+      --ready:      #6FC894;
+      --ready-bg:   #14251C;
+
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -14px rgba(0,0,0,.8);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #0E1413;
+    --surface:    #161D1C;
+    --surface-2:  #1D2625;
+    --ink:        #E8EEEC;
+    --ink-2:      #B3C0BD;
+    --ink-3:      #7E8D8A;
+    --rule:       #28312F;
+    --rule-2:     #3A4644;
+
+    --accent:     #57B8B4;
+    --accent-2:   #8CD6D0;
+    --accent-wash:#152A2B;
+
+    --blocked:    #E0AE55;
+    --blocked-bg: #2A2113;
+    --blocked-br: #55411D;
+
+    --conflict:   #B99BE8;
+    --conflict-bg:#221B31;
+    --conflict-br:#3E3157;
+
+    --uncovered:  #9BAEBB;
+    --uncovered-bg:#1A2228;
+    --uncovered-br:#2F3C44;
+
+    --ready:      #6FC894;
+    --ready-bg:   #14251C;
+
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -14px rgba(0,0,0,.8);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--f-ui);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .shell { max-width: 1280px; margin: 0 auto; padding: 0 24px 72px; }
+
+  /* ---- masthead ---- */
+  .masthead {
+    display: flex; flex-wrap: wrap; align-items: flex-end; gap: 20px;
+    padding: 30px 0 20px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .mast-id { flex: 1 1 340px; min-width: 0; }
+  .eyebrow {
+    font-family: var(--f-mono); font-size: 10.5px; font-weight: 500;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3);
+  }
+  h1 {
+    font-family: var(--f-display); font-weight: 500;
+    font-size: clamp(30px, 4.6vw, 46px); line-height: 1.05;
+    letter-spacing: -.015em; margin: 6px 0 8px; text-wrap: balance;
+  }
+  .standfirst {
+    color: var(--ink-2); font-size: 15px; max-width: 60ch; margin: 0;
+  }
+  .mast-meters { display: flex; gap: 10px; flex-wrap: wrap; }
+  .meter {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 3px; padding: 9px 13px 10px; min-width: 108px;
+  }
+  .meter-k {
+    font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--ink-3); display: block;
+  }
+  .meter-v {
+    font-family: var(--f-mono); font-size: 21px; font-weight: 600;
+    font-variant-numeric: tabular-nums; line-height: 1.25; display: block;
+  }
+  .meter-n { font-size: 11px; color: var(--ink-3); }
+  .v-blocked { color: var(--blocked); }
+  .v-accent  { color: var(--accent); }
+
+  /* ---- gate banner ---- */
+  .gate {
+    display: grid; grid-template-columns: 4px 1fr; gap: 0;
+    margin: 20px 0 26px; background: var(--blocked-bg);
+    border: 1px solid var(--blocked-br); border-radius: 3px; overflow: hidden;
+  }
+  .gate-stripe { background: var(--blocked); }
+  .gate-body { padding: 15px 18px; }
+  .gate h2 {
+    font-family: var(--f-ui); font-size: 13px; font-weight: 600; margin: 0 0 6px;
+    letter-spacing: .01em; color: var(--blocked);
+  }
+  .gate p { margin: 0 0 8px; font-size: 13.5px; color: var(--ink-2); max-width: 88ch; }
+  .gate p:last-child { margin-bottom: 0; }
+  .gate strong { color: var(--ink); font-weight: 600; }
+
+  /* ---- working surface ---- */
+  .surface { display: grid; grid-template-columns: 310px minmax(0, 1fr); gap: 26px; align-items: start; }
+  @media (max-width: 900px) { .surface { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 3px; box-shadow: var(--shadow);
+  }
+  .panel-head {
+    padding: 13px 16px 12px; border-bottom: 1px solid var(--rule);
+    display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  }
+  .panel-head h2 {
+    font-family: var(--f-mono); font-size: 10.5px; font-weight: 600;
+    letter-spacing: .14em; text-transform: uppercase; margin: 0; color: var(--ink-2);
+  }
+  .panel-note { font-size: 11px; color: var(--ink-3); font-family: var(--f-mono); }
+
+  /* ---- requisition form ---- */
+  .req { padding: 4px 16px 16px; }
+  .req-warn {
+    font-size: 11.5px; color: var(--ink-3); border-bottom: 1px dashed var(--rule-2);
+    padding: 10px 0 10px; margin-bottom: 4px; line-height: 1.45;
+  }
+  .fset { border: 0; padding: 14px 0 4px; margin: 0; }
+  .fset + .fset { border-top: 1px solid var(--rule); }
+  .fset legend {
+    font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .13em;
+    text-transform: uppercase; color: var(--accent); padding: 0 0 8px;
+  }
+  .field { display: grid; grid-template-columns: 1fr 96px; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .field label { font-size: 12.5px; color: var(--ink-2); }
+  .field .unit { font-family: var(--f-mono); font-size: 10px; color: var(--ink-3); display: block; }
+  input[type="number"], select {
+    width: 100%; font-family: var(--f-mono); font-size: 13px;
+    font-variant-numeric: tabular-nums; padding: 5px 7px;
+    background: var(--surface-2); color: var(--ink);
+    border: 1px solid var(--rule-2); border-radius: 2px;
+  }
+  select { font-family: var(--f-ui); font-size: 12px; }
+  .field-wide { grid-template-columns: 1fr; }
+  .field-wide select { width: 100%; }
+  input:focus-visible, select:focus-visible, button:focus-visible, .tab:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+  .derived {
+    margin-top: 12px; background: var(--surface-2); border: 1px solid var(--rule);
+    border-radius: 2px; padding: 10px 12px;
+  }
+  .derived-row { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; padding: 3px 0; }
+  .derived-row span:last-child { font-family: var(--f-mono); color: var(--ink-3); }
+
+  /* ---- tabs ---- */
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--rule); padding: 0 8px; flex-wrap: wrap; }
+  .tab {
+    appearance: none; background: none; border: 0; border-bottom: 2px solid transparent;
+    font-family: var(--f-ui); font-size: 12.5px; font-weight: 500; color: var(--ink-3);
+    padding: 12px 12px 10px; cursor: pointer; letter-spacing: .01em;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+  .tab .cnt { font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-3); margin-left: 5px; }
+
+  /* ---- trace ---- */
+  .trace { padding: 6px 0 8px; }
+  .node {
+    display: grid; grid-template-columns: 3px 42px minmax(0, 1fr);
+    border-bottom: 1px solid var(--rule);
+  }
+  .node:last-child { border-bottom: 0; }
+  .node-stripe { background: var(--rule-2); }
+  .node[data-status="blocked"]   .node-stripe { background: var(--blocked); }
+  .node[data-status="conflict"]  .node-stripe { background: var(--conflict); }
+  .node[data-status="uncovered"] .node-stripe { background: var(--uncovered); }
+  .node[data-status="unsourced"] .node-stripe { background: var(--ink-3); }
+  .node[data-status="partial"]   .node-stripe { background: var(--accent); }
+
+  .node-num {
+    font-family: var(--f-mono); font-size: 11px; font-weight: 500; color: var(--ink-3);
+    padding: 15px 0 0; text-align: center; font-variant-numeric: tabular-nums;
+  }
+  .node-body { padding: 13px 16px 14px 4px; min-width: 0; }
+  .node-top { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .node-title { font-size: 14.5px; font-weight: 600; letter-spacing: -.005em; }
+  .node-decides { font-size: 12.5px; color: var(--ink-2); margin: 3px 0 9px; max-width: 74ch; }
+
+  .chip {
+    font-family: var(--f-mono); font-size: 9.5px; font-weight: 600;
+    letter-spacing: .09em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 2px; border: 1px solid; white-space: nowrap;
+  }
+  .chip-blocked   { color: var(--blocked);   background: var(--blocked-bg);   border-color: var(--blocked-br); }
+  .chip-conflict  { color: var(--conflict);  background: var(--conflict-bg);  border-color: var(--conflict-br); }
+  .chip-uncovered { color: var(--uncovered); background: var(--uncovered-bg); border-color: var(--uncovered-br); }
+  .chip-unsourced { color: var(--ink-2);     background: var(--surface-2);    border-color: var(--rule-2); }
+
+  .srcline { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 8px; }
+  .srcline-k {
+    font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-3); margin-right: 2px;
+  }
+  .sid {
+    font-family: var(--f-mono); font-size: 11px; color: var(--accent);
+    background: var(--accent-wash); border: 1px solid transparent;
+    padding: 1px 6px; border-radius: 2px;
+  }
+  .sid.unread::after { content: " ×"; color: var(--blocked); font-weight: 600; }
+
+  .socket {
+    display: flex; gap: 9px; align-items: flex-start;
+    background: repeating-linear-gradient(135deg, transparent 0 6px, var(--surface-2) 6px 7px);
+    border: 1px dashed var(--rule-2); border-radius: 2px;
+    padding: 9px 11px; font-size: 12.5px; color: var(--ink-2);
+  }
+  .socket-icon { font-family: var(--f-mono); color: var(--blocked); font-weight: 600; flex: none; }
+  .socket em { font-style: normal; color: var(--ink); font-weight: 500; }
+  .socket code {
+    font-family: var(--f-mono); font-size: 11.5px; color: var(--ink);
+    background: var(--surface-2); padding: 0 4px; border-radius: 2px;
+  }
+  .gapref { font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-3); margin-top: 7px; }
+
+  /* ---- register table ---- */
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 12.5px; min-width: 620px; }
+  th {
+    text-align: left; font-family: var(--f-mono); font-size: 9.5px; font-weight: 600;
+    letter-spacing: .11em; text-transform: uppercase; color: var(--ink-3);
+    padding: 11px 12px; border-bottom: 1px solid var(--rule-2); white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  td.mono { font-family: var(--f-mono); font-size: 11.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.sidcell { font-family: var(--f-mono); font-size: 11.5px; color: var(--accent); white-space: nowrap; }
+  .tier {
+    font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .07em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  .aged { color: var(--blocked); font-weight: 600; }
+
+  .chip-ready   { color: var(--ready); background: var(--ready-bg); border-color: var(--ready); }
+  .chip-partial { color: var(--accent); background: var(--accent-wash); border-color: var(--accent); }
+  .v-conflict   { color: var(--conflict); }
+
+  /* ---- excluded materials ---- */
+  .excluded { border-top: 1px solid var(--rule-2); padding: 18px 18px 20px; }
+  .excluded h3 {
+    font-family: var(--f-mono); font-size: 10px; letter-spacing: .13em;
+    text-transform: uppercase; color: var(--conflict); margin: 0 0 9px; font-weight: 600;
+  }
+  .excluded p { margin: 0 0 12px; font-size: 12.5px; color: var(--ink-2); max-width: 78ch; }
+  .excluded ul { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 5px; }
+  .excluded li {
+    display: grid; grid-template-columns: minmax(0, 1fr) 210px; gap: 14px;
+    padding: 8px 11px; background: var(--conflict-bg);
+    border-left: 2px solid var(--conflict-br); border-radius: 0 2px 2px 0;
+    font-size: 12.5px; align-items: baseline;
+  }
+  .excl-t { color: var(--ink); }
+  .excl-r {
+    font-family: var(--f-mono); font-size: 10px; letter-spacing: .05em;
+    text-transform: uppercase; color: var(--conflict);
+  }
+  .excl-note { border-left: 2px solid var(--rule-2); padding-left: 12px; }
+  .excluded code { font-family: var(--f-mono); font-size: 11.5px; color: var(--accent); }
+  @media (max-width: 640px) { .excluded li { grid-template-columns: 1fr; gap: 3px; } }
+
+  /* ---- conflicts ---- */
+  .clist { padding: 4px 0; }
+  .conflict {
+    display: grid; grid-template-columns: 3px minmax(0, 1fr);
+    border-bottom: 1px solid var(--rule);
+  }
+  .conflict:last-child { border-bottom: 0; }
+  .conflict-stripe { background: var(--conflict); }
+  .conflict-body { padding: 14px 16px 15px; }
+  .conflict-id {
+    font-family: var(--f-mono); font-size: 11px; font-weight: 600; color: var(--conflict);
+  }
+  .conflict h3 { font-size: 14.5px; font-weight: 600; margin: 3px 0 6px; letter-spacing: -.005em; }
+  .conflict p { margin: 0 0 9px; font-size: 12.5px; color: var(--ink-2); max-width: 78ch; }
+  .positions { display: grid; gap: 6px; margin-bottom: 9px; }
+  .position {
+    display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px;
+    font-size: 12.5px; padding: 7px 10px; background: var(--surface-2); border-radius: 2px;
+  }
+  .position b { font-family: var(--f-mono); font-size: 11px; font-weight: 500; color: var(--accent); }
+  @media (max-width: 620px) { .position { grid-template-columns: 1fr; gap: 2px; } }
+
+  /* ---- coverage ---- */
+  .cov { padding: 18px 18px 20px; display: grid; gap: 22px; }
+  .cov h3 {
+    font-family: var(--f-mono); font-size: 10px; letter-spacing: .13em;
+    text-transform: uppercase; color: var(--ink-3); margin: 0 0 10px; font-weight: 600;
+  }
+  .bars { display: grid; gap: 9px; }
+  .bar-row { display: grid; grid-template-columns: 132px minmax(0, 1fr) 54px; gap: 12px; align-items: center; font-size: 12.5px; }
+  .bar-track { height: 9px; background: var(--surface-2); border-radius: 1px; overflow: hidden; }
+  .bar-fill { height: 100%; }
+  .bar-n { font-family: var(--f-mono); font-size: 11.5px; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+  .cov-note { font-size: 12.5px; color: var(--ink-2); max-width: 74ch; margin: 0; }
+  .vintage { width: 100%; height: auto; display: block; }
+  .vx { font-family: var(--f-mono); font-size: 9px; fill: var(--ink-3); }
+  .vlabel { font-family: var(--f-mono); font-size: 8.5px; fill: var(--ink-3); }
+  .vaxis { stroke: var(--rule-2); }
+  .vgrid { stroke: var(--rule); }
+
+  footer {
+    margin-top: 34px; padding-top: 18px; border-top: 1px solid var(--rule);
+    display: flex; flex-wrap: wrap; gap: 18px; justify-content: space-between;
+    font-size: 12px; color: var(--ink-3);
+  }
+  footer code { font-family: var(--f-mono); font-size: 11.5px; }
+  .oldest { color: var(--blocked); font-weight: 600; font-family: var(--f-mono); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="shell">
+
+  <header class="masthead">
+    <div class="mast-id">
+      <span class="eyebrow">Chronic lymphocytic leukaemia · decision support · prototype 1</span>
+      <h1>CLL Decision Trace</h1>
+      <p class="standfirst">A working shell of the rules engine. Every input, every decision node and every
+        citation path is real. No clinical threshold is present, because no source document has been read.</p>
+    </div>
+    <div class="mast-meters">
+      <div class="meter">
+        <span class="meter-k">Sources</span>
+        <span class="meter-v v-blocked">1<span class="meter-n">/38</span></span>
+        <span class="meter-n">read</span>
+      </div>
+      <div class="meter">
+        <span class="meter-k">Nodes</span>
+        <span class="meter-v v-blocked">0<span class="meter-n">/15</span></span>
+        <span class="meter-n">evaluable</span>
+      </div>
+      <div class="meter">
+        <span class="meter-k">Excluded</span>
+        <span class="meter-v v-conflict">7</span>
+        <span class="meter-n">company items</span>
+      </div>
+      <div class="meter">
+        <span class="meter-k">Oldest guidance</span>
+        <span class="meter-v v-accent">2018</span>
+        <span class="meter-n">8 years</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="gate">
+    <div class="gate-stripe"></div>
+    <div class="gate-body">
+      <h2>Phase 0 gate is closed — this prototype cannot produce clinical output</h2>
+      <p>The register holds <strong>38 identified documents</strong>, of which <strong>one has actually been
+        read</strong>: an Oman Ministry of Health institutional protocol found in the project Drive. The other
+        37 were refused at the network proxy before reaching a paywall, so their identity comes from search
+        metadata — enough to name a document, not enough to state what it says.</p>
+      <p>So the trace below shows the machine <em>up to the point where a number would go</em>: inputs captured,
+        rule identified, governing source assigned, threshold absent. Each socket names the exact document and
+        section that fills it. Supply those and the same nodes light up — nothing else has to change.</p>
+      <p>Separately, <strong>7 items were found and deliberately excluded</strong> — manufacturer-produced
+        medical-affairs and promotional material. They are listed under the register, with reasons, rather
+        than dropped silently.</p>
+    </div>
+  </div>
+
+  <div class="surface">
+
+    <!-- ============ left rail: patient requisition ============ -->
+    <form class="panel" id="req" aria-label="Patient inputs">
+      <div class="panel-head">
+        <h2>Patient inputs</h2>
+        <span class="panel-note">15 fields</span>
+      </div>
+      <div class="req">
+        <p class="req-warn"><strong>Example patient.</strong> Fabricated for demonstration, chosen to exercise
+          the tumour-burden, cardiac and renal branches simultaneously. Not a real person and not a
+          recommendation.</p>
+
+        <fieldset class="fset">
+          <legend>Demographics</legend>
+          <div class="field">
+            <label for="age">Age</label>
+            <input type="number" id="age" value="58" min="18" max="105">
+          </div>
+          <div class="field">
+            <label for="weight">Weight <span class="unit">kg</span></label>
+            <input type="number" id="weight" value="82" min="30" max="220">
+          </div>
+          <div class="field field-wide">
+            <label for="ecog">ECOG performance status</label>
+            <select id="ecog">
+              <option>0</option><option selected>1</option><option>2</option><option>3</option><option>4</option>
+            </select>
+          </div>
+        </fieldset>
+
+        <fieldset class="fset">
+          <legend>Haematology</legend>
+          <div class="field">
+            <label for="alc">Absolute lymphocytes <span class="unit">×10⁹/L</span></label>
+            <input type="number" id="alc" value="118" step="0.1" min="0">
+          </div>
+          <div class="field">
+            <label for="hb">Haemoglobin <span class="unit">g/dL</span></label>
+            <input type="number" id="hb" value="10.8" step="0.1" min="2" max="20">
+          </div>
+          <div class="field">
+            <label for="plt">Platelets <span class="unit">×10⁹/L</span></label>
+            <input type="number" id="plt" value="96" min="1">
+          </div>
+        </fieldset>
+
+        <fieldset class="fset">
+          <legend>Disease burden</legend>
+          <div class="field">
+            <label for="node">Largest node <span class="unit">cm</span></label>
+            <input type="number" id="node" value="7" step="0.1" min="0">
+          </div>
+          <div class="field">
+            <label for="spleen">Spleen below costal margin <span class="unit">cm</span></label>
+            <input type="number" id="spleen" value="4" step="0.1" min="0">
+          </div>
+          <div class="field field-wide">
+            <label for="bsymp">Constitutional symptoms</label>
+            <select id="bsymp">
+              <option value="none">None reported</option>
+              <option value="fatigue" selected>Fatigue limiting activity</option>
+              <option value="sweats">Night sweats</option>
+              <option value="wtloss">Weight loss</option>
+              <option value="fever">Fever without infection</option>
+            </select>
+          </div>
+        </fieldset>
+
+        <fieldset class="fset">
+          <legend>Genetics</legend>
+          <div class="field field-wide">
+            <label for="del17p">del(17p) by FISH</label>
+            <select id="del17p">
+              <option selected>Not detected</option><option>Detected</option><option>Not tested</option>
+            </select>
+          </div>
+          <div class="field field-wide">
+            <label for="tp53">TP53 mutation</label>
+            <select id="tp53">
+              <option selected>Not detected</option><option>Detected</option><option>Not tested</option>
+            </select>
+          </div>
+          <div class="field field-wide">
+            <label for="ighv">IGHV status</label>
+            <select id="ighv">
+              <option selected>Unmutated</option><option>Mutated</option><option>Not tested</option>
+            </select>
+          </div>
+        </fieldset>
+
+        <fieldset class="fset">
+          <legend>Comorbidity &amp; organ function</legend>
+          <div class="field">
+            <label for="creat">Creatinine <span class="unit">µmol/L</span></label>
+            <input type="number" id="creat" value="96" min="20" max="900">
+          </div>
+          <div class="field field-wide">
+            <label for="cardiac">Cardiac history</label>
+            <select id="cardiac">
+              <option value="af" selected>Atrial fibrillation, anticoagulated</option>
+              <option value="htn">Hypertension only</option>
+              <option value="none">None</option>
+              <option value="other">Other structural disease</option>
+            </select>
+          </div>
+          <div class="field field-wide">
+            <label for="line">Treatment line</label>
+            <select id="line">
+              <option value="1" selected>Treatment-naive</option>
+              <option value="2">Relapsed after fixed-duration</option>
+              <option value="3">Progressed on covalent BTKi</option>
+              <option value="4">BTKi- and BCL2i-exposed</option>
+            </select>
+          </div>
+        </fieldset>
+
+        <div class="derived">
+          <div class="derived-row"><span>Creatinine clearance</span><span id="d-crcl">formula unsourced</span></div>
+          <div class="derived-row"><span>Rai stage</span><span id="d-rai">definition unsourced</span></div>
+          <div class="derived-row"><span>Binet stage</span><span id="d-binet">definition unsourced</span></div>
+          <div class="derived-row"><span>Nodes able to fire</span><span id="d-fire">0 of 15</span></div>
+        </div>
+      </div>
+    </form>
+
+    <!-- ============ right: tabbed working panel ============ -->
+    <div class="panel">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" aria-selected="true"  aria-controls="p-trace"     id="t-trace">Assessment trace<span class="cnt">15</span></button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="p-sources"   id="t-sources">Source register<span class="cnt">38</span></button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="p-conflicts" id="t-conflicts">Conflicts<span class="cnt">7</span></button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="p-coverage"  id="t-coverage">Coverage</button>
+      </div>
+
+      <section id="p-trace" role="tabpanel" aria-labelledby="t-trace">
+        <div class="trace" id="trace"></div>
+      </section>
+
+      <section id="p-sources" role="tabpanel" aria-labelledby="t-sources" hidden>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Source id</th><th>Document</th><th>Tier</th><th>Year</th><th>Access</th>
+              </tr>
+            </thead>
+            <tbody id="srcbody"></tbody>
+          </table>
+        </div>
+        <div class="excluded">
+          <h3>Found and deliberately excluded</h3>
+          <p>Manufacturer-produced material located in the project Drive. BeOne Medicines markets
+            zanubrutinib, one of the agents this tool must compare impartially, so none of this can be a
+            source of record for a treatment-selection rule — regardless of whether its content is accurate.
+            Listed here so the exclusion is auditable rather than silent.</p>
+          <ul id="exclbody"></ul>
+          <p class="excl-note">The last item is the instructive one. It bears directly on node 11, which is
+            otherwise thinly sourced — so it is tempting. But it is a conference abstract, retrospective and
+            propensity-matched rather than randomised, and it favours the product of the company holding the
+            file, while head-to-head <em>randomised</em> evidence for the same question exists
+            (<code>elevate-rr-jco-2021</code>, <code>alpine-nejm-2023</code>).</p>
+        </div>
+      </section>
+
+      <section id="p-conflicts" role="tabpanel" aria-labelledby="t-conflicts" hidden>
+        <div class="clist" id="clist"></div>
+      </section>
+
+      <section id="p-coverage" role="tabpanel" aria-labelledby="t-coverage" hidden>
+        <div class="cov">
+          <div>
+            <h3>Pre-search knowledge audit — 93 clinical inputs</h3>
+            <div class="bars" id="gapbars"></div>
+            <p class="cov-note" style="margin-top:12px">Declared before any searching, per Step 0.1. The single
+              confidently-held item is a definition, not a number. No numeric threshold in this tool was
+              claimed from memory.</p>
+          </div>
+
+          <div>
+            <h3>Source vintage — publication year of each register entry</h3>
+            <svg class="vintage" viewBox="0 0 760 168" role="img"
+                 aria-label="Dot plot of the 23 register sources by publication year, 2018 to 2026. One source dates from 2018; three carry an unknown label revision.">
+              <g id="vintage-g"></g>
+            </svg>
+            <p class="cov-note">Each mark is one source. Staleness is a property of <em>guidance</em>, not of
+              literature — RESONATE-2 being from 2015 is history, not decay, and it will never be reissued.
+              So the signal is the oldest <strong>guidance</strong> mark: <code>iwcll-2018</code>, eight years
+              old and still the presumptive authority for treatment initiation. Whether the 2026 EHA
+              guideline changes that is conflict C-06. Three drug labels have no recoverable revision date
+              and sit off the scale.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <footer>
+    <div>Register <code>0.1.0-provisional</code> · compiled <code>2026-09-06</code> · owner confirmation pending</div>
+    <div>Oldest guidance <span class="oldest">2018 · 8 years</span> &middot; 38 sources, 1 read</div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- register (mirrors /rules/sources.yaml) ---------- */
+  var SOURCES = [
+    ["iwcll-2018","iwCLL guidelines — diagnosis, treatment indications, response","guideline",2018],
+    ["eha-2026","EHA Guidelines on CLL and Richter transformation","guideline",2026],
+    ["nccn-cll-current","NCCN CLL/SLL, current version","guideline",2026],
+    ["nccn-insights-v2-2026","NCCN Guidelines Insights, v2.2026","guideline",2026],
+    ["bsh-2025","BSH Guideline for the treatment of CLL","guideline",2025],
+    ["eric-tp53-2024","ERIC TP53 mutation analysis — 2024 update","guideline",2024],
+    ["eric-ighv-2022","ERIC immunoglobulin gene sequence analysis","guideline",2022],
+    ["saudi-cll-2026","Saudi CLL clinical practice guidelines","guideline",2026],
+    ["gulf-fixed-duration-2025","Gulf position statement — upfront fixed duration","guideline",2025],
+    ["gulf-consensus-2024","Gulf region consensus statements","guideline",2024],
+    ["cll17-nejm-2025","CLL17 — fixed-duration vs continuous","literature",2025],
+    ["cll13-gaia-nejm-2023","CLL13/GAIA — first-line venetoclax combinations","literature",2023],
+    ["glow-nejm-evid-2022","GLOW — fixed-duration ibrutinib-venetoclax","literature",2022],
+    ["fda-venetoclax-uspi","VENCLEXTA US prescribing information","label",2026],
+    ["fda-acalabrutinib-uspi","CALQUENCE US prescribing information","label",2026],
+    ["fda-zanubrutinib-uspi","BRUKINSA US prescribing information","label",null],
+    ["fda-ibrutinib-uspi","IMBRUVICA US prescribing information","label",null],
+    ["fda-obinutuzumab-uspi","GAZYVA US prescribing information","label",null],
+    ["fda-pirtobrutinib-uspi","JAYPIRCA US prescribing information","label",2025],
+    ["fda-lisocel-pi","BREYANZI prescribing information","label",2024],
+    ["fda-approval-acala-ven-2026","FDA approval notice — acalabrutinib + venetoclax","label",2026],
+    ["ema-venclyxto-smpc","VENCLYXTO EU summary of product characteristics","label",2026],
+    ["ema-calquence-smpc","CALQUENCE EU summary of product characteristics","label",2025],
+    ["oman-royal-hospital-2026","CLL protocols — Royal Hospital, MoH Oman","guideline",2026],
+    ["amplify-nejm-2025","AMPLIFY — fixed-duration acalabrutinib combinations, 1L","literature",2025],
+    ["cll14-nejm-2019","CLL14 — venetoclax + obinutuzumab, primary analysis","literature",2019],
+    ["cll14-blood-2024-6yr","CLL14 — 6-year results","literature",2024],
+    ["elevate-tn-lancet-2020","ELEVATE-TN — acalabrutinib ± obinutuzumab, 1L","literature",2020],
+    ["sequoia-lancet-oncol-2022","SEQUOIA — zanubrutinib vs bendamustine-rituximab","literature",2022],
+    ["alpine-nejm-2023","ALPINE — zanubrutinib vs ibrutinib, R/R","literature",2023],
+    ["elevate-rr-jco-2021","ELEVATE-RR — acalabrutinib vs ibrutinib, high-risk R/R","literature",2021],
+    ["murano-nejm-2018","MURANO — venetoclax + rituximab, R/R","literature",2018],
+    ["captivate-jco-2021","CAPTIVATE — ibrutinib + venetoclax, MRD cohort","literature",2021],
+    ["bruin-nejm-2023","BRUIN — pirtobrutinib after a covalent BTKi","literature",2023],
+    ["bruin-cll321-jco","BRUIN CLL-321 — phase III pirtobrutinib","literature",2025],
+    ["transcend-cll004-lancet-2023","TRANSCEND CLL 004 — lisocabtagene maraleucel","literature",2023],
+    ["resonate2-nejm-2015","RESONATE-2 — ibrutinib as initial therapy","literature",2015],
+    ["cll12-blood-2022","CLL12 — ibrutinib vs placebo, early-stage asymptomatic","literature",2022]
+  ];
+
+  // The only source whose content has actually been read.
+  var READ = { "oman-royal-hospital-2026": true };
+
+  /* ---------- deliberately excluded (mirrors sources.yaml excluded_materials) ---------- */
+  var EXCLUDED = [
+    ["GCC BRUKINSA CLL Objection Handler V5.0", "Promotional"],
+    ["BRUKINSA CLL segmented messaging playbook, GCC version", "Promotional"],
+    ["Zanubrutinib Indirect Treatment Comparisons (Global)", "Manufacturer-sponsored indirect comparison"],
+    ["GCC MAIC and Meta-analysis trainings", "Manufacturer-sponsored indirect comparison"],
+    ["Zanubrutinib Pooled Safety Data — MA slides", "Manufacturer medical affairs"],
+    ["CLL/SLL internal training decks (Aug 2024, Nov 2023)", "Internal training — “not approved for external audiences”"],
+    ["Tang Z et al. Cardiovascular outcomes, acalabrutinib vs zanubrutinib. Blood 2024;144:6783–4", "ASH conference abstract, retrospective observational"]
+  ];
+
+  var TIER_LABEL = { guideline: "Primary guideline", literature: "Primary literature", label: "Regulatory label" };
+
+  /* ---------- the tool's spine ---------- */
+  var NODES = [
+    { n:1, title:"Confirm the diagnosis", status:"blocked",
+      decides:"Whether this is CLL, SLL or monoclonal B-cell lymphocytosis, and whether the immunophenotype is adequate to call it.",
+      sources:["iwcll-2018","eha-2026"], gaps:"A1–A5",
+      need:"The clonal B-lymphocyte count threshold and the CLL / SLL / MBL boundaries, from <code>iwcll-2018</code> §Diagnosis." },
+
+    { n:2, title:"Rai stage", status:"blocked",
+      decides:"Stage 0–IV and its risk grouping, from nodal, splenic, hepatic and cytopenia findings.",
+      sources:["iwcll-2018"], gaps:"B1–B4",
+      need:"The haemoglobin and platelet cut-points, and confirmation that the cytopenia must be disease-related rather than autoimmune." },
+
+    { n:3, title:"Binet stage", status:"blocked",
+      decides:"Stage A, B or C from the count of involved lymphoid areas plus cytopenia.",
+      sources:["iwcll-2018"], gaps:"B5–B6",
+      need:"The list of lymphoid areas, the area-count boundary, and Binet's own haemoglobin and platelet cut-points — which differ from Rai's. Mixing the two is a realistic tool bug." },
+
+    { n:4, title:"TP53 aberration status", status:"blocked",
+      decides:"Whether del(17p) or a TP53 mutation is present, which branches every downstream treatment decision.",
+      sources:["eric-tp53-2024","eha-2026"], gaps:"C1–C3",
+      need:"The reporting rule from <code>eric-tp53-2024</code>. Search indicates the fixed variant-allele-frequency cut-off was withdrawn in favour of laboratory validation — so the tool must <em>not</em> hard-code a VAF threshold. Confirm before building this branch." },
+
+    { n:5, title:"IGHV mutational status", status:"blocked",
+      decides:"Mutated or unmutated, and whether that still changes first-line selection in the targeted-agent era.",
+      sources:["eric-ighv-2022","eha-2026"], gaps:"C4–C5",
+      need:"The germline-deviation cut-off and the handling of borderline cases, plus a current statement on whether IGHV still modifies regimen choice." },
+
+    { n:6, title:"Is there an indication to treat?", status:"conflict", conflict:"C-06",
+      decides:"The entry point for the whole tool: active disease versus continued surveillance.",
+      sources:["iwcll-2018","eha-2026","cll12-blood-2022"], gaps:"D1–D10, B8",
+      need:"Every numeric threshold in the active-disease criteria: progressive marrow failure, spleen and node size, lymphocyte increase and doubling time with its count floor, and all four constitutional-symptom definitions. Two candidate authorities now exist — see C-06. Separately, <code>cll12-blood-2022</code> now decides whether watch-and-wait survives for asymptomatic patients with adverse genetics: it randomised exactly that population to ibrutinib or placebo. That was a declared blank (gap B8); it is now a named, unread paper." },
+
+    { n:7, title:"Surveillance interval", status:"partial",
+      decides:"How often to review a patient who does not yet meet treatment criteria.",
+      sources:["oman-royal-hospital-2026"], gaps:"D11",
+      need:"<em>Partially answered.</em> No international guideline located that specifies a cadence — but the Oman protocol, which has been read, sets one at institutional level: <code>3-monthly in year one, then 6–12-monthly</code>. So the tool can offer a local cadence for Oman while stating that no guideline mandates one. This is the shape every regional rule should take." },
+
+    { n:8, title:"First-line option set", status:"conflict", conflict:"C-01",
+      decides:"Which regimens are available for this patient, stratified by TP53 status and fitness.",
+      sources:["eha-2026","nccn-cll-current","bsh-2025","saudi-cll-2026","gulf-fixed-duration-2025"], gaps:"F1–F10",
+      need:"The complete current option set and its ordering from each guideline. The Gulf position statement takes a directive stance the international guidelines are unlikely to share — recorded as C-01, to be surfaced, not resolved." },
+
+    { n:9, title:"Fixed duration or continuous", status:"conflict", conflict:"C-04",
+      decides:"The treatment-duration model for each listed option, and whether MRD may guide stopping.",
+      sources:["nccn-cll-current","eha-2026","bsh-2025","cll17-nejm-2025"], gaps:"F10, H1–H3, E5",
+      need:"Per-regimen duration in cycles, the cycle length, and each guideline's position on MRD-guided stopping outside a trial. <code>cll17-nejm-2025</code> may be decisive here and is unread." },
+
+    { n:10, title:"Tumour lysis risk tier", status:"conflict", conflict:"C-03",
+      decides:"For any venetoclax-containing option: risk tier, ramp-up schedule, prophylaxis, monitoring and care setting.",
+      sources:["fda-venetoclax-uspi"], gaps:"I1–I8",
+      need:"The label's own TLS table — how tumour burden and renal function combine into a tier. This is the most safety-sensitive logic in the tool and, if NCCN has removed its table, it is single-sourced. Needed as the table's structure, not a summary of it." },
+
+    { n:11, title:"Cardiac suitability for a BTK inhibitor", status:"blocked",
+      decides:"Whether atrial fibrillation and anticoagulation rule an agent out, or merely shift preference between agents.",
+      sources:["fda-ibrutinib-uspi","fda-acalabrutinib-uspi","fda-zanubrutinib-uspi"], gaps:"J1–J7",
+      need:"Current label wording on atrial and ventricular arrhythmia, what anticoagulation is permitted alongside each agent, and any peri-procedural hold periods." },
+
+    { n:12, title:"Renal and hepatic dose adjustment", status:"blocked",
+      decides:"Dose modification by organ function, and which creatinine-clearance equation the thresholds are written in.",
+      sources:["fda-venetoclax-uspi","fda-acalabrutinib-uspi","fda-zanubrutinib-uspi","fda-ibrutinib-uspi"], gaps:"K1–K5",
+      need:"Per-agent impairment bands and the CYP3A interaction dose reductions. The tool computes a clearance, so it must know which equation each label assumes." },
+
+    { n:13, title:"Regional availability and reimbursement", status:"partial",
+      decides:"Whether each listed option can actually be given in UAE, Qatar, Oman or Kuwait — and whether the assays this trace depends on can be run there at all.",
+      sources:["oman-royal-hospital-2026"], gaps:"N1–N10",
+      need:"<em>Oman only, and only in part.</em> The Royal Hospital protocol states that <code>TP53 mutation testing is sent abroad</code> when unavailable in-house, that MRD testing is <code>“if available”</code>, and that drugs are <code>“subject to availability in Royal Hospital pharmacy”</code> — so node 4 is conditional and node 9's MRD-guided option may be unreachable there. <strong>Nothing at all for UAE, Qatar or Kuwait</strong>, and no formulary or reimbursement data for any market." },
+
+    { n:14, title:"Relapsed / refractory pathway", status:"blocked",
+      decides:"Next-line options by prior class exposure, and the distinction between intolerance and progression.",
+      sources:["eha-2026","nccn-cll-current","fda-pirtobrutinib-uspi","fda-lisocel-pi"], gaps:"G1–G8",
+      need:"Prior-therapy requirements verbatim from each label. Pirtobrutinib's indication appears to have broadened at its December 2025 traditional approval — assuming the older wording would make this branch wrong." },
+
+    { n:15, title:"Supportive care and prophylaxis", status:"blocked",
+      decides:"Hepatitis B screening, infection prophylaxis, vaccination and immunoglobulin replacement triggers.",
+      sources:["eha-2026","bsh-2025","fda-obinutuzumab-uspi"], gaps:"L1–L5",
+      need:"Screening requirements before anti-CD20 therapy, which regimens trigger which prophylaxis, and the immunoglobulin threshold." }
+  ];
+
+  var STATUS_CHIP = {
+    blocked:   ["chip-blocked",   "Source unread"],
+    conflict:  ["chip-conflict",  "Sources disagree"],
+    uncovered: ["chip-uncovered", "Not covered by any guideline"],
+    unsourced: ["chip-unsourced", "No source in register"],
+    partial:   ["chip-partial",   "Partly sourced · Oman only"]
+  };
+
+  /* ---------- conflicts (mirrors /rules/CONFLICTS.md) ---------- */
+  var CONFLICTS = [
+    { id:"C-01", title:"Is fixed-duration ibrutinib-venetoclax the first-line default in the Gulf?",
+      positions:[
+        ["gulf-fixed-duration-2025","A directive regional preference for one regimen in all fit patients, argued from a younger Arab patient demographic and from convenience, cost and logistics."],
+        ["eha-2026 · nccn · bsh-2025","Expected to present an option set driven by patient factors rather than a single default — unverified, all three unread."]
+      ],
+      note:"This is the conflict that decides whether the tool outputs one recommendation or a cited option set. Complication: the position statement predates both CLL17 and the 2026 approvals, so its direction may be reinforced while its specific regimen choice is overtaken." },
+
+    { id:"C-02", title:"US and EU approvals of acalabrutinib-venetoclax appear to differ",
+      positions:[
+        ["ema-calquence-smpc","EC authorisation reported June 2025 for the fixed-duration regimen with or without obinutuzumab."],
+        ["fda-approval-acala-ven-2026","FDA approval reported February 2026; the obinutuzumab arm is not mentioned in the summary surfaced."]
+      ],
+      note:"Approval status has to be modelled per jurisdiction rather than merged into one string. Gulf regulators often track EMA, so the EU wording may be the locally relevant one. Also unresolved: the trial population reportedly excluded TP53-aberrant disease — if the indication carries that restriction, the TP53 branch must exclude this regimen." },
+
+    { id:"C-03", title:"Where does authority for TLS prophylaxis now sit?",
+      positions:[
+        ["nccn-cll-current","Reported to have removed its venetoclax TLS prophylaxis table and its response-definitions table at v2.2026."],
+        ["fda-venetoclax-uspi","Becomes the sole source of record for TLS stratification, ramp-up, prophylaxis and monitoring if that removal is confirmed."]
+      ],
+      note:"Not a disagreement so much as a loss of redundancy — and arguably more dangerous. A single-sourced safety rule has nothing to catch a transcription error. The tool should state at the point of use that its TLS content is label-derived and single-sourced." },
+
+    { id:"C-04", title:"MRD-guided treatment duration: endorsed, or trial-only?",
+      positions:[
+        ["nccn-cll-current","Now classifies regimens as fixed-duration versus MRD-guided, implying MRD-guided duration is a recognised category."],
+        ["eha-2026 · bsh-2025","Position unknown — both unread."]
+      ],
+      note:"Flagged pre-search as gap E5: contested at the assistant's training cutoff. The signals suggest the position has moved, but not in which direction or how far. Until that is settled the tool must not present MRD-guided stopping as though it were established." },
+
+    { id:"C-05", title:"Does chemoimmunotherapy retain a role, and does the answer change regionally?",
+      positions:[
+        ["bsh-2025","Reported to hold that targeted agents have superseded chemoimmunotherapy except where they are unavailable or contraindicated."],
+        ["Regional reality","That carve-out is precisely the situation that may obtain locally on access or cost grounds — and no formulary data exists in the register to characterise it."]
+      ],
+      note:"The clinically correct answer and the locally actionable answer may differ. That is a conflict to surface, not resolve — and it cannot even be described until the access data requested in ACCESS-REQUESTS.md arrives." },
+
+    { id:"C-06", title:"Which document governs the decision to start treatment?",
+      positions:[
+        ["iwcll-2018","The classical authority for active-disease criteria. Now eight years old and the oldest load-bearing source in the register."],
+        ["eha-2026","Described as covering management from diagnosis and active surveillance through to treatment need — so it may defer, restate, amend or replace those criteria."]
+      ],
+      note:"All four outcomes are possible and the difference is material: initiation is the tool's entry point, so a stale threshold here propagates through every downstream branch. Must be settled by reading both side by side." },
+
+    { id:"C-07", title:"The sources nearest to hand are the ones that cannot be used",
+      positions:[
+        ["Available","The project Drive holds a substantial CLL library: objection handlers, messaging playbooks, indirect treatment comparisons, pooled safety analyses, internal training decks, and a favourable conference abstract."],
+        ["Admissible","One document. An Oman Ministry of Health institutional protocol — which was in the same Drive, and which nothing about the rest of the collection would have led you to expect was the valuable item."]
+      ],
+      note:"BeOne Medicines markets zanubrutinib, one of the agents this tool must compare impartially. That does not make the company material wrong; it makes it inadmissible as a source of record, which is a different and stricter test. The exclusions are listed under the source register rather than dropped silently, so the decision can be audited. If this tool is ever intended to reach an external audience, settle this with compliance and medical governance early rather than late." }
+  ];
+
+  /* ---------- render: trace ---------- */
+  function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+  var traceEl = document.getElementById("trace");
+  traceEl.innerHTML = NODES.map(function (nd) {
+    var chip = STATUS_CHIP[nd.status];
+    var srcs = nd.sources.length
+      ? nd.sources.map(function (s) { return '<span class="sid unread">' + esc(s) + '</span>'; }).join("")
+      : '<span class="sid" style="color:var(--ink-3);background:var(--surface-2)">none</span>';
+    return '' +
+      '<article class="node" data-status="' + nd.status + '">' +
+        '<div class="node-stripe"></div>' +
+        '<div class="node-num">' + nd.n + '</div>' +
+        '<div class="node-body">' +
+          '<div class="node-top">' +
+            '<span class="node-title">' + esc(nd.title) + '</span>' +
+            '<span class="chip ' + chip[0] + '">' + chip[1] + '</span>' +
+            (nd.conflict ? '<span class="chip chip-conflict">' + nd.conflict + '</span>' : '') +
+          '</div>' +
+          '<p class="node-decides">' + esc(nd.decides) + '</p>' +
+          '<div class="srcline"><span class="srcline-k">Governed by</span>' + srcs + '</div>' +
+          '<div class="socket"><span class="socket-icon">⌷</span><span>' + nd.need + '</span></div>' +
+          '<div class="gapref">Declared gaps ' + esc(nd.gaps) + '</div>' +
+        '</div>' +
+      '</article>';
+  }).join("");
+
+  /* ---------- render: register ---------- */
+  document.getElementById("srcbody").innerHTML = SOURCES.map(function (s) {
+    var read = !!READ[s[0]];
+    var yr = s[3] === null
+      ? '<span class="aged">unknown</span>'
+      : ((s[3] === 2018 && s[2] === "guideline") ? '<span class="aged">' + s[3] + '</span>' : s[3]);
+    return '<tr>' +
+      '<td class="sidcell">' + esc(s[0]) + '</td>' +
+      '<td>' + esc(s[1]) + '</td>' +
+      '<td class="tier">' + TIER_LABEL[s[2]] + '</td>' +
+      '<td class="mono">' + yr + '</td>' +
+      '<td class="mono">' + (read
+        ? '<span class="chip chip-ready">obtained &middot; read</span>'
+        : '<span class="chip chip-blocked">not obtained</span>') + '</td>' +
+    '</tr>';
+  }).join("");
+
+  document.getElementById("exclbody").innerHTML = EXCLUDED.map(function (e) {
+    return '<li><span class="excl-t">' + esc(e[0]) + '</span>' +
+           '<span class="excl-r">' + esc(e[1]) + '</span></li>';
+  }).join("");
+
+  /* ---------- render: conflicts ---------- */
+  document.getElementById("clist").innerHTML = CONFLICTS.map(function (c) {
+    var pos = c.positions.map(function (p) {
+      return '<div class="position"><b>' + esc(p[0]) + '</b><span>' + esc(p[1]) + '</span></div>';
+    }).join("");
+    return '' +
+      '<article class="conflict">' +
+        '<div class="conflict-stripe"></div>' +
+        '<div class="conflict-body">' +
+          '<div class="conflict-id">' + c.id + '</div>' +
+          '<h3>' + esc(c.title) + '</h3>' +
+          '<div class="positions">' + pos + '</div>' +
+          '<p>' + esc(c.note) + '</p>' +
+        '</div>' +
+      '</article>';
+  }).join("");
+
+  /* ---------- render: coverage bars ---------- */
+  var GAPS = [
+    ["Held with confidence", 1,  "var(--ready)"],
+    ["Needs verification",  52,  "var(--blocked)"],
+    ["Not held at all",     40,  "var(--uncovered)"]
+  ];
+  document.getElementById("gapbars").innerHTML = GAPS.map(function (g) {
+    return '<div class="bar-row">' +
+      '<span>' + g[0] + '</span>' +
+      '<span class="bar-track"><span class="bar-fill" style="width:' + (g[1] / 93 * 100) + '%;background:' + g[2] + '"></span></span>' +
+      '<span class="bar-n">' + g[1] + '</span>' +
+    '</div>';
+  }).join("");
+
+  /* ---------- render: source vintage dot plot ---------- */
+  (function () {
+    var W = 760, H = 178, L = 40, R = 24, T = 26, B = 34;
+    var y0 = 2015, y1 = 2026;
+    var plotW = W - L - R;
+    var xOf = function (y) { return L + (y - y0) / (y1 - y0) * plotW; };
+    var baseline = H - B;
+    var parts = [];
+
+    // year grid + axis labels
+    for (var y = y0; y <= y1; y++) {
+      var x = xOf(y);
+      parts.push('<line class="vgrid" x1="' + x + '" y1="' + T + '" x2="' + x + '" y2="' + baseline + '" stroke-width="1"></line>');
+      parts.push('<text class="vx" x="' + x + '" y="' + (baseline + 15) + '" text-anchor="middle">' + y + '</text>');
+    }
+    parts.push('<line class="vaxis" x1="' + L + '" y1="' + baseline + '" x2="' + (W - R) + '" y2="' + baseline + '" stroke-width="1"></line>');
+
+    // stack dots per year
+    var byYear = {};
+    SOURCES.forEach(function (s) {
+      if (s[3] === null) return;
+      (byYear[s[3]] = byYear[s[3]] || []).push(s);
+    });
+    Object.keys(byYear).forEach(function (yr) {
+      // guidance first so it sits nearest the axis and reads as one band
+      byYear[yr].sort(function (a, b) {
+        return (a[2] === "literature" ? 1 : 0) - (b[2] === "literature" ? 1 : 0);
+      }).forEach(function (s, i) {
+        var cx = xOf(+yr), cy = baseline - 10 - i * 11;
+        var guidance = s[2] !== "literature";
+        var fill = s[0] === "iwcll-2018" ? "var(--blocked)"
+                 : guidance ? "var(--accent)" : "var(--rule-2)";
+        parts.push('<circle cx="' + cx + '" cy="' + cy + '" r="4.2" fill="' + fill + '"></circle>');
+      });
+    });
+
+    // legend + the one mark that carries the staleness signal
+    parts.push('<circle cx="' + L + '" cy="' + (T - 12) + '" r="4.2" fill="var(--accent)"></circle>');
+    parts.push('<text class="vlabel" x="' + (L + 10) + '" y="' + (T - 9) + '" text-anchor="start">guidance &amp; labels</text>');
+    parts.push('<circle cx="' + (L + 118) + '" cy="' + (T - 12) + '" r="4.2" fill="var(--rule-2)"></circle>');
+    parts.push('<text class="vlabel" x="' + (L + 128) + '" y="' + (T - 9) + '" text-anchor="start">trial literature</text>');
+    parts.push('<text class="vlabel" x="' + (W - R) + '" y="' + (T - 9) + '" text-anchor="end">3 labels · revision unknown, off scale</text>');
+    parts.push('<text class="vlabel" x="' + (xOf(2018) + 8) + '" y="' + (baseline - 30) + '" text-anchor="start">iwcll-2018</text>');
+
+    document.getElementById("vintage-g").innerHTML = parts.join("");
+  })();
+
+  /* ---------- derived readouts: honest about what cannot be computed ---------- */
+  var out = {
+    crcl: document.getElementById("d-crcl"),
+    rai: document.getElementById("d-rai"),
+    binet: document.getElementById("d-binet"),
+    fire: document.getElementById("d-fire")
+  };
+
+  function refresh() {
+    // Inputs are captured and echoed. Nothing is classified, because every
+    // classification needs a threshold no source in the register has supplied.
+    var alc = document.getElementById("alc").value;
+    var hb = document.getElementById("hb").value;
+    var plt = document.getElementById("plt").value;
+    out.crcl.textContent = "equation unsourced · K4";
+    out.rai.textContent = "captured, unclassified · B1";
+    out.binet.textContent = "captured, unclassified · B5";
+    out.fire.textContent = "0 of 15";
+    out.rai.title = "ALC " + alc + " ×10⁹/L, Hb " + hb + " g/dL, platelets " + plt + " ×10⁹/L captured.";
+  }
+  document.getElementById("req").addEventListener("input", refresh);
+  refresh();
+
+  /* ---------- tabs ---------- */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+  tabs.forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      tabs.forEach(function (t) {
+        var on = t === tab;
+        t.setAttribute("aria-selected", on ? "true" : "false");
+        document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+      });
+    });
+  });
+})();
+</script>

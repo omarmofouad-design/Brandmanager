@@ -40,7 +40,7 @@
 # because it is unread.
 # ---------------------------------------------------------------------------
 
-register_version: "0.1.0-provisional"
+register_version: "0.2.0-provisional"
 compiled_on: "2026-09-06"
 compiled_by: "Claude (Phase 0 sourcing)"
 confirmed_by_owner: false
@@ -48,8 +48,16 @@ gate_status: "Phase 1 blocked pending owner confirmation and document supply"
 
 egress_note: >
   Outbound HTTPS is blocked by this environment's egress policy for all
-  external hosts except GitHub. Zero source documents were retrieved.
-  See ACCESS-REQUESTS.md for the precise supply list.
+  external hosts except GitHub. Zero source documents were retrieved over the
+  network. See ACCESS-REQUESTS.md for the precise supply list.
+
+drive_note: >
+  0.2.0 adds the first document actually read: an institutional CLL protocol
+  retrieved from the owner's Google Drive (oman-royal-hospital-2026). The
+  Drive was searched for CLL material; the rest of what it holds is
+  manufacturer-produced medical-affairs and promotional material and is
+  recorded under `excluded_materials` rather than as sources. See
+  CONFLICTS.md C-07 for the independence problem that creates.
 
 sources:
 
@@ -570,6 +578,260 @@ sources:
       apparently broader combination set than the US approval. Central to
       conflict C-02.
 
+  # =========================================================================
+  # TIER 1c — INSTITUTIONAL PROTOCOL (obtained and read)
+  # =========================================================================
+
+  - id: oman-royal-hospital-2026
+    title: "CLL protocols — Royal Hospital (Oman)"
+    publisher: >-
+      Royal Hospital, Ministry of Health, Sultanate of Oman.
+      Document control MoH/DGQAC/P&P/002
+    version_or_year: >-
+      Version 01 (Initial Release), written/reviewed/validated 2026-02-11 by
+      Dr Muna Al Tarshi, approved by Dr Mahdiya Al Bulushi. Effective and
+      review dates are unfilled placeholders in the document.
+    url_or_doi: "https://drive.google.com/file/d/1_94k1nzytvmgapkVcj5MwxK8Ra90r4GT/view"
+    access_date: "2026-09-06"
+    access_method: user_supplied
+    reliability: primary_guideline
+    verified: content_read
+    intended_use:
+      - Oman-specific operational constraints (assay and drug availability)
+      - Institutional surveillance and follow-up cadence
+      - Local referral and escalation pathways
+    notes: >-
+      THE ONLY DOCUMENT IN THIS REGISTER THAT HAS ACTUALLY BEEN READ. Located
+      in the project owner's Google Drive. It is an institutional protocol,
+      NOT a guideline: it restates NCCN/ESMO content rather than deriving
+      recommendations, so it must never be cited for a clinical threshold that
+      a primary guideline also covers. Three limits on its authority:
+      (a) it is draft-quality — effective/review dates are "Month/Year"
+      placeholders and an unfinished editing note survives in the text
+      ("First-Line Treatment Selection: add the NCCCN");
+      (b) its content and its own reference list disagree — the comparison
+      table is headed "NCCN 2026 / ESMO 2024" while reference 11 cites NCCN
+      v4.2024 and reference 14 cites the 2021 ESMO/EHA guideline, so its
+      guideline columns are not a reliable rendering of either;
+      (c) it cites ESMO 2021, superseded by the 2024 ESMO interim update and
+      now by eha-2026.
+      Ask the owner whether a finalised version exists.
+    usable_for:
+      - "Oman: TP53 mutation testing is sent abroad when not available in-house"
+      - "Oman: MRD testing listed as 'if available'"
+      - "Oman: medications 'subject to availability in Royal Hospital pharmacy'"
+      - "Institutional follow-up cadence: 3-monthly in year one, then 6-12-monthly"
+      - "Institutional imaging practice and referral pathway for external molecular testing"
+    not_usable_for:
+      - "Any treatment-initiation threshold — restated from secondary sources, cite iwcll-2018 or eha-2026 instead"
+      - "Any first-line or relapsed regimen ranking — its guideline columns are version-inconsistent"
+
+  # =========================================================================
+  # TIER 2 (continued) — PIVOTAL TRIALS, bibliographically identified
+  # =========================================================================
+  # Identified 2026-09-06 by search. NONE has been read. Each still requires
+  # access_method != not_obtained AND verified: content_read before any rule
+  # or efficacy statement may cite it. Full detail in PROCUREMENT.md Tier D.
+
+  - id: amplify-nejm-2025
+    title: "AMPLIFY — Fixed-Duration Acalabrutinib Combinations in Untreated CLL"
+    publisher: "New England Journal of Medicine"
+    version_or_year: "2025 (Brown JR et al.)"
+    url_or_doi: "10.1056/NEJMoa2409804"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_literature
+    verified: bibliographic_only
+    notes: "Underpins the 2026-02-19 FDA approval. Population reportedly excluded del(17p)/TP53."
+
+  - id: cll14-nejm-2019
+    title: "CLL14 — Venetoclax and Obinutuzumab in Patients with CLL and Coexisting Conditions"
+    publisher: "New England Journal of Medicine"
+    version_or_year: "2019;380:2225-2236 (Fischer K, Al-Sawaf O, Bahlo J, et al.)"
+    url_or_doi: "10.1056/NEJMoa1815281"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_literature
+    verified: bibliographic_only
+
+  - id: cll14-blood-2024-6yr
+    title: "CLL14 — 6-year results of the randomized phase 3 study"
+    publisher: "Blood (American Society of Hematology)"
+    version_or_year: "2024;144(18):1924-1935 (Al-Sawaf O, Robrecht S, Zhang C, et al.)"
+    url_or_doi: "https://ashpublications.org/blood/article/144/18/1924/516941/"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_literature
+    verified: bibliographic_only
+
+  - id: elevate-tn-lancet-2020
+    title: "ELEVATE-TN — Acalabrutinib with or without obinutuzumab vs chlorambucil-obinutuzumab"
+    publisher: "The Lancet"
+    version_or_year: "2020;395:1278-1291 (Sharman JP et al.); PMID 32305093"
+    url_or_doi: "https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(20)30262-2/abstract"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_literature
+    verified: bibliographic_only
+
+  - id: sequoia-lancet-oncol-2022
+    title: "SEQUOIA — Zanubrutinib vs bendamustine-rituximab in untreated CLL/SLL"
+    publisher: "The Lancet Oncology"
+    version_or_year: "2022;23(8):1031-1043 (Tam CS et al.)"
+    url_or_doi: "https://www.thelancet.com/journals/lanonc/article/PIIS1470-2045(22)00293-5/abstract"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_literature
+    verified: bibliographic_only
+
+  - id: alpine-nejm-2023
+    title: "ALPINE — Zanubrutinib or Ibrutinib in Relapsed or Refractory CLL"
+    publisher: "New England Journal of Medicine"
+    version_or_year: "2023 (Brown JR et al.)"
+    url_or_doi: "10.1056/NEJMoa2211582"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_literature
+    verified: bibliographic_only
+
+  - id: elevate-rr-jco-2021
+    title: "ELEVATE-RR — Acalabrutinib vs ibrutinib in previously treated high-risk CLL"
+    publisher: "Journal of Clinical Oncology"
+    version_or_year: "2021 (Byrd JC et al.)"
+    url_or_doi: "pending — DOI not established by search"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_literature
+    verified: bibliographic_only
+    notes: "The head-to-head randomised cardiac-safety citation for node 11."
+
+  - id: murano-nejm-2018
+    title: "MURANO — Venetoclax-Rituximab in Relapsed or Refractory CLL"
+    publisher: "New England Journal of Medicine"
+    version_or_year: "2018 (Seymour JF et al.)"
+    url_or_doi: "10.1056/NEJMoa1713976"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_literature
+    verified: bibliographic_only
+
+  - id: captivate-jco-2021
+    title: "CAPTIVATE — Ibrutinib plus venetoclax, first line, MRD cohort"
+    publisher: "Journal of Clinical Oncology"
+    version_or_year: "2021 (Wierda WG et al.); PMID 34618601"
+    url_or_doi: "https://pubmed.ncbi.nlm.nih.gov/34618601/"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_literature
+    verified: bibliographic_only
+
+  - id: bruin-nejm-2023
+    title: "BRUIN — Pirtobrutinib after a covalent BTK inhibitor in CLL"
+    publisher: "New England Journal of Medicine"
+    version_or_year: "2023;389:33-44 (Mato AR, Woyach JA, Brown JR, et al.)"
+    url_or_doi: "10.1056/NEJMoa2300696"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_literature
+    verified: bibliographic_only
+
+  - id: bruin-cll321-jco
+    title: "BRUIN CLL-321 — Phase III pirtobrutinib vs idelalisib-rituximab or bendamustine-rituximab"
+    publisher: "Journal of Clinical Oncology"
+    version_or_year: "2025"
+    url_or_doi: "10.1200/JCO-25-00166"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_literature
+    verified: bibliographic_only
+
+  - id: transcend-cll004-lancet-2023
+    title: "TRANSCEND CLL 004 — Lisocabtagene maraleucel in CLL/SLL"
+    publisher: "The Lancet"
+    version_or_year: "2023;402(10402):641-654 (Siddiqi T, Maloney DG, Kenderian SS, et al.)"
+    url_or_doi: "https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(23)01052-8/abstract"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_literature
+    verified: bibliographic_only
+
+  - id: resonate2-nejm-2015
+    title: "RESONATE-2 — Ibrutinib as Initial Therapy for Patients with CLL"
+    publisher: "New England Journal of Medicine"
+    version_or_year: "2015 (Burger JA et al.); PMID 26639149"
+    url_or_doi: "https://pubmed.ncbi.nlm.nih.gov/26639149/"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_literature
+    verified: bibliographic_only
+
+  - id: cll12-blood-2022
+    title: "CLL12 — Ibrutinib vs placebo in treatment-naive, early-stage CLL"
+    publisher: "Blood (American Society of Hematology); final results in J Clin Oncol"
+    version_or_year: >-
+      Blood 2022;139(2):177 (Langerbeins P et al.); final results
+      J Clin Oncol 2024, doi 10.1200/JCO.24.00975
+    url_or_doi: "https://ashpublications.org/blood/article/139/2/177/477942/"
+    access_date: "2026-09-06"
+    access_method: not_obtained
+    reliability: primary_literature
+    verified: bibliographic_only
+    notes: >-
+      HIGH PRIORITY, higher than its tier suggests. Randomised asymptomatic
+      early-stage patients at high risk of progression to ibrutinib or
+      placebo. Search reporting indicates event-free survival improved but
+      overall survival did not, and that watch-and-wait remains standard
+      regardless of genetic risk. That was gap B8/D10, on which no reliable
+      position was held. If confirmed on reading, node 6 keeps watch-and-wait
+      as the default for asymptomatic disease even with adverse genetics — a
+      load-bearing behaviour of the whole tool.
+
+# ===========================================================================
+# EXCLUDED MATERIALS — deliberately NOT sources
+# ===========================================================================
+# Found in the project owner's Google Drive during the 2026-09-06 sweep.
+# Recorded so the exclusion is auditable rather than silent. See CONFLICTS.md
+# C-07. None of these may be cited by any rule.
+
+excluded_materials:
+  reason_class: >-
+    Manufacturer-produced medical-affairs, training and promotional material.
+    The owner's organisation (BeOne Medicines) markets zanubrutinib, one of
+    the agents this tool must compare impartially. Company material cannot be
+    a source of record for a treatment-selection rule regardless of its
+    accuracy.
+  still_useful_as: >-
+    A reference map only. These decks cite the primary literature accurately,
+    and several Tier D citations in PROCUREMENT.md were confirmed from them.
+    Citing the map is not citing the territory.
+  items:
+    - title: "GCC BRUKINSA CLL Objection Handler V5.0"
+      class: promotional
+    - title: "BRUKINSA CLL segmented messaging playbook, GCC version"
+      class: promotional
+    - title: "Zanubrutinib Indirect Treatment Comparisons (Global, MRC-approved Aug 2025)"
+      class: manufacturer_sponsored_indirect_comparison
+    - title: "GCC MAIC and Meta-analysis trainings"
+      class: manufacturer_sponsored_indirect_comparison
+    - title: "Zanubrutinib Pooled Safety Data — MA slides (MRC-approved May 2025)"
+      class: manufacturer_medical_affairs
+    - title: "Chronic Lymphocytic Leukemia / CLL-SLL internal training decks (Aug 2024, Nov 2023)"
+      class: internal_training
+      note: "Marked 'Confidential. For training purposes ONLY. Not approved for use with external audiences.'"
+    - title: >-
+        Tang Z, Aldapt MB, Chiang CH, Gong Z. The Cardiovascular Outcomes
+        Difference between Acalabrutinib and Zanubrutinib: A Retrospective
+        Cohort Study Using Real-World Data. Blood 2024;144:6783-6784
+      identifier: "10.1182/blood-2024-211603"
+      class: conference_abstract_observational
+      note: >-
+        The instructive case. Bears directly on node 11 (cardiac suitability),
+        which is otherwise thinly sourced, so it is tempting. But it is an ASH
+        conference abstract, retrospective and propensity-matched rather than
+        randomised, and it favours the product of the company holding the
+        file. Head-to-head RANDOMISED evidence for the same question exists
+        (elevate-rr-jco-2021, alpine-nejm-2023). Excluded.
+
 # ===========================================================================
 # PENDING IDENTIFICATION — NOT SOURCES
 # ===========================================================================
@@ -580,46 +842,20 @@ sources:
 pending_identification:
 
   pivotal_trials:
-    - regimen: "Venetoclax + obinutuzumab, first line"
-      believed_trial: "CLL14"
-      status: "Trial name not confirmed by search; no citation established"
-    - regimen: "Acalabrutinib ± obinutuzumab, first line"
-      believed_trial: "ELEVATE-TN"
-      status: "Not confirmed; no citation established"
-    - regimen: "Acalabrutinib vs ibrutinib, relapsed"
-      believed_trial: "ELEVATE-RR"
-      status: "Not confirmed; needed as the head-to-head cardiac-safety citation"
-    - regimen: "Zanubrutinib, first line"
-      believed_trial: "SEQUOIA"
-      status: "Not confirmed; del(17p) cohort detail needed"
-    - regimen: "Zanubrutinib vs ibrutinib, relapsed"
-      believed_trial: "ALPINE"
-      status: "Not confirmed"
-    - regimen: "Acalabrutinib + venetoclax ± obinutuzumab, first line"
-      believed_trial: "AMPLIFY"
-      status: >-
-        Trial name corroborated by regulatory announcements but no peer-reviewed
-        citation established. Required — this underpins a 2026 approval.
-    - regimen: "Ibrutinib + venetoclax, first line"
-      believed_trial: "CAPTIVATE (GLOW is separately identified)"
-      status: "Not confirmed which is registrational for which population"
-    - regimen: "Venetoclax + rituximab, relapsed"
-      believed_trial: "MURANO"
-      status: "Not confirmed; needed for the R/R duration rule"
-    - regimen: "Pirtobrutinib, relapsed"
-      believed_trial: "BRUIN"
-      status: "Not confirmed; registrational cohort unclear"
-    - regimen: "Lisocabtagene maraleucel, relapsed"
-      believed_trial: "TRANSCEND CLL 004"
-      status: "Not confirmed"
-    - regimen: "Ibrutinib monotherapy, first line (historical)"
-      believed_trial: "RESONATE-2"
-      status: "Not confirmed"
-    - regimen: "Early treatment of high-risk asymptomatic disease"
-      believed_trial: "CLL12 and/or EVOLVE"
-      status: >-
-        Not confirmed. Needed to resolve gaps B8/D10 — whether watch-and-wait
-        remains standard for asymptomatic high-risk genetics.
+    resolved_on: "2026-09-06"
+    status: >-
+      RESOLVED. Every pivotal trial previously listed here has been
+      bibliographically identified and promoted into `sources` above
+      (amplify-nejm-2025, cll14-nejm-2019, cll14-blood-2024-6yr,
+      elevate-tn-lancet-2020, sequoia-lancet-oncol-2022, alpine-nejm-2023,
+      elevate-rr-jco-2021, murano-nejm-2018, captivate-jco-2021,
+      bruin-nejm-2023, bruin-cll321-jco, transcend-cll004-lancet-2023,
+      resonate2-nejm-2015, cll12-blood-2022). All remain UNREAD.
+    still_open:
+      - "ELEVATE-RR: DOI not established, only journal and year"
+      - >-
+        EVOLVE (early treatment of high-risk asymptomatic disease): whether it
+        has read out is unverified. CLL12 has, and is registered.
 
   documents:
     - "BSH diagnosis/investigation guideline for CLL (existence and currency unestablished; bsh-2025 covers treatment only)"
